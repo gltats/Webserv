@@ -30,11 +30,11 @@ CLEANING_TOOL := \xF0\x9F\xA7\xBD
 #--------------------------------
 
 # Binary name
-NAME = FragTrap
+NAME = Webserv
 
 # Compiler and flags
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98 -pedantic
+CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
 
 # Folders & files
 FILES = main
