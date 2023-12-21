@@ -10,6 +10,7 @@
 	<link rel="shortcut icon" href="./img/webIcon.png" type="image/x-icon" sizes="16x16 32x32 48x48">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<link rel="stylesheet" href="./style/error-styles.css">
+	<script src="./error.js" defer></script>
 	<title>Webserv</title> 
 </head>
 <body>
@@ -18,7 +19,7 @@
 			<source src="img/404.mp4" type="video/mp4">
 		</video>
 		<h2>Sorry, the page you're looking for doesn't exist.</h2>
-		<button type="button" class="btn btn-light mt-2"> Home </button>
+		<button type="button" class="btn btn-light mt-2" onclick="redirectToHome()" > Home </button>
 	</div>
 </body>
 </html>
