@@ -10,13 +10,14 @@
 
 #include <iostream>
 
-class Parsing {
+class ConfigParser {
 	private:
+		int _nbServer;
 	protected:
 	public:
-		Parsing();
-		Parsing();
-		Parsing(const Parsing &copy);
-		Parsing &operator=(const Parsing &copy);
-		~Parsing();
+		ConfigParser();
+		ConfigParser();
+		ConfigParser(const Parsing &copy);
+		ConfigParser &operator=(const Parsing &copy);
+		~ConfigParser();
 }
