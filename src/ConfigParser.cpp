@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gl.tats
- * @ Modified time: 2024-01-09 17:13:19
+ * @ Modified time: 2024-01-09 17:23:25
  * @ Description: webserv
  */
 
@@ -29,7 +29,7 @@ ConfigParser::~ConfigParser()
 {}
 
 //constructor
-ConfigParser::ConfigParser(std::string const path):  _path(path), _size(0), _nb_server(0)
+ConfigParser::ConfigParser(std::string const ConfigFile):  _path(path), _size(0), _nb_server(0)
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,8 +55,6 @@ void ConfigParser::getConfig(const std::string &configFile)
 	splitServers(content);//spliting servers on separetly strings in vector (learning vector), later I have to add a checker for checking all the value requiered are there and they all have the ;
 	return (0);
 }
-
-
 
 //helper functions
 void ConfigParser::removeWhiteSpace(const std::string& content)
@@ -171,10 +169,6 @@ const char	*ConfigParser::FileIsUnaccessible::what() const throw() {
 
 const char	*ConfigParser::FileIsEmpty::what() const throw() {
 	return "File is empty";
-}
-
-const char	*ConfigParser::SizeError::what() const throw() {
-	return "Size error";
 }
 
 const char *ConfigParser::FileIsNotFile::what() const throw() {
