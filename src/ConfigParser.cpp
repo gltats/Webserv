@@ -19,17 +19,17 @@ ConfigParser::ConfigParser(const ConfigParser &copy)
 }
 
 //copy assignment overload
-ConfigParser &ConfigParser::operator=(const ConfigParser &copy) {
-	if (this == &copy)
-		return *this;
-}
+// ConfigParser &ConfigParser::operator=(const ConfigParser &copy) {
+// 	if (this == &copy)
+// 		return *this;
+// }
 
 //Destructor
 ConfigParser::~ConfigParser()
 {}
 
 //constructor
-ConfigParser::ConfigParser(std::string const ConfigFile):  _path(path), _size(0), _nb_server(0)
+ConfigParser::ConfigParser(std::string const ConfigFile):  _path(ConfigFile), _size(0)
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,37 +40,37 @@ void ConfigParser::getConfig(const std::string &configFile)
 	// Check if the file exists and is readable
     int fileType = getTypePath(configFile);
     if (fileType == -1) {
-        throw FileNotOpen; // Error in getTypePath
+        throw std::invalid_argument("File is not open");// Error in getTypePath
     } else if (fileType != 1) {
-        throw FileIsNotFile; // Not a regular file
+        throw std::invalid_argument("File is not a regular file");; // Not a regular file
     } else if (checkFile(configFile, 4) != 0) {
-        throw FileIsUnaccessible; // File not readable
+        throw  std::invalid_argument("File not redable"); // File not readable
     }
 	//try to open file
 	content = readFile(configFile);
 	if (content.empty())
-		throw FileIsEmpty;
+		throw std::invalid_argument("File is empty");
 	removeComments(content);
 	removeWhiteSpace(content);
-	splitServers(content);//spliting servers on separetly strings in vector (learning vector), later I have to add a checker for checking all the value requiered are there and they all have the ;
-	return (0);
+	std::cout << content << std::endl;//just for testing purpouses
+	//splitServers(content);//spliting servers on separetly strings in vector (learning vector), later I have to add a checker for checking all the value requiered are there and they all have the ;
 }
 
 //helper functions
-void ConfigParser::removeWhiteSpace(const std::string& content)
+void ConfigParser::removeWhiteSpace(std::string& content)
 {
-	std::string::iterator it = content.begin();
-	while (it != content.end()) {
-		if (*it == ' ' || *it == '\t' || *it == '\n' || *it == '\r' || *it == '\f' || *it == '\v')
-			it = content.erase(it);
-		else
-			++it;
-	}
+    std::string::iterator it = content.begin();
+    while (it != content.end()) {
+        if (*it == ' ' || *it == '\t' || *it == '\n' || *it == '\r' || *it == '\f' || *it == '\v')
+            it = content.erase(it);
+        else
+            ++it;
+    }
 }
 
-void ConfigParser::removeComments(const std::string& content)
+void ConfigParser::removeComments(std::string& content)
 {
-	size_t pos = content.find('#'); // Find the first occurrence of '#'
+    size_t pos = content.find('#'); // Find the first occurrence of '#'
 
     while (pos != std::string::npos)
     {
@@ -78,9 +78,7 @@ void ConfigParser::removeComments(const std::string& content)
         content.erase(pos, endOfLine - pos);
         pos = content.find('#');
     }
-	
 }
-
 
 //Check if the the path is a file, a forder or something else
 int ConfigParser::getTypePath(std::string const path)
@@ -111,14 +109,13 @@ int	ConfigParser::checkFile(std::string const path, int mode)
 std::string	ConfigParser::readFile(std::string path)
 {
 	if (path.empty() || path.length() == 0)
-		throw PathIssue;
+		throw std::invalid_argument("Path is wrong");
 	std::ifstream config_file(path.c_str());
 	if (!config_file || !config_file.is_open())
-		throw FileNotOpen;
+		throw std::invalid_argument("File is not open");
 
-	std::stringstream stream_binding;
-	stream_binding << config_file.rdbuf();
-	return (stream_binding.str());
+    std::string content((std::istreambuf_iterator<char>(config_file)), std::istreambuf_iterator<char>());
+    return content;
 }
 
 
@@ -138,49 +135,9 @@ bool	ConfigParser::fileOpen(std::ifstream &configFile) {
 }
 
 
-//failure strings
-const char	*ConfigParser::BracketsNotClosed::what() const throw() {
-	return "Brackets for the block are not closed.";
-}
-
-const char	*ConfigParser::BlocknameNotExisting::what() const throw() {
-	return "This blockname doesnt exist in the provide config file";
-}
-
-const char	*ConfigParser::NoSemicolonAtTheEndOfContext::what() const throw() {
-	return "The context has no semicolon at the end of it";
-}
-
-const char	*ConfigParser::FileNotOpen::what() const throw(){
-	return "Could not open the config file.";
-}
-
-const char	*ConfigParser::LocationAlreadyExists::what() const throw() {
-	return "Location already exists.";
-}
-
-const char	*ConfigParser::ContextExistsMoreThanOnce::what() const throw() {
-	return "Context already exits for this block.";
-}
-
-const char	*ConfigParser::FileIsUnaccessible::what() const throw() {
-	return "File is not accesible";
-}
-
-const char	*ConfigParser::FileIsEmpty::what() const throw() {
-	return "File is empty";
-}
-
-const char *ConfigParser::FileIsNotFile::what() const throw() {
-	return "Your are trying to open something that is not a normal file, maybe a folder"
-}
-
-const char *ConfigParser::PathIssue::what() const throw() {
-	return "The Path provided is incorrect"
-}
 
 //Test functions
-int ConfigParser::print()
+void ConfigParser::print()
 {
 	//want to print each part of the config file
 	std::cout << "------------- Config File -------------" << std::endl;
@@ -189,12 +146,13 @@ int ConfigParser::print()
 }
 
 //getters
-std::string ConfigFile::getPath()
+std::string ConfigParser::getPath()
 {
 	return (this->_path);
 }
 
-int ConfigFile::getSize()
+int ConfigParser::getSize()
 {
 	return (this->_size);
 }
+

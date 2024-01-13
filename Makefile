@@ -33,12 +33,12 @@ CLEANING_TOOL := \xF0\x9F\xA7\xBD
 NAME = Webserv
 
 # Compiler and flags
-CC = c++
+CC = clang++
 CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
 
 # Folders & files
-FILES = main
-HEADER_FILES = 
+FILES = main ConfigParser
+HEADER_FILES = ConfigParser
 
 # Source files
 SRC = $(addsuffix .cpp, $(addprefix src/, $(FILES)))
