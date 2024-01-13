@@ -23,7 +23,8 @@
             ConfigParser configParser;
             try {
                 configParser.getConfig("configs/default.conf");
-                configParser.print(); // Should print the configuration without errors
+                // configParser.getConfig("configs/single");
+                // Should print the configuration without errors
             } catch (const std::invalid_argument& e) {
                 std::cerr << "Test 1: " << e.what() << std::endl;
             }

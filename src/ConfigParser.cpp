@@ -30,7 +30,9 @@ ConfigParser::~ConfigParser()
 
 //constructor
 ConfigParser::ConfigParser(std::string const ConfigFile):  _path(ConfigFile), _size(0)
-{}
+{
+	std::vector<std::string> servers;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //main function:
@@ -52,11 +54,31 @@ void ConfigParser::getConfig(const std::string &configFile)
 		throw std::invalid_argument("File is empty");
 	removeComments(content);
 	removeWhiteSpace(content);
-	std::cout << content << std::endl;//just for testing purpouses
-	//splitServers(content);//spliting servers on separetly strings in vector (learning vector), later I have to add a checker for checking all the value requiered are there and they all have the ;
+	splitServers(content);//spliting servers on separetly strings in vector (learning vector), later I have to add a checker for checking all the value requiered are there and they all have the ;
+	// std::cout << content << std::endl;//just for testing purpouses
+	print();
 }
 
 //helper functions
+void ConfigParser::splitServers(std::string &content)
+{
+    size_t startPos = content.find("server{");
+    size_t endPos = content.find("}", startPos);
+
+    if (content.find("server", 0) == std::string::npos)
+        throw std::invalid_argument("Server was not found");
+    while (startPos != std::string::npos && endPos != std::string::npos)
+    {
+        if (content.find("server", 0) == std::string::npos)
+            throw std::invalid_argument("1 Server found");
+        std::string server = content.substr(startPos, endPos - startPos + 1);
+        this->servers.push_back(server);
+
+        startPos = content.find("server{", endPos);
+        endPos = content.find("}", startPos);
+    }
+}
+
 void ConfigParser::removeWhiteSpace(std::string& content)
 {
     std::string::iterator it = content.begin();
@@ -141,7 +163,11 @@ void ConfigParser::print()
 {
 	//want to print each part of the config file
 	std::cout << "------------- Config File -------------" << std::endl;
-	
+	for (size_t i = 0; i < servers.size(); i++)
+	{
+		std::cout << servers[i] << std::endl;
+	}
+		
 
 }
 

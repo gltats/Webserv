@@ -14,11 +14,13 @@
 #include <string>
 #include <unistd.h>
 #include <exception>
+#include <vector>
 
 class ConfigParser {
 	private:
 		std::string		_path;
 		size_t			_size;
+		std::vector<std::string> servers;
 	public:
 		ConfigParser();
 		ConfigParser(std::string const ConfigFile);
@@ -26,6 +28,7 @@ class ConfigParser {
 		// ConfigParser &operator=(const ConfigParser &copy);
 		~ConfigParser();
 		void getConfig(const std::string &configFile);
+		void splitServers(std::string &content);
 		void removeWhiteSpace(std::string& content);
 		void removeComments(std::string& content);
 		int getTypePath(std::string const path);
