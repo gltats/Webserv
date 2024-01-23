@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stylish Webpage with YouTube Video</title>
+    <style>
+        /* Define CSS styles */
+        body {
+            background-color: black; /* Set background color to black */
+            color: white; /* Set text color to white */
+            font-family: Arial, sans-serif; /* Set font-family */
+            text-align: center; /* Center-align text */
+        }
+
+        h1 {
+            color: gold; /* Set heading color to gold */
+            font-size: 24px; /* Set heading font size */
+            margin-bottom: 20px; /* Add space below the heading */
+        }
+
+        p {
+            font-size: 18px; /* Set paragraph font size */
+        }
+
+        .banner {
+            background-color: #333; /* Set banner background color */
+            color: white; /* Set banner text color to white */
+            padding: 10px; /* Add padding to the banner */
+            text-align: center; /* Center-align text in the banner */
+        }
+
+        .button-content {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .button {
+            background-color: #007bff; /* Set button background color to blue */
+            color: white; /* Set button text color to white */
+            font-size: 18px; /* Set button font size */
+            padding: 10px 20px; /* Add padding to the button */
+            text-decoration: none; /* Remove underline from link */
+            margin: 10px; /* Add margin to the button */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class='banner'>
+        <h1>Also pages with youtube links</h1>
+    </div>
+    <p>Watch this YouTube video:</p>
+    <!-- Replace 'VIDEO_ID' with the actual YouTube video ID -->
+    <div id="player"></div>
+    <div class="button-content">
+        <button onclick="window.location.href='index.html';" type="button" class="button">Back to Index</button>
+    </div>
+
+    <script>
+        // Load the YouTube API asynchronously
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '315',
+                width: '560',
+                videoId: '7FDAJ8L3lig', // Replace with your video ID
+                playerVars: {
+                    'autoplay': 0, // 0 for off, 1 for on
+                    'controls': 1, // 0 for off, 1 for on
+                    'showinfo': 1 // 0 for off, 1 for on
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

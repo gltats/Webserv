@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>42 Webserver</title>
+    <style>
+        /* Define CSS styles */
+        body {
+            background-color: black; /* Set background color to black */
+            color: white; /* Set text color to white */
+            font-family: Arial, sans-serif; /* Set font-family */
+            text-align: center; /* Center-align text */
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .banner {
+            background-color: #007bff; /* Set banner background color */
+            color: white; /* Set banner text color */
+            padding: 20px; /* Add padding to the banner */
+            width: 25%; /* Set banner width */
+            text-align: center; /* Align banner text to the left */
+        }
+
+        h1 {
+            color: gold; /* Set heading color to gold */
+            font-size: 24px; /* Set heading font size */
+            margin-bottom: 10px; /* Add margin below heading */
+        }
+
+        p {
+            font-size: 18px; /* Set paragraph font size */
+            margin-bottom: 20px; /* Add margin below paragraph */
+        }
+
+        img {
+            max-width: 80%; /* Ensure the image fits within its container */
+            border: 4px solid white; /* Add a white border to the image */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Add a subtle shadow to the image */
+            margin-left: 20px; /* Add a left margin to the image */
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-left: 20px; /* Add margin to create space between buttons and image */
+        }
+
+        .btn {
+            background-color: #007bff; /* Set button background color */
+            color: white; /* Set button text color */
+            padding: 10px 15px; /* Add padding to buttons */
+            margin-bottom: 10px; /* Add margin to create spacing between buttons */
+            border: none;
+            cursor: pointer;
+            border-radius: 5px; /* Add rounded corners to buttons */
+        }
+
+        .btn:hover {
+            background-color: #0056b3; /* Change button color on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <h1>Welcome to our Webserv</h1>
+        <p>42 Wolfsburg</p>
+    </div>
+
+    <img src="images/image1.png" alt="Image Description">
+
+    <div class="button-container">
+        <button onclick="window.location.href='../html/youtube.html';" class="btn">Page with youtube window</button>
+        <button onclick="window.location.href='../html/giff.html';" class="btn">Page with giff</button>
+        <button onclick="window.location.href='../cgi-bin/time_cgi.py';" class="btn">Time cgi page</button>
+		<button onclick="window.location.href='../cgi-bin/image_cgi.py';" class="btn">Image cgi page</button>
+
+	</div>
+</body>
+</html>

@@ -5,10 +5,10 @@ define T_HEADER
 ██║    ██║██╔════╝██╔══██╗    ██╔════╝██╔════╝██╔══██╗██║   ██║
 ██║ █╗ ██║█████╗  ██████╔╝    ███████╗█████╗  ██████╔╝██║   ██║
 ██║███╗██║██╔══╝  ██╔══██╗    ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝
-╚███╔███╔╝███████╗██████╔╝    ███████║███████╗██║  ██║ ╚████╔╝
- ╚══╝╚══╝ ╚══════╝╚═════╝     ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝
-
-endef
+╚███╔███╔╝███████╗██████╔╝    ███████║███████╗██║  ██║ ╚████╔╝ 
+ ╚══╝╚══╝ ╚══════╝╚═════╝     ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  
+                                                               
+endef 
 export T_HEADER
 
 #Colors------------------------------------------------------------
@@ -35,12 +35,10 @@ NAME = Webserv
 # Compiler and flags
 CC = clang++
 CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
-# CFLAGS = -Iincludes -std=c++98 # for development
 
 # Folders & files
-# FILES = main ConfigParser # Tatiana's original
-FILES = main_server map signal_handler ConfigParser Server Connection Request Response
-HEADER_FILES = webserver
+FILES = main ConfigParser
+HEADER_FILES = ConfigParser
 
 # Source files
 SRC = $(addsuffix .cpp, $(addprefix src/, $(FILES)))
