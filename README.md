@@ -12,4 +12,6 @@ to test the 404 (Page not found):
 	example:
 	http://localhost:4431/html/index_NOT_FOUND.html
 
+Ctrl + C : to kill the infinite loop. Handling of the exit still to be implemented.
+
 i have only tested in the Mac so far.
