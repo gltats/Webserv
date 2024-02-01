@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:33
  * @ Modified by: Gltats
- * @ Modified time: 2024-02-01 17:25:52
+ * @ Modified time: 2024-02-01 17:31:10
  * @ Description: webserv
  */
 
@@ -16,6 +16,7 @@
 #include <exception>
 #include <vector>
 #include <map>
+#include <set>
 
 // #include "ServerConfigParser.hpp"
 
@@ -26,6 +27,7 @@ class ConfigParser {
 		std::vector<std::string> servers;
 		std::map<std::string, std::string> parameters;
 		std::vector<std::map<std::string, std::string> > serverParameters;
+		std::set<std::string> listenValues;
 	public:
 		ConfigParser();
 		ConfigParser(std::string const ConfigFile);

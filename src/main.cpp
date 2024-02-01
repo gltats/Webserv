@@ -28,6 +28,8 @@ void test()
             configParser.getConfig("configs/default.conf");
         } catch (const std::invalid_argument& e) {
             std::cerr << "Test 1: " << e.what() << std::endl;
+        } catch (const std::runtime_error& e) {
+            std::cerr << "Test 1: " << e.what() << std::endl;
         }
     }
     { 

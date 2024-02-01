@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-02-01 17:25:36
+ * @ Modified time: 2024-02-01 17:40:34
  * @ Description: webserv
  */
 
@@ -67,9 +67,17 @@ void ConfigParser::getConfig(const std::string &configFile)
   	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it) 
 	{
         std::map<std::string, std::string> parameters = parseParameters(*it);
+
+		// Check if the "listen" parameter is repeated
+		std::string listenValue = parameters["listen"];
+        if (listenValues.find(listenValue) != listenValues.end()) {
+            throw std::runtime_error("Error: 'listen' parameter is repeated");
+        }
+		listenValues.insert(listenValue);
+
 		serverParameters.push_back(parameters);
+		
     }
-	
 	print();// test function
 }
 
