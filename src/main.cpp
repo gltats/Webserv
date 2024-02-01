@@ -1,5 +1,4 @@
 #include "ConfigParser.hpp"
-#include "ServerConfigParser.hpp"
 
 //the proper main
 // int main(int argc, char **argv)
