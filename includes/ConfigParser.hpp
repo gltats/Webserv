@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:33
  * @ Modified by: Gltats
- * @ Modified time: 2024-01-31 14:29:16
+ * @ Modified time: 2024-02-01 17:25:52
  * @ Description: webserv
  */
 
@@ -25,7 +25,7 @@ class ConfigParser {
 		size_t			_size;
 		std::vector<std::string> servers;
 		std::map<std::string, std::string> parameters;
-
+		std::vector<std::map<std::string, std::string> > serverParameters;
 	public:
 		ConfigParser();
 		ConfigParser(std::string const ConfigFile);

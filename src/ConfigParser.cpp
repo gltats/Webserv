@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-01-31 15:02:38
+ * @ Modified time: 2024-02-01 17:25:36
  * @ Description: webserv
  */
 
@@ -67,27 +67,7 @@ void ConfigParser::getConfig(const std::string &configFile)
   	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it) 
 	{
         std::map<std::string, std::string> parameters = parseParameters(*it);
-
-        // Access the value of the "listen" parameter
-        if (parameters.find("listen") != parameters.end()) {
-            std::string listenValue = parameters["listen"];
-        }
-
-        // Access the value of the "server_name" parameter
-        if (parameters.find("server_name") != parameters.end()) {
-            std::string serverNameValue = parameters["server_name"];
-        }
-
-		// Access the value of the "body_size" parameter
-		if (parameters.find("body_size") != parameters.end()) {
-            std::string bodySizeValue = parameters["body_size"];
-        }
-
-		// Access the value of the "error_page" parameter
-		if (parameters.find("error_page") != parameters.end()) {
-            std::string errorPage = parameters["error_page"];
-        }
-        
+		serverParameters.push_back(parameters);
     }
 	
 	print();// test function
@@ -231,15 +211,15 @@ void ConfigParser::print()
 		std::cout << servers[i] << std::endl;
 		//print each parameter
 		std::cout << "------------- Parameters -------------" << std::endl;
-		for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
-		{
-			std::cout << "dj" << std::endl;
-		}
+		std::map<std::string, std::string> parameters = serverParameters[i];
+        std::cout << "listen: " << parameters["listen"] << std::endl;
+        std::cout << "server_name: " << parameters["server_name"] << std::endl;
+        std::cout << "body_size: " << parameters["body_size"] << std::endl;
+        std::cout << "error_page: " << parameters["error_page"] << std::endl;
 		std::cout << "--------------------------------------" << std::endl;
 		
 	}
-		
-
+	std::cout << "--------------------------------------" << std::endl;
 }
 
 //getters
