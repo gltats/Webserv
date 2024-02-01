@@ -1,8 +1,8 @@
 /**
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
- * @ Modified by: Gl.tats
- * @ Modified time: 2024-01-09 17:23:25
+ * @ Modified by: Gltats
+ * @ Modified time: 2024-01-31 15:02:38
  * @ Description: webserv
  */
 
@@ -18,11 +18,15 @@ ConfigParser::ConfigParser(const ConfigParser &copy)
 	*this = copy;
 }
 
-//copy assignment overload
-// ConfigParser &ConfigParser::operator=(const ConfigParser &copy) {
-// 	if (this == &copy)
-// 		return *this;
-// }
+// copy assignment overload
+ConfigParser &ConfigParser::operator=(const ConfigParser &copy) {
+	if (this != &copy)
+	{
+		this->_path = copy._path;
+		this->_size = copy._size;
+	}
+	return (*this);
+}
 
 //Destructor
 ConfigParser::~ConfigParser()
@@ -39,7 +43,7 @@ ConfigParser::ConfigParser(std::string const ConfigFile):  _path(ConfigFile), _s
 void ConfigParser::getConfig(const std::string &configFile)
 {
 	std::string		content;
-	// Check if the file exists and is readable
+	// Check if the file exists, has the correct path and is readable
     int fileType = getTypePath(configFile);
     if (fileType == -1) {
         throw std::invalid_argument("File is not open");// Error in getTypePath
@@ -47,16 +51,46 @@ void ConfigParser::getConfig(const std::string &configFile)
         throw std::invalid_argument("File is not a regular file");; // Not a regular file
     } else if (checkFile(configFile, 4) != 0) {
         throw  std::invalid_argument("File not redable"); // File not readable
-    }
+    } else if (!checkExtension(configFile)) 
+	{
+		throw std::invalid_argument("File has wrong extension"); // Wrong extension
+	}
 	//try to open file
 	content = readFile(configFile);
 	if (content.empty())
 		throw std::invalid_argument("File is empty");
 	removeComments(content);
 	removeWhiteSpace(content);
-	splitServers(content);//spliting servers on separetly strings in vector (learning vector), later I have to add a checker for checking all the value requiered are there and they all have the ;
-	// std::cout << content << std::endl;//just for testing purpouses
-	print();
+	splitServers(content);
+
+    // Parse the parameters for each server
+  	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it) 
+	{
+        std::map<std::string, std::string> parameters = parseParameters(*it);
+
+        // Access the value of the "listen" parameter
+        if (parameters.find("listen") != parameters.end()) {
+            std::string listenValue = parameters["listen"];
+        }
+
+        // Access the value of the "server_name" parameter
+        if (parameters.find("server_name") != parameters.end()) {
+            std::string serverNameValue = parameters["server_name"];
+        }
+
+		// Access the value of the "body_size" parameter
+		if (parameters.find("body_size") != parameters.end()) {
+            std::string bodySizeValue = parameters["body_size"];
+        }
+
+		// Access the value of the "error_page" parameter
+		if (parameters.find("error_page") != parameters.end()) {
+            std::string errorPage = parameters["error_page"];
+        }
+        
+    }
+	
+	print();// test function
 }
 
 //helper functions
@@ -77,6 +111,24 @@ void ConfigParser::splitServers(std::string &content)
         startPos = content.find("server{", endPos);
         endPos = content.find("}", startPos);
     }
+}
+
+std::map<std::string, std::string> ConfigParser::parseParameters(const std::string& serverConfig) 
+{
+    std::map<std::string, std::string> parameters;
+    std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "autoindex", "index", "cgi"};
+
+    for (size_t i = 0; i < sizeof(keys)/sizeof(keys[0]); i++) {
+        std::string key = keys[i];
+        size_t startPos = serverConfig.find(key);
+        if (startPos != std::string::npos) {
+            startPos += key.length();
+            size_t endPos = serverConfig.find(';', startPos);
+            std::string value = serverConfig.substr(startPos, endPos - startPos);
+            parameters[key] = value;
+        }
+    }
+    return parameters;
 }
 
 void ConfigParser::removeWhiteSpace(std::string& content)
@@ -122,6 +174,7 @@ int ConfigParser::getTypePath(std::string const path)
 		return (-1);
 }
 
+//Check if the file exists and is readable
 int	ConfigParser::checkFile(std::string const path, int mode)
 {
 	return (access(path.c_str(), mode));
@@ -138,6 +191,15 @@ std::string	ConfigParser::readFile(std::string path)
 
     std::string content((std::istreambuf_iterator<char>(config_file)), std::istreambuf_iterator<char>());
     return content;
+}
+
+//Check if extension is correct
+bool ConfigParser::checkExtension(std::string const path)
+{
+	size_t pos = path.find(".conf");
+	if (pos == std::string::npos)
+		return (false);
+	return (true);
 }
 
 
@@ -165,7 +227,16 @@ void ConfigParser::print()
 	std::cout << "------------- Config File -------------" << std::endl;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
+		std::cout << "Server " << i << std::endl;
 		std::cout << servers[i] << std::endl;
+		//print each parameter
+		std::cout << "------------- Parameters -------------" << std::endl;
+		for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
+		{
+			std::cout << "dj" << std::endl;
+		}
+		std::cout << "--------------------------------------" << std::endl;
+		
 	}
 		
 
@@ -181,4 +252,3 @@ int ConfigParser::getSize()
 {
 	return (this->_size);
 }
-

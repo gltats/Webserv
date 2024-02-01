@@ -1,5 +1,7 @@
 #include "ConfigParser.hpp"
+#include "ServerConfigParser.hpp"
 
+//the proper main
 // int main(int argc, char **argv)
 // {
 //     if(argc == 1 || argc == 2)
@@ -15,32 +17,53 @@
 //         std::cout << "Wrong arguments" << std::endl;
 // }
 
-    
-    int main()
-    {
-        { 
-            // Test 1: pass
-            ConfigParser configParser;
-            try {
-                configParser.getConfig("configs/default.conf");
-                // configParser.getConfig("configs/single");
-                // Should print the configuration without errors
-            } catch (const std::invalid_argument& e) {
-                std::cerr << "Test 1: " << e.what() << std::endl;
-            }
+
+//tests function
+
+void test()
+{
+    { 
+        // Test 1: pass
+        ConfigParser configParser;
+        try {
+            configParser.getConfig("configs/default.conf");
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Test 1: " << e.what() << std::endl;
         }
-
-        // Test 2: Non-pass
-        {
-            ConfigParser configParser;
-            try {
-                configParser.getConfig("test_configs/non_existent.conf");
-                configParser.print(); // Should throw an exception
-            } catch (const std::invalid_argument& e) {
-                std::cerr << "Test 2: " << e.what() << std::endl;
-            }
-        }
-
-        return 0;
-
     }
+    { 
+        // Test 2: non-existent file
+        ConfigParser configParser;
+        try {
+            configParser.getConfig("configs/no_file.conf");
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Test 2: " << e.what() << std::endl;
+        }
+    }
+    { 
+        // Test 3: wrong extension
+        ConfigParser configParser;
+        try {
+            configParser.getConfig("configs/lol");
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Test 3: " << e.what() << std::endl;
+        }
+    }
+    { 
+        // Test 4: file without server block
+        ConfigParser configParser;
+        try {
+            configParser.getConfig("configs/single.conf");
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Test 4: " << e.what() << std::endl;
+        }
+    }
+}
+
+
+int main()
+{
+    test();
+    return 0;
+
+}
