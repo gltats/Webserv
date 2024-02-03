@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/01/23 20:54:54 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/01/30 21:04:30 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,18 @@ int	main(int argc, char *argv[], char *env[])
 	ft_setup_sighandler();
 
 	// launch webserver loop
-	launch_webserver(config_map, error_page_map, env);
-
+	try
+	{
+		launch_webserver(config_map, error_page_map, env);
+	}
+	catch(const UserRequestTermination& e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 	return (0);
 }
 

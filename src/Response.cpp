@@ -193,6 +193,8 @@ void	Response::_parse_response(Request const &req)
 		// 	close(fd);
 
 		int fd_stdin = dup(STDIN_FILENO); // save original stdin
+		int fd_stdout = dup(STDOUT_FILENO); // save original stdin
+
 		int fd_pipe[2];
 		if (pipe(fd_pipe) == -1)
 		{
@@ -216,6 +218,8 @@ void	Response::_parse_response(Request const &req)
 			close(fd_stdin);
 
 			execve(exe[0], exe, _envp);
+
+			dup2(fd_stdout, STDOUT_FILENO); // return output to stdout to print error
 			std::cout << "Error: CGI could not be executed : " << uri << std::endl;
 			exit(1);
 		}
@@ -292,7 +296,7 @@ int	Response::_read_file_data(Request const &req)
 	// std::string			fcontent;
 
 	// std::cout << "...trying to open <" <<req.get_uri() << ">" << std::endl;
-	html_file.open(req.get_uri(), std::ifstream::in);
+	html_file.open(req.get_uri().c_str(), std::ifstream::in);
 	if (html_file.is_open() == 0)
 	{
 		std::cout << REDB << "Error: _get_file_data. File could not be openned" << RESET << std::endl;

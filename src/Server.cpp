@@ -20,7 +20,14 @@ Server::Server(std::map<std::string, std::string> &config_map, std::map<std::str
 	 _error_page_map = &error_page_map;
 	try {
         // Convert the string to an integer using stoi
-        _max_backlog_queue = std::stoi(config_map["limit_conn"]); // allowed function?
+		// put this code in a function as converter from string to int
+		std::stringstream	str2nb;
+		int					nb;
+		str2nb << config_map["limit_conn"];
+		str2nb >> nb;
+
+		_max_backlog_queue = nb;
+        // _max_backlog_queue = std::stoi(config_map["limit_conn"]); // allowed function?
 
     } catch (const std::exception& e) {
         // Handle the exception if the conversion fails

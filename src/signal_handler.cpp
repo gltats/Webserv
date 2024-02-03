@@ -1,12 +1,13 @@
 #include "webserver.hpp"
+#include "Webserv_Exceptions.hpp"
 
 void	ft_signal_handler(int signum)
 {
 	if (signum == SIGINT)
 	{
-		std::cout << CYAN << std::endl << "User request to close program with ctrl+c. Exiting..." << RESET << std::endl;
-		// throw exception and the moment exiting directly
-		exit(0);
+		throw UserRequestTermination();
+		// std::cout << CYAN << std::endl << "User request to close program with ctrl+c. Exiting..." << RESET << std::endl;
+
 	}
 }
 

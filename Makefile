@@ -33,9 +33,10 @@ CLEANING_TOOL := \xF0\x9F\xA7\xBD
 NAME = Webserv
 
 # Compiler and flags
-CC = clang++
-CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
-# CFLAGS = -Iincludes -std=c++98 # for development
+# CC = clang++ // incorrect compiler
+CC = c++
+#CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
+ CFLAGS = -Iincludes -std=c++98 # for development
 
 # Folders & files
 # FILES = main ConfigParser # Tatiana's original

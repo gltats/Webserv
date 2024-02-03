@@ -5,10 +5,13 @@
 
 #include <iostream>
 #include <fstream>
+
 #include <sstream>
 #include <unistd.h>
 #include <fcntl.h> // open
 #include <map>
+#include <stdlib.h> // for exit
+#include <string.h> // for memset
 
 #include "Request.hpp"
 

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/01/23 21:07:21 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/01/30 21:15:15 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,9 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
-
+#include <stdlib.h> // for exit
+#include <cerrno> // for errno : only pre-development
+#include <string.h> // for memset: check if it is allowed
 #include "color_code.hpp"
 #include "Request.hpp"
 #include "Response.hpp"

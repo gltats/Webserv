@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <unistd.h>
-#include <strstream>
+#include <strstream> // depreacated -> use basic_stringstream
 
 #include "color_code.hpp"
 

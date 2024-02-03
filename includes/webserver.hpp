@@ -5,12 +5,13 @@
 #include <map>
 #include <iostream>
 #include <signal.h>
-
+#include <stdlib.h>
 #include "color_code.hpp"
 
 #include "ConfigParser.hpp"
 #include "Server.hpp"
 #include "Connection.hpp"
+#include "Webserv_Exceptions.hpp"
 
 
 void 	map_config_file(std::map<std::string, std::string>& config_map, ConfigParser const &parser_output);

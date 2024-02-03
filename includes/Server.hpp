@@ -7,6 +7,9 @@
 // file descriptors
 #include <fcntl.h>
 
+#include <stdlib.h> // for exit, is exit allowed
+#include <sstream> // for converter of string to int -> add to a support function lib
+
 // socket libraries
 #include <sys/socket.h>
 #include <netinet/in.h> // AF_INET
