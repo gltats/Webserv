@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/01/23 21:07:12 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/04 21:20:07 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,10 @@
 
 // }
 
-Connection::Connection(int connection_socket, char *env[], std::map<std::string, std::string> &error_page_map): _error_page_map(error_page_map), _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _response(error_page_map) // _client_addr_size(sizeof(_client_addr))
+Connection::Connection(int connection_socket, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2)
 {
 	std::cout << "Client connected" << std::endl;
 	_env = env;
-	_error_page_map = error_page_map;
 	_buffer_rcv = new char[_buffer_rcv_size];
 	memset(_buffer_rcv, '\0', _buffer_rcv_size); // is memset allowed?
 	// error here?
@@ -81,13 +80,11 @@ std::string	Connection::get_response(void)
 void		Connection::send_response(void)
 {
 	size_t	send_size = 0;
-	// set_error_page_map(_error_page_map);
 	_response.create_response(_request, _env);
 
 
 	if (_response.get_response().length() > 0)
 	{
-		// std::cout << "string to be sent is " <<  _response.get_response() << std::endl; // remove
 
 		size_t buffer_send_size = _response.get_response().length() + 1;
 

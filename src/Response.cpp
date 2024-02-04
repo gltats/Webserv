@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
+/*   Updated: 2024/02/04 22:23:20 by mgranero         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Response.hpp"
 
 /*
@@ -117,10 +129,13 @@ general-header = Cache-Control            ; Section 14.9
 // 	std::cout << "Response default constructor" << std::endl;
 // }
 
-Response::Response(std::map<std::string, std::string> &error_page_map): _error_page_map(error_page_map)
+Response::Response(void)
 {
 		_html_content.clear();
 	std::cout << "Response default constructor" << std::endl;
+	// map default error pages number and path
+	map_default_error_pages(_error_page_map);
+	map_reponse_status(_response_status_map);
 }
 
 /*
@@ -353,4 +368,12 @@ int		Response::_create_status_line(void)
 	return (0);
 }
 
+std::map<std::string, std::string>	Response::get_error_page_map(void) const
+{
+	return (_error_page_map);
+}
 
+std::map<std::string, std::string>	Response::get_response_status_map(void) const
+{
+	return (_response_status_map);
+}

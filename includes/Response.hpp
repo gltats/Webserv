@@ -1,4 +1,14 @@
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
+/*   Updated: 2024/02/04 22:23:33 by mgranero         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
@@ -14,6 +24,7 @@
 #include <string.h> // for memset
 
 #include "Request.hpp"
+#include "map.hpp"
 
 /*
 esponse
@@ -42,34 +53,34 @@ Status-Line
 class Response
 {
 	private:
-		std::string		_html_content;
-		size_t			_html_content_size;
-		std::string		_status_line;
-		std::string		_response;
-		char 			**_envp;
-		std::map<std::string, std::string> &_error_page_map;
 
+		int									_status;
+		std::string							_html_content;
+		size_t								_html_content_size;
+		std::string							_status_line;
+		std::string							_response;
+		char 								**_envp;
+		std::map<std::string, std::string>	_error_page_map;
+		std::map<std::string, std::string>	_response_status_map;
 
 		// Response(Response const &src);
-		Response	&operator=(Response const &rhs);
-		int			_read_file_data(Request const &req);
-		int			_create_status_line(void);
-		void 		_setup_response(char *env[]);
-		void		_parse_response(Request const &req);
+		Response							&operator=(Response const &rhs);
+		int									_read_file_data(Request const &req);
+		int									_create_status_line(void);
+		void 								_setup_response(char *env[]);
+		void								_parse_response(Request const &req);
 
 
 	public:
-		// Response(void);
-		Response(std::map<std::string, std::string> &error_page_map);
-		// Response(char  *env[]);
+		Response(void);
 		~Response(void);
-		void			create_response(Request const &req, char *env[]);
+		void								create_response(Request const &req, char *env[]);
 
-		std::string		get_response(void) const;
-		std::string		get_html_content(void) const;
-		size_t			get_html_size(void) const;
-		// void			set_error_page_map(std::map<std::string, std::string> *error_page_map);
-
+		std::string							get_response(void) const;
+		std::string							get_html_content(void) const;
+		size_t								get_html_size(void) const;
+		std::map<std::string, std::string>	get_error_page_map(void) const;
+		std::map<std::string, std::string>	get_response_status_map(void) const;
 
 };
 

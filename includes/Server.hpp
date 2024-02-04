@@ -8,7 +8,6 @@
 #include <fcntl.h>
 
 #include <stdlib.h> // for exit, is exit allowed
-#include <sstream> // for converter of string to int -> add to a support function lib
 
 // socket libraries
 #include <sys/socket.h>
@@ -22,44 +21,50 @@
 #include <stdio.h> // for tests with perror
 #include <string.h>// for tests with perror
 #include <errno.h> // for tests with perror
-
 #include <map>
-
 #include "color_code.hpp"
-
+#include "lib_convertion.hpp"
 
 class Server
 {
 	private:
 		std::string 						_server_port;
+		std::string							_server_name;
+
 		int									_server_socket;
 		int									_connection_socket;
 		int									_max_backlog_queue;
-		// socklen_t						_client_addr_size;
-		// struct sockaddr_un				_client_addr;
-		std::map<std::string, std::string> *_error_page_map;
 
-		struct addrinfo			*_result;
+		bool								_allow_GET;
+		bool								_allow_POST;
+		bool								_allow_DELETE;
+
+
+		struct addrinfo						*_result;
 
 		Server(void);
 		Server(Server const & src);
-		Server					&operator=(Server const &rhs);
-		void					_setup_server(void);
-		void					_setup_socket(void);
-		void					_listen(void);
+		Server								&operator=(Server const &rhs);
+		void								_setup_server(void);
+		void								_setup_socket(void);
+		void								_listen(void);
 
 
 	public:
 		// does the server needs the map to the error pages or only the response object?
-		Server(std::map<std::string, std::string> &config_map, std::map<std::string, std::string> &error_page_map);
+		Server(std::map<std::string, std::string> &config_map);
 		~Server(void);
 
-		int						get_server_socket(void) const;
-		std::string				get_server_port(void) const;
-		socklen_t				get_client_addr_size(void)const;
-		struct sockaddr_un		get_client_addr(void) const;
+		int									get_server_socket(void) const;
+		std::string							get_server_name(void) const;
+		std::string							get_server_port(void) const;
+		socklen_t							get_client_addr_size(void)const;
+		struct sockaddr_un					get_client_addr(void) const;
+		bool								get_allow_GET(void) const;
+		bool								get_allow_POST(void) const;
+		bool								get_allow_DELETE(void) const;
 
-		void					close_socket(void);
+		void								close_server_socket(void);
 
 
 };

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/01/30 21:15:15 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/04 21:18:42 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,11 @@
 class Connection
 {
 	private:
-		std::map<std::string, std::string> &_error_page_map;
 		int						_connection_socket;
 		ssize_t					_size_data_recv;
 		int						_flags_recv;
 		const size_t			_buffer_rcv_size;
 		char					*_buffer_rcv;
-		// socklen_t				_client_addr_size;
-		// struct sockaddr_un		_client_addr;
 		char					**_env;
 		Request 				_request;
 		Response				_response;
@@ -43,7 +40,7 @@ class Connection
 		// Connection		&operator=(Connection const &rhs);
 		// Connection(void);
 	public:
-		Connection(int connection_socket, char *env[], std::map<std::string, std::string> &error_page_map);
+		Connection(int connection_socket, char *env[]);
 		~Connection(void);
 
 		void					receive_msg(void);

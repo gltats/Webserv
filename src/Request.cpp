@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
+/*   Updated: 2024/02/04 21:34:37 by mgranero         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Request.hpp"
 
 Request::Request(void):  _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control("") //, _content_lenght(0)
@@ -170,7 +182,9 @@ int Request::_parser_request_header(std::string buffer)
 	_user_agent = _get_key_value(buffer, "User-Agent: ");
 	_accept = _get_key_value(buffer, "Accept: ");
 	_host = _get_key_value(buffer, "Host: ");
-
+	_connection = _get_key_value(buffer, "Connection: ");
+	_accept_encoding = _get_key_value(buffer, "Accept-Encoding: ");
+	_cache_control = _get_key_value(buffer, "Cache-Control: ");
 	return (0);
 }
 
@@ -232,7 +246,42 @@ void	Request::read_request(char const *request_buffer)
 	_parser_request_header(str);
 
 }
-std::string Request::get_uri(void) const
+std::string		Request::get_uri(void) const
 {
 	return (_uri);
+}
+
+std::string		Request::get_method(void) const
+{
+	return (_method);
+}
+
+std::string		Request::get_protocol_version(void) const
+{
+	return (_protocol_version);
+}
+
+std::string		Request::get_user_agent(void) const
+{
+	return (_user_agent);
+}
+
+std::string		Request::get_host(void) const
+{
+	return (_host);
+}
+
+std::string		Request::get_accept_encoding(void) const
+{
+	return (_accept_encoding);
+}
+
+std::string		Request::get_connection(void) const
+{
+	return (_connection);
+}
+
+std::string		Request::get_cache_control(void) const
+{
+	return (_cache_control);
 }

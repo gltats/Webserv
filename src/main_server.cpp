@@ -6,13 +6,17 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/01/30 21:04:30 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/04 21:12:05 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserver.hpp"
 
-void	launch_webserver(std::map<std::string, std::string> &config_map, std::map<std::string, std::string> &error_page_map, char *env[]);
+// # if defined (__APPLE__)
+
+// # elif defined (__linux__)
+
+void	launch_webserver(std::map<std::string, std::string> &config_map, char *env[]);
 
 // Interface to Parser -> Server
 // Tatiana please adapt map_config_file function in file map.cpp
@@ -31,9 +35,6 @@ int	main(int argc, char *argv[], char *env[])
 	std::map<std::string, std::string> config_map;
 	map_config_file(config_map, parser_output); // <- Tatiana: use this function to map you parser_out to the Server map inputs
 
-	// map default error pages number and path
-	std::map<std::string, std::string> error_page_map;
-	map_default_error_pages(error_page_map);
 
 	//setup signal handler
 	ft_setup_sighandler();
@@ -41,7 +42,7 @@ int	main(int argc, char *argv[], char *env[])
 	// launch webserver loop
 	try
 	{
-		launch_webserver(config_map, error_page_map, env);
+		launch_webserver(config_map, env);
 	}
 	catch(const UserRequestTermination& e)
 	{
@@ -54,17 +55,16 @@ int	main(int argc, char *argv[], char *env[])
 	return (0);
 }
 
-void	launch_webserver(std::map<std::string, std::string> &config_map, std::map<std::string, std::string> &error_page_map, char *env[])
+void	launch_webserver(std::map<std::string, std::string> &config_map, char *env[])
 {
 	socklen_t				client_addr_size;
 	struct sockaddr_un		client_addr;
 
 	client_addr_size = sizeof(client_addr);
 
-	Server srv(config_map, error_page_map);
-	while (true) // correct infinite loop
-	// bool sw = 0;
-	// while (sw == 0) // testing not infinite loop
+	Server srv(config_map);
+
+	while (true)
 	{
 		std::cout << "Server Listening in IP: LocalHost and Port: " << srv.get_server_port() << " ..." << std::endl;
 
@@ -75,16 +75,15 @@ void	launch_webserver(std::map<std::string, std::string> &config_map, std::map<s
 			return ; // at the moment just return
 		}
 
-		Connection	client(new_socket, env, error_page_map);
+		Connection	client(new_socket, env);
 
 		client.receive_msg();
 		client.send_response();
 		close(new_socket);
 
-		// sw = 1;
-
 	}
-		srv.close_socket(); // temporary
+		srv.close_server_socket(); // temporary
 }
+
 
 

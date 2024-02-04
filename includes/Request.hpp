@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Request.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/04 21:21:14 by mgranero          #+#    #+#             */
+/*   Updated: 2024/02/04 21:34:58 by mgranero         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
@@ -79,25 +91,33 @@ class Request
 		std::string		_connection;
 		std::string		_cache_control;
 
-		// int				_content_lenght;
-
 		int				_parse_request_line(std::string buffer);
 		int				_parser_request_header(std::string buffer);
 		int				_parser_general_header(std::string buffer);
 		std::string		_get_key_value(std::string buffer, std::string needle);
 
-
 		Request			&operator=(Request const &rhs);
 		Request(Request const &src);
+
+
 	public:
 		Request(void);
 		~Request(void);
+
 		int				get_request_status(void) const;
+
+		std::string		get_method(void) const;
 		std::string		get_uri(void) const;
+		std::string		get_protocol_version(void) const;
+		std::string		get_user_agent(void) const;
+		std::string		get_host(void) const;
+		std::string		get_accept_encoding(void) const;
+		std::string		get_connection(void) const;
+		std::string		get_cache_control(void) const;
+
 		void			read_request(char const *request_buffer);
 		void			print_request(void) const;
 
 };
-
 
 #endif

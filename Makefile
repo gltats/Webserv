@@ -40,7 +40,7 @@ CC = c++
 
 # Folders & files
 # FILES = main ConfigParser # Tatiana's original
-FILES = main_server map signal_handler ConfigParser Server Connection Request Response
+FILES = main_server map signal_handler lib_convertion ConfigParser Server Request Response Connection
 HEADER_FILES = webserver
 
 # Source files

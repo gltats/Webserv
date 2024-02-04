@@ -47,3 +47,22 @@ void	map_default_error_pages (std::map<std::string, std::string>& error_page_map
 	error_page_map["504"] = "/frontEnd/error/error504.html";
 	error_page_map["505"] = "/frontEnd/error/error505.html";
 }
+
+// https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+void	map_reponse_status (std::map<std::string, std::string>& response_status_map)
+{
+	response_status_map["200"] = "OK";
+	response_status_map["400"] = "Bad Request";
+	response_status_map["401"] = "Unauthorized";
+	response_status_map["403"] = "Forbidden";
+	response_status_map["404"] = "Not Found";
+	response_status_map["405"] = "Method Not Allowed";
+	response_status_map["408"] = "Request Timeout";
+	response_status_map["413"] = "Request Entity Too Large";
+	response_status_map["414"] = "Request-URI Too Long";
+	response_status_map["415"] = "Unsupported Media Type";
+	response_status_map["500"] = "Internal Server Error";
+	response_status_map["501"] = "Not Implemented";
+	response_status_map["504"] = "Gateway Timeout";
+	response_status_map["505"] = "HTTP Version Not Supported";
+}

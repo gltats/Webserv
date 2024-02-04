@@ -7,15 +7,14 @@
 #include <signal.h>
 #include <stdlib.h>
 #include "color_code.hpp"
-
+// #include "Request.hpp"
+// #include "Response.hpp"
 #include "ConfigParser.hpp"
 #include "Server.hpp"
 #include "Connection.hpp"
 #include "Webserv_Exceptions.hpp"
+#include "lib_convertion.hpp"
 
-
-void 	map_config_file(std::map<std::string, std::string>& config_map, ConfigParser const &parser_output);
-void	map_default_error_pages (std::map<std::string, std::string>& error_page_map);
 
 void	ft_signal_handler(int signum);
 void	ft_setup_sighandler(void);

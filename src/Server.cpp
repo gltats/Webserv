@@ -15,24 +15,26 @@ Server					&Server::operator=(Server const &rhs)
 	return (*this);
 }
 
-Server::Server(std::map<std::string, std::string> &config_map, std::map<std::string, std::string> &error_page_map):  _server_port(config_map["listen"]), _server_socket(-1)
+Server::Server(std::map<std::string, std::string> &config_map):  _server_port(config_map["listen"]), _server_socket(-1), _server_name(config_map["server_name"])
 {
-	 _error_page_map = &error_page_map;
-	try {
-        // Convert the string to an integer using stoi
-		// put this code in a function as converter from string to int
-		std::stringstream	str2nb;
-		int					nb;
-		str2nb << config_map["limit_conn"];
-		str2nb >> nb;
+	if (config_map["allow_GET"].compare("y") == 0)
+		_allow_GET = true;
+	else
+		_allow_GET = false;
 
-		_max_backlog_queue = nb;
-        // _max_backlog_queue = std::stoi(config_map["limit_conn"]); // allowed function?
+	if (config_map["allow_POST"].compare("y") == 0)
+		_allow_POST = true;
+	else
+		_allow_POST = false;
 
-    } catch (const std::exception& e) {
-        // Handle the exception if the conversion fails
-        std::cerr << REDB <<"Conversion error: " << e.what() << RESET << std::endl;
-    }
+	if (config_map["allow_DELETE"].compare("y") == 0)
+		_allow_DELETE = true;
+	else
+		_allow_DELETE = false;
+
+	_max_backlog_queue = str2int(config_map["limit_conn"]);
+
+
 
 	_setup_server();
 	_setup_socket();
@@ -70,7 +72,6 @@ void Server::_setup_server(void)
 {
 	int					status;
 	struct addrinfo		hints;
-    // struct addrinfo		*rp;
 
 	memset(&hints, 0 , sizeof(hints));
 	hints.ai_family = AF_INET;    /* Allow IPv4 or IPv6 */
@@ -81,7 +82,9 @@ void Server::_setup_server(void)
 	hints.ai_addr = NULL;
 	hints.ai_next = NULL;
 
-	status = getaddrinfo(NULL, _server_port.c_str(), &hints, &_result);
+//    status = getaddrinfo(_server_name.c_str(), _server_port.c_str(), &hints, &_result);
+   status = getaddrinfo(NULL, _server_port.c_str(), &hints, &_result);
+
 	if (status != 0)
 	{
 		std::cerr << REDB << "getaddrinfo: %s\n", gai_strerror(status); // is gai_strerror allowed?
@@ -132,17 +135,38 @@ void	Server::_listen(void)
 {
 	if (listen(_server_socket, _max_backlog_queue) == -1)
 	{
-		// fprintf(stderr, "listen: %s\n", strerror(errno));
-		std::cerr << REDB << "Error: to listen socket. Reason: " << strerror(errno) << RESET << std::endl;
+		std::cerr << REDB << "Error: to listen socket. Reason: " << strerror(errno) << RESET << std::endl; // not allowd to use errno
 		close(_server_socket);
 		//throw exception
 		exit (1); // at the moment just exit
 	}
 }
 
-void	Server::close_socket(void)
+void	Server::close_server_socket(void)
 {
 	if (_server_socket != -1)
 		close(_server_socket);
 	_server_socket = -1;
 }
+
+bool	Server::get_allow_GET(void) const
+{
+	return (_allow_GET);
+}
+
+bool	Server::get_allow_POST(void) const
+{
+	return (_allow_POST);
+}
+
+bool	Server::get_allow_DELETE(void) const
+{
+	return (_allow_DELETE);
+}
+
+std::string		Server::get_server_name(void) const
+{
+	return (_server_name);
+}
+
+
