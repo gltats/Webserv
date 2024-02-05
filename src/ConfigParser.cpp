@@ -2,14 +2,14 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-02-01 17:40:34
+ * @ Modified time: 2024-02-05 17:11:14
  * @ Description: webserv
  */
 
 #include "ConfigParser.hpp"
 
 //Default constructor
-ConfigParser::ConfigParser(): _size(0)
+ConfigParser::ConfigParser(): _size(0), servers(), parameters(), serverParameters(), listenValues()
 {}
 
 // Copy constructor
@@ -24,6 +24,10 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &copy) {
 	{
 		this->_path = copy._path;
 		this->_size = copy._size;
+		this->servers = copy.servers;
+		this->parameters = copy.parameters;
+		this->serverParameters = copy.serverParameters;
+		this->listenValues = copy.listenValues;
 	}
 	return (*this);
 }
@@ -36,6 +40,9 @@ ConfigParser::~ConfigParser()
 ConfigParser::ConfigParser(std::string const ConfigFile):  _path(ConfigFile), _size(0)
 {
 	std::vector<std::string> servers;
+	std::map<std::string, std::string> parameters;
+	std::vector<std::map<std::string, std::string> > serverParameters;
+	std::set<std::string> listenValues;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,21 +74,28 @@ void ConfigParser::getConfig(const std::string &configFile)
   	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it) 
 	{
         std::map<std::string, std::string> parameters = parseParameters(*it);
-
-		// Check if the "listen" parameter is repeated
-		std::string listenValue = parameters["listen"];
-        if (listenValues.find(listenValue) != listenValues.end()) {
-            throw std::runtime_error("Error: 'listen' parameter is repeated");
-        }
-		listenValues.insert(listenValue);
-
+		checkParameters(parameters);
 		serverParameters.push_back(parameters);
-		
     }
 	print();// test function
 }
 
 //helper functions
+void ConfigParser::checkParameters(std::map<std::string, std::string> parameters)
+{
+		// Check if the "listen" parameter is repeated
+		std::string listenValue = parameters["listen"];
+		std::string server_name = parameters["server_name"];
+		std::string body_size = parameters["body_size"];
+        if (listenValues.find(listenValue) != listenValues.end()) {
+            throw std::runtime_error("Error: 'listen' parameter is repeated");
+        }
+		else if(listenValue.empty())
+			throw std::invalid_argument("Listen value is empty");
+		listenValues.insert(listenValue);
+
+}
+
 void ConfigParser::splitServers(std::string &content)
 {
     size_t startPos = content.find("server{");

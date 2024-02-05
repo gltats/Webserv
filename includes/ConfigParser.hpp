@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:33
  * @ Modified by: Gltats
- * @ Modified time: 2024-02-01 17:31:10
+ * @ Modified time: 2024-02-05 17:07:40
  * @ Description: webserv
  */
 
@@ -35,7 +35,8 @@ class ConfigParser {
 		ConfigParser &operator=(const ConfigParser &copy);
 		~ConfigParser();
 		void getConfig(const std::string &configFile);
-		std::map<std::string, std::string> parseParameters(const std::string& serverConfig); 
+		std::map<std::string, std::string> parseParameters(const std::string& serverConfig);
+		void checkParameters(std::map<std::string, std::string> parameters);
 		void splitServers(std::string &content);
 		void removeWhiteSpace(std::string& content);
 		void removeComments(std::string& content);
