@@ -36,7 +36,7 @@ class ConfigParser {
 		~ConfigParser();
 		void getConfig(const std::string &configFile);
 		std::map<std::string, std::string> parseParameters(const std::string& serverConfig);
-		void checkParameters(std::map<std::string, std::string> parameters);
+		void checkCorrectParameters(std::map<std::string, std::string> parameters);
 		void splitServers(std::string &content);
 		void removeWhiteSpace(std::string& content);
 		void removeComments(std::string& content);
@@ -49,4 +49,8 @@ class ConfigParser {
 		void print();
 		std::string getPath();
 		int getSize();
+		///getters for sockets
+		std::string getListenValue(const std::map<std::string, std::string>& parameters);
+		std::string getServerName(const std::map<std::string, std::string>& parameters);
+		std::string getBodySize(const std::map<std::string, std::string>& parameters);
 };

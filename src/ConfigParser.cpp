@@ -73,29 +73,18 @@ void ConfigParser::getConfig(const std::string &configFile)
     // Parse the parameters for each server
   	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it) 
 	{
-        std::map<std::string, std::string> parameters = parseParameters(*it);
-		checkParameters(parameters);
+        parameters = parseParameters(*it);
+        // locationparameters = parseLocationParameters(*it);
+
+		checkCorrectParameters(parameters);
 		serverParameters.push_back(parameters);
+		// serverParameters.push_back(locationparameters);
+
     }
 	print();// test function
 }
 
 //helper functions
-void ConfigParser::checkParameters(std::map<std::string, std::string> parameters)
-{
-		// Check if the "listen" parameter is repeated
-		std::string listenValue = parameters["listen"];
-		std::string server_name = parameters["server_name"];
-		std::string body_size = parameters["body_size"];
-        if (listenValues.find(listenValue) != listenValues.end()) {
-            throw std::runtime_error("Error: 'listen' parameter is repeated");
-        }
-		else if(listenValue.empty())
-			throw std::invalid_argument("Listen value is empty");
-		listenValues.insert(listenValue);
-
-}
-
 void ConfigParser::splitServers(std::string &content)
 {
     size_t startPos = content.find("server{");
@@ -118,19 +107,46 @@ void ConfigParser::splitServers(std::string &content)
 std::map<std::string, std::string> ConfigParser::parseParameters(const std::string& serverConfig) 
 {
     std::map<std::string, std::string> parameters;
-    std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "autoindex", "index", "cgi"};
+    std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "autoindex", "indexing", "cgi"};
 
     for (size_t i = 0; i < sizeof(keys)/sizeof(keys[0]); i++) {
         std::string key = keys[i];
         size_t startPos = serverConfig.find(key);
         if (startPos != std::string::npos) {
             startPos += key.length();
-            size_t endPos = serverConfig.find(';', startPos);
-            std::string value = serverConfig.substr(startPos, endPos - startPos);
-            parameters[key] = value;
+			if (key == "location") {
+				size_t bracePos = serverConfig.find('{', startPos);
+				if (bracePos != std::string::npos) {
+					size_t endPos = bracePos;
+					std::string value = serverConfig.substr(startPos, endPos - startPos);
+					parameters[key] = value;
+				}
+			}
+			else
+			{
+				size_t endPos = serverConfig.find(';', startPos);
+            	std::string value = serverConfig.substr(startPos, endPos - startPos);
+            	parameters[key] = value;
+			}
         }
     }
     return parameters;
+}
+
+void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> parameters)
+{
+		std::string listenValue = parameters["listen"];
+		std::string serverName = parameters["server_name"];
+		std::string bodySize = parameters["body_size"];
+		// Check if the "listen" parameter is repeated
+        if (listenValues.find(listenValue) != listenValues.end()) {
+            throw std::runtime_error("Error: 'listen' parameter is repeated");
+        }
+		else if(listenValue.empty() || serverName.empty() || bodySize.empty()) //empty parameters
+			throw std::invalid_argument("Listen value is empty");
+		listenValues.insert(listenValue);
+		listenValues.insert(serverName);
+		listenValues.insert(bodySize);
 }
 
 void ConfigParser::removeWhiteSpace(std::string& content)
@@ -234,10 +250,15 @@ void ConfigParser::print()
 		//print each parameter
 		std::cout << "------------- Parameters -------------" << std::endl;
 		std::map<std::string, std::string> parameters = serverParameters[i];
-        std::cout << "listen: " << parameters["listen"] << std::endl;
-        std::cout << "server_name: " << parameters["server_name"] << std::endl;
-        std::cout << "body_size: " << parameters["body_size"] << std::endl;
+        std::cout << "listen: " << getListenValue(serverParameters[i]) << std::endl;
+        std::cout << "server_name: " << getServerName(serverParameters[i]) << std::endl;
+        std::cout << "body_size: " << getServerName(serverParameters[i]) << std::endl;
         std::cout << "error_page: " << parameters["error_page"] << std::endl;
+		std::cout << "location:" << parameters["location"] << std::endl;
+		std::cout << "allowed methods:" << parameters["allow_methods"] << std::endl;
+		std::cout << "autoindex:" << parameters["autoindex"] << std::endl;
+		std::cout << "index:" << parameters["index"] << std::endl;
+		std::cout << "scripts:" << parameters["cgi"] << std::endl;
 		std::cout << "--------------------------------------" << std::endl;
 		
 	}
@@ -253,4 +274,19 @@ std::string ConfigParser::getPath()
 int ConfigParser::getSize()
 {
 	return (this->_size);
+}
+
+std::string ConfigParser::getListenValue(const std::map<std::string, std::string>& parameters)
+{
+	return parameters.at("listen");
+}
+
+std::string ConfigParser::getServerName(const std::map<std::string, std::string>& parameters)
+{
+	return parameters.at("server_name");
+}
+
+std::string ConfigParser::getBodySize(const std::map<std::string, std::string>& parameters)
+{
+	return parameters.at("body_size");
 }
