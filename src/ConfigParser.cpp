@@ -257,7 +257,7 @@ void ConfigParser::print()
 		std::cout << "location:" << parameters["location"] << std::endl;
 		std::cout << "allowed methods:" << parameters["allow_methods"] << std::endl;
 		std::cout << "autoindex:" << parameters["autoindex"] << std::endl;
-		std::cout << "index:" << parameters["index"] << std::endl;
+		std::cout << "index:" << parameters["indexing"] << std::endl;
 		std::cout << "scripts:" << parameters["cgi"] << std::endl;
 		std::cout << "--------------------------------------" << std::endl;
 		
