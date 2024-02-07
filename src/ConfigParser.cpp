@@ -74,12 +74,9 @@ void ConfigParser::getConfig(const std::string &configFile)
   	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it) 
 	{
         parameters = parseParameters(*it);
-        // locationparameters = parseLocationParameters(*it);
 
 		checkCorrectParameters(parameters);
 		serverParameters.push_back(parameters);
-		// serverParameters.push_back(locationparameters);
-
     }
 	print();// test function
 }
@@ -120,6 +117,18 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 					size_t endPos = bracePos;
 					std::string value = serverConfig.substr(startPos, endPos - startPos);
 					parameters[key] = value;
+				}
+			}
+			else if(key == "cgi")
+			{
+				std::string cgi = "cgi";
+				size_t endPos = serverConfig.find(';', startPos);
+				if (endPos != std::string::npos) {
+					std::string value = serverConfig.substr(startPos, endPos - startPos);
+					parameters[key] = value;
+				}
+				else {
+					parameters[key] = cgi;  //needs to be set it up
 				}
 			}
 			else
