@@ -67,5 +67,6 @@
         "variant": "cpp",
         "vector": "cpp",
         "algorithm": "cpp"
-    }
+    },
+    "liveServer.settings.port": 5501
 }
