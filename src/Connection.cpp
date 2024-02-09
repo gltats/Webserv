@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/04 21:20:07 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/07 21:55:02 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,8 +97,9 @@ void		Connection::send_response(void)
 			close(_connection_socket);
 			return ;
 		}
-		std::cout << "number of characters sent " << send_size << std::endl;
-		close(_connection_socket);
+		// std::cout << "reponse sent " << _response.get_response() << std::endl;
+		std::cout << "\tnumber of characters sent " << send_size << std::endl;
+		// close(_connection_socket);
 	}
 	else
 		close(_connection_socket);

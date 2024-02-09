@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/04 22:23:20 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/07 21:55:23 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,8 @@ general-header = Cache-Control            ; Section 14.9
 
 Response::Response(void)
 {
-		_html_content.clear();
+	_html_content.clear();
+	_response.clear();
 	std::cout << "Response default constructor" << std::endl;
 	// map default error pages number and path
 	map_default_error_pages(_error_page_map);
