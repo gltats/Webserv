@@ -6,9 +6,24 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/04 22:23:33 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/09 22:27:24 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+# ifndef OS_SYS
+# define OS_SYS
+	enum{
+		LINUX,
+		MAC
+	};
+
+# if defined (__linux__)
+		#define OS LINUX
+#endif
+# if defined (__APPLE__)
+	#define OS MAC
+#endif
+#endif
 
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
@@ -25,6 +40,8 @@
 
 #include "Request.hpp"
 #include "map.hpp"
+
+
 
 /*
 esponse

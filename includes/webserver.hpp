@@ -15,7 +15,24 @@
 #include "Webserv_Exceptions.hpp"
 #include "lib_convertion.hpp"
 
+# ifndef OS_SYS
+# define OS_SYS
+	enum{
+		LINUX,
+		MAC
+	};
+
+# if defined (__linux__)
+		#define OS LINUX
+#endif
 # if defined (__APPLE__)
+	#define OS MAC
+#endif
+
+#endif
+
+# if defined (__APPLE__)
+	#define OS MAC
 	#include	<sys/event.h> // for kqueue
 #endif
 

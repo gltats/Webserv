@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/07 21:55:23 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/09 22:29:03 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,7 @@ general-header = Cache-Control            ; Section 14.9
 
 Response::Response(void)
 {
+	_html_content_size = 0;
 	_html_content.clear();
 	_response.clear();
 	std::cout << "Response default constructor" << std::endl;
@@ -225,7 +226,11 @@ void	Response::_parse_response(Request const &req)
 		{
 			std::cout << "...Trying to run CGI : " << uri << std::endl;
 
-			char python_path[23] = "/usr/local/bin/python3";
+			// if (OS == LINUX)
+			// 	char python_path[] = "/usr/bin/python3";
+			// else
+				char python_path[] = "/usr/local/bin/python3";
+
 			char *exe[3] = {python_path, (char *)uri.c_str(), 0};
 
 			dup2(fd_pipe[1], STDOUT_FILENO);
