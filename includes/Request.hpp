@@ -16,8 +16,7 @@
 
 #include <iostream>
 #include <unistd.h>
-#include <strstream> // depreacated -> use basic_stringstream
-
+#include <sstream>
 #include "color_code.hpp"
 
 #define		CR	13

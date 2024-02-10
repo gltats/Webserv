@@ -121,8 +121,10 @@ void	Server::_setup_socket(void)
 	}
 	std::cout << "Socket option SO_REUSEADDR set sucessfully" << std::endl;
 	int flags = fcntl(_server_socket, F_GETFL, 0);
-	fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK); // check for sucess
-	std::cout << "Socket set to NON BLOCK" << std::endl;
+
+	// commented it out for linux test - basic
+	// fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK); // check for sucess
+	// std::cout << "Socket set to NON BLOCK" << std::endl;
 
 	if (bind(_server_socket, _result->ai_addr, _result->ai_addrlen) == -1)
 	{

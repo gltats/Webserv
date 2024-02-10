@@ -226,10 +226,16 @@ void	Response::_parse_response(Request const &req)
 		{
 			std::cout << "...Trying to run CGI : " << uri << std::endl;
 
-			// if (OS == LINUX)
-			// 	char python_path[] = "/usr/bin/python3";
-			// else
-				char python_path[] = "/usr/local/bin/python3";
+			// std::string	python_path;
+			char *python_path;
+
+			char python_path_linux[] = "/usr/bin/python3";
+			char python_path_mac[] = "/usr/local/bin/python3";
+
+			python_path = python_path_mac;
+			if (OS == LINUX)
+				python_path = python_path_linux;
+			
 
 			char *exe[3] = {python_path, (char *)uri.c_str(), 0};
 
@@ -252,9 +258,10 @@ void	Response::_parse_response(Request const &req)
 
 			//parent = webserver
 			int MSGSIZE = 8192*2;
+			ssize_t nb_characters;
 			char inbuf[MSGSIZE];
 			memset(inbuf, '\0',MSGSIZE ); // is this function allowed?
-			read(STDIN_FILENO, &inbuf, MSGSIZE );
+			nb_characters = read(STDIN_FILENO, &inbuf, MSGSIZE );
 			// // waitpid(pid, 0, 0);
 
 			dup2(fd_stdin, STDIN_FILENO); // return STDFILE IN to original
@@ -266,9 +273,11 @@ void	Response::_parse_response(Request const &req)
 			// append response
 			_response.append(_status_line);
 			_response.append("Server: MairaServer\r\n");
-
+			_response.append("Content-Length: ");
+			_response.append(int2str(nb_characters));
+			_response.append("\r\n");
+			_response.append("Server: Webserv\r\n");
 			_response.append(inbuf);
-
 
 			return ;
 		}
@@ -288,15 +297,9 @@ void	Response::_parse_response(Request const &req)
 	// content length
 	std::stringstream	ss_len;
 	ss_len << "Content-Length: " << _html_content_size << "\r\n";
-	ss_len << "Server: MairaServer" << "\r\n";
+	ss_len << "Server: Webserv" << "\r\n";
 
 	_response.append(ss_len.str()); // convert string stream to a string
-
-	// content type
-	// if (uri.find_last_of("cat_giff.gif") != -1)
-	// 	_response.append("Content-Type: image/gif\r\n");
-	// else if (uri.find_last_of(".png") != -1)
-	// 	_response.append("Content-Type: image/png\r\n");
 
 	_response.append("\r\n"); // empty line
 	_response.append(_html_content);
