@@ -38,18 +38,18 @@ class Connection
 		char					**_env;
 		Request 				_request;
 		Response				_response;
-		struct sockaddr_un		_client_addr;
 
 		// Connection(Connection const &src);
 		// Connection		&operator=(Connection const &rhs);
 		// Connection(void);
 	public:
-		Connection(int connection_socket, struct sockaddr_un client_addr, char *env[]);
+		Connection(int connection_socket, char *env[]);
 		~Connection(void);
 
 		void					receive_msg(void);
 		std::string				get_response(void);
 		void					send_response(void);
+		std::string				get_connection(void) const;
 		// std::string				get_client_ip(void) const;
 
 };

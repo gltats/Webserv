@@ -44,9 +44,9 @@
 	#include	<sys/event.h> // for kqueue
 #endif
 
-#ifndef SOCK_NONBLOCK
-#define SOCK_NONBLOCK 0 // remove this after splitting linux and mac implementation
-#endif
+// #ifndef SOCK_NONBLOCK
+// #define SOCK_NONBLOCK 0 // remove this after splitting linux and mac implementation
+// #endif
 
 
 

@@ -9,7 +9,8 @@ void map_config_file(std::map<std::string, std::string>& config_map, ConfigParse
 	// names based on Tatiana's parser print function:
 	// server{listen2024;server_namewebserv42.com;body_size10000000;error_page404/error/error404.html;location/{allow_methodsGETPOSTDELETE;autoindexon;indexindex.html;cgi;}
 
-	config_map["listen"] = "4432"; // port to be listen
+	config_map["listen"] = "4432"; // port to be listen for docker
+	// config_map["listen"] = "4433"; // port to be listen when docker is on
 	config_map["server_name"] = "webserv42.com";
 	config_map["body_size"] = "10000000";
 	config_map["error_page404"] = "/error/error404.html";

@@ -1,7 +1,6 @@
 #ifndef WEBSERVER_HPP
 #define WEBSERVER_HPP
 
-
 #include <map>
 #include <iostream>
 #include <signal.h>
@@ -15,8 +14,10 @@
 #include "Webserv_Exceptions.hpp"
 #include "lib_convertion.hpp"
 
+# ifndef DEBUG
+#  define DEBUG 1
+# endif
 
-// # elif defined (__linux__)
 
 void	ft_signal_handler(int signum);
 void	ft_setup_sighandler(void);

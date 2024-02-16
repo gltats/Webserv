@@ -17,7 +17,7 @@
 
 // }
 
-Connection::Connection(int connection_socket, struct sockaddr_un client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _client_addr(client_addr)
+Connection::Connection(int connection_socket, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2)
 {
 	_env = env;
 	_buffer_rcv = new char[_buffer_rcv_size];
@@ -62,6 +62,8 @@ void	Connection::receive_msg(void)
 		// throw exception
 		exit(1); // at the moment just exiting
 	}
+
+	std::cout << _buffer_rcv << std::endl; // remove
 	// create Request Object
 	_request.read_request(_buffer_rcv);
 	_request.print_request();
@@ -74,6 +76,7 @@ std::string	Connection::get_response(void)
 
 void		Connection::send_response(void)
 {
+
 	size_t	send_size = 0;
 	_response.create_response(_request, _env);
 
@@ -99,6 +102,12 @@ void		Connection::send_response(void)
 	else
 		close(_connection_socket);
 }
+
+std::string		Connection::get_connection(void) const
+{
+	return(_request.get_connection());
+}
+
 
 // std::string	Connection::get_client_ip(void) const
 // {

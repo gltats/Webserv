@@ -100,6 +100,11 @@ void Server::_setup_server(void)
 	hints.ai_addr = NULL;
 	hints.ai_next = NULL;
 
+//REF other way
+// serverAddr.sin_family = AF_INET;
+// serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // Bind to all available interfaces
+// serverAddr.sin_port = htons(PORT); // PORT is the port number
+// if (bind(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
 
 //    status = getaddrinfo(_server_name.c_str(), _server_port.c_str(), &hints, &_result);
    status = getaddrinfo(NULL, _server_port.c_str(), &hints, &_result);
@@ -143,13 +148,14 @@ void	Server::_setup_socket(void)
 	}
 	std::cout << "Socket option SO_REUSEADDR set sucessfully" << std::endl;
 	
-	if (OS == MAC)
-	{
+	// if (OS == MAC)
+	// {
 		int flags = fcntl(_server_socket, F_GETFL, 0, 0); // remove - illegal function
 		std::cout << "flags standard on _server_socket " << flags << std::endl; // remove - illegal function
 		// flags = 2;
-		int ret =  fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK);;
-		// int ret =  fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK, FD_CLOEXEC);
+		int ret = 0;
+		//  ret =  fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK);;
+		//  ret =  fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK, FD_CLOEXEC);
 		if (ret == -1)
 		{
 			std::cout << REDB <<  "Error: to set socket to O_NONBLOCK for MAC applications. Reason: " << strerror(errno) << RESET << std::endl;
@@ -157,7 +163,7 @@ void	Server::_setup_socket(void)
 			//throw exception
 			exit (1); // at the moment just exit
 		}
-	}	
+	// }	
 
 	if (bind(_server_socket, _result->ai_addr, _result->ai_addrlen) == -1)
 	{
