@@ -36,7 +36,8 @@ NAME = Webserv
 # CC = clang++ // incorrect compiler
 CC = c++
 #CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
- CFLAGS = -Iincludes -std=c++98 # for development
+# CFLAGS = -Iincludes -std=c++98  # in mac for development
+CFLAGS =  -Iincludes -std=c++98 -D__linux__  # for development in docker linux
 
 # Folders & files
 # FILES = main ConfigParser # Tatiana's original

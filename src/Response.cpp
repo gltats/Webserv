@@ -13,6 +13,13 @@
 #include "Response.hpp"
 
 /*
+	html 3027 bytes
+	index image 302743 bytes
+	file content is size 302743 (302743)
+*/
+
+
+/*
 
 	HTTP/1.1 defines the sequence CR LF as the end-of-line marker for all
    protocol elements except the entity-body (see appendix 19.3 for
@@ -162,9 +169,9 @@ void	Response::_setup_response(char *env[])
 	_html_content_size = 0;
 	 _envp = env;
 	_html_content.clear();
-	_html_content_size = 0;
 	_status_line.clear();
 	_response.clear();
+
 }
 
 // void	Response::set_error_page_map(std::map<std::string, std::string> *error_page_map)
@@ -233,7 +240,7 @@ void	Response::_parse_response(Request const &req)
 			char python_path_mac[] = "/usr/local/bin/python3";
 
 			python_path = python_path_mac;
-			if (OS == LINUX)
+			if (OS_PATH == LINUX)
 				python_path = python_path_linux;
 			
 
@@ -262,8 +269,10 @@ void	Response::_parse_response(Request const &req)
 			char inbuf[MSGSIZE];
 			memset(inbuf, '\0',MSGSIZE ); // is this function allowed?
 			nb_characters = read(STDIN_FILENO, &inbuf, MSGSIZE );
-			// // waitpid(pid, 0, 0);
-
+			if (nb_characters == -1)
+				std::cout << "Received nothing from pipe" << std::endl;
+			// std::cout << "received the following form the pipe '" << inbuf << "'" << std::endl;
+			std::cout << "file content is size " << nb_characters << " (" << int2str(nb_characters) << ")" << std::endl;
 			dup2(fd_stdin, STDIN_FILENO); // return STDFILE IN to original
 			// std::cout << "CGI in buff is :$" << inbuf << "$" << std::endl;
 
@@ -272,12 +281,14 @@ void	Response::_parse_response(Request const &req)
 
 			// append response
 			_response.append(_status_line);
-			_response.append("Server: MairaServer\r\n");
-			_response.append("Content-Length: ");
-			_response.append(int2str(nb_characters));
-			_response.append("\r\n");
 			_response.append("Server: Webserv\r\n");
+			// cgi has also a type of data line which means nb_characters is not the size of content but bigger
+			// _response.append("Content-Length: "); 
+			// _response.append(int2str(nb_characters));
+			// _response.append("\r\n");
 			_response.append(inbuf);
+
+			// std::cout << "response looks like this " << std::endl << _response << std::endl;
 
 			return ;
 		}
@@ -285,18 +296,19 @@ void	Response::_parse_response(Request const &req)
 	}
 
 	// // read html file content
+		// _response.clear();
+
 	if (_read_file_data(req) == -1)
 		return ;
 	// create a response
 	_create_status_line();
-
 
 	// append response
 	_response.append(_status_line);
 
 	// content length
 	std::stringstream	ss_len;
-	ss_len << "Content-Length: " << _html_content_size << "\r\n";
+	ss_len << "Content-Length: " << _html_content_size  << "\r\n";
 	ss_len << "Server: Webserv" << "\r\n";
 
 	_response.append(ss_len.str()); // convert string stream to a string
@@ -304,6 +316,8 @@ void	Response::_parse_response(Request const &req)
 	_response.append("\r\n"); // empty line
 	_response.append(_html_content);
 	// std::cout << "Response in object is:\n#" << _response  << "#" << std::endl;
+	std::cout << "file content is size " << _html_content_size << " (" << int2str(_html_content_size) << ")" << std::endl;
+	// std::cout << "response is "<< std::endl << _response << std::endl;
 }
 
 Response::~Response(void)
@@ -339,9 +353,11 @@ int	Response::_read_file_data(Request const &req)
 	}
 
 	/* read file */
+
 	ss << html_file.rdbuf();
 
 	/* convert to string */
+
 	_html_content = ss.str();
 
 	/* get msg body size */

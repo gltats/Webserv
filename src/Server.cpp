@@ -35,10 +35,15 @@ Server::Server(std::map<std::string, std::string> &config_map):  _server_port(co
 	_max_backlog_queue = str2int(config_map["limit_conn"]);
 
 
+	std::cout << "Server constructor" << std::endl;
 
 	_setup_server();
+	std::cout << "Server Setup done" << std::endl;
 	_setup_socket();
+	std::cout << "Socket Setup done" << std::endl;
 	_listen();
+	std::cout << "Socket in listenning mdoe" << std::endl;
+
 }
 
 Server::~Server(void)
@@ -73,24 +78,39 @@ void Server::_setup_server(void)
 	int					status;
 	struct addrinfo		hints;
 
+	if (OS == MAC)
+		std::cout << "Setup Webserver for Mac OS" << std::endl;
+	else if (OS == LINUX)
+		std::cout << "Setup Webserver for Linux" << std::endl;
+	else
+	{
+		std::cout << "Setup Webserver not supported for operational system. Exiting application" << std::endl;
+		// throw exception
+		exit(1); // at the moment
+	}
 	memset(&hints, 0 , sizeof(hints));
-	hints.ai_family = AF_INET;    /* Allow IPv4 or IPv6 */
-	hints.ai_socktype = SOCK_STREAM; /* Stream socket for TCP */
+	hints.ai_family = AF_INET;    // Allow IPv4
+	// if (OS == MAC)
+		hints.ai_socktype = SOCK_STREAM; // Stream socket - only for mac
+	// else
+		// hints.ai_socktype = SOCK_STREAM | SOCK_NONBLOCK; // only for linux
 	hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV | AI_PASSIVE;
 	hints.ai_protocol = IPPROTO_TCP; // only TCP allowed
 	hints.ai_canonname = NULL;
 	hints.ai_addr = NULL;
 	hints.ai_next = NULL;
 
+
 //    status = getaddrinfo(_server_name.c_str(), _server_port.c_str(), &hints, &_result);
    status = getaddrinfo(NULL, _server_port.c_str(), &hints, &_result);
 
 	if (status != 0)
 	{
-		std::cerr << REDB << "getaddrinfo: %s\n", gai_strerror(status); // is gai_strerror allowed?
+		std::cerr << REDB << "Error: getaddrinfo nb " << status << " - " << gai_strerror(status) << std::endl; // is gai_strerror allowed?
 		// throw exception
 		exit(1); // at the moment just exit
 	}
+
 	// // result is a list and can be looped to show additional connections. we just want one
 	if (_result->ai_next != NULL)
 	{
@@ -98,10 +118,12 @@ void Server::_setup_server(void)
 		// throw exception
 		exit(1); // at the moment just exit
 	}
+
 }
 
 void	Server::_setup_socket(void)
 {
+
 	_server_socket = socket(_result->ai_family, _result->ai_socktype, _result->ai_protocol);
 	if (_server_socket == -1)
 	{
@@ -120,11 +142,22 @@ void	Server::_setup_socket(void)
 		exit (1); // at the moment just exit
 	}
 	std::cout << "Socket option SO_REUSEADDR set sucessfully" << std::endl;
-	int flags = fcntl(_server_socket, F_GETFL, 0);
-
-	// commented it out for linux test - basic
-	// fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK); // check for sucess
-	// std::cout << "Socket set to NON BLOCK" << std::endl;
+	
+	if (OS == MAC)
+	{
+		int flags = fcntl(_server_socket, F_GETFL, 0, 0); // remove - illegal function
+		std::cout << "flags standard on _server_socket " << flags << std::endl; // remove - illegal function
+		// flags = 2;
+		int ret =  fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK);;
+		// int ret =  fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK, FD_CLOEXEC);
+		if (ret == -1)
+		{
+			std::cout << REDB <<  "Error: to set socket to O_NONBLOCK for MAC applications. Reason: " << strerror(errno) << RESET << std::endl;
+			close(_server_socket);
+			//throw exception
+			exit (1); // at the moment just exit
+		}
+	}	
 
 	if (bind(_server_socket, _result->ai_addr, _result->ai_addrlen) == -1)
 	{

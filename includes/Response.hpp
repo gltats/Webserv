@@ -10,20 +10,24 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-# ifndef OS_SYS
-# define OS_SYS
-	enum{
-		LINUX,
-		MAC
+#ifndef OS_ENUM
+#define OS_ENUM
+	enum
+	{
+		MAC,
+		LINUX
 	};
+#endif
+
 
 # if defined (__linux__)
-		#define OS LINUX
+		#define OS_PATH LINUX
 #endif
+
 # if defined (__APPLE__)
-	#define OS MAC
+	#define OS_PATH MAC
 #endif
-#endif
+
 
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP

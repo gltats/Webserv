@@ -17,13 +17,14 @@
 
 // }
 
-Connection::Connection(int connection_socket, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2)
+Connection::Connection(int connection_socket, struct sockaddr_un client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _client_addr(client_addr)
 {
-	std::cout << "Client connected" << std::endl;
 	_env = env;
 	_buffer_rcv = new char[_buffer_rcv_size];
 	memset(_buffer_rcv, '\0', _buffer_rcv_size); // is memset allowed?
-	// error here?
+
+	std::cout << "Client connected" << std::endl;
+
 }
 
 Connection::~Connection(void)
@@ -61,12 +62,6 @@ void	Connection::receive_msg(void)
 		// throw exception
 		exit(1); // at the moment just exiting
 	}
-	// if (VERBOSE == 1)
-	// {
-	// 	std::cout << std::endl;
-	// 	std::cout << "Message received is :" << YELLOW << std::endl;
-	// 	std::cout << _buffer_rcv << RESET << std::endl;
-	// }
 	// create Request Object
 	_request.read_request(_buffer_rcv);
 	_request.print_request();
@@ -85,22 +80,49 @@ void		Connection::send_response(void)
 
 	if (_response.get_response().length() > 0)
 	{
-
 		size_t buffer_send_size = _response.get_response().length() + 1;
 
+		std::cout << REDB << "trying to send to socket " << _connection_socket << ", message size is "<< buffer_send_size << RESET << std::endl;
+		/* only for debugging - remove for evaluation */
+		
 		send_size = send(_connection_socket, _response.get_response().c_str() , buffer_send_size, 0); // this works
 
 		if (send_size != buffer_send_size)
 		{
 			std::cout << "Error: to send. Reason: " << strerror(errno) << std::endl;
 			std::cout << "Closing sockets and exiting" << std::endl;
-			close(_connection_socket);
+			// close(_connection_socket);
 			return ;
 		}
-		// std::cout << "reponse sent " << _response.get_response() << std::endl;
 		std::cout << "\tnumber of characters sent " << send_size << std::endl;
-		// close(_connection_socket);
 	}
 	else
 		close(_connection_socket);
 }
+
+// std::string	Connection::get_client_ip(void) const
+// {
+
+// 	// struct sockaddr_in 	*ptr4;
+// 	// struct sockaddr_in6	*ptr6;
+// 	// uint16_t 			port;
+
+// 	// // Client connected throw IPv4
+// 	// if(_client_addr.ssfamily == AF_INET)
+// 	// {
+// 	// 	ptr4 = (struct sockaddr_in *)&_client_addr;
+// 	// 	port = ntohs(ptr4->sin_port);
+// 	// }
+// 	// // Client connected throw IPv6
+// 	// else if(_client_addr.ssfamily == AF_INET6)
+// 	// {
+// 	// 	ptr6 = (struct sockaddr_in6 *)&_client_addr;
+// 	// 	port = ntohs(ptr6->sin_port);
+// 	// }
+// 	// else
+// 	// {
+// 	// 	std::cout << "Socket family not Supported. Please use only IPv4 or IPv6 clients" << std::endl;
+// 	// 	return ;
+// 	// }
+
+// }

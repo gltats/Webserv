@@ -25,6 +25,32 @@
 #include "color_code.hpp"
 #include "lib_convertion.hpp"
 
+#ifndef OS_ENUM
+#define OS_ENUM
+	enum
+	{
+		MAC,
+		LINUX
+	};
+#endif
+
+# if defined (__linux__)
+	#define OS LINUX
+	#include <sys/epoll.h>
+#endif
+
+# if defined (__APPLE__)
+	#define OS MAC
+	#include	<sys/event.h> // for kqueue
+#endif
+
+#ifndef SOCK_NONBLOCK
+#define SOCK_NONBLOCK 0 // remove this after splitting linux and mac implementation
+#endif
+
+
+
+
 class Server
 {
 	private:

@@ -19,6 +19,10 @@
 #include <stdlib.h> // for exit
 #include <cerrno> // for errno : only pre-development
 #include <string.h> // for memset: check if it is allowed
+// #include <netinet/in.h> // for sockaddr_un support
+// #include <sys/socket.h> // for sockaddr_un support
+#include <sys/un.h> // for sockaddr_un support
+
 #include "color_code.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
@@ -34,18 +38,19 @@ class Connection
 		char					**_env;
 		Request 				_request;
 		Response				_response;
-
+		struct sockaddr_un		_client_addr;
 
 		// Connection(Connection const &src);
 		// Connection		&operator=(Connection const &rhs);
 		// Connection(void);
 	public:
-		Connection(int connection_socket, char *env[]);
+		Connection(int connection_socket, struct sockaddr_un client_addr, char *env[]);
 		~Connection(void);
 
 		void					receive_msg(void);
 		std::string				get_response(void);
 		void					send_response(void);
+		// std::string				get_client_ip(void) const;
 
 };
 

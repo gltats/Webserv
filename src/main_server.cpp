@@ -13,10 +13,9 @@
 #include "webserver.hpp"
 
 
-
-void	launch_webserver(std::map<std::string, std::string> &config_map, char *env[]);
+// void	launch_webserver(std::map<std::string, std::string> &config_map, char *env[]);
 // void	launch_webserver_mac_os(std::map<std::string, std::string> &config_map, char *env[]);
-// void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, char *env[]);
+void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, char *env[]);
 
 // Interface to Parser -> Server
 // Tatiana please adapt map_config_file function in file map.cpp
@@ -42,11 +41,11 @@ int	main(int argc, char *argv[], char *env[])
 	// launch webserver loop
 	try
 	{
-		launch_webserver(config_map, env);
+		// launch_webserver(config_map, env);
 		// if (OS == LINUX)
-		// 	launch_webserver_linux_os(config_map, env);
+			launch_webserver_linux_os(config_map, env);
 		// else
-		// 	launch_webserver_mac_os(config_map, env);
+			// launch_webserver_mac_os(config_map, env);
 
 	}
 	catch(const UserRequestTermination& e)
@@ -60,13 +59,116 @@ int	main(int argc, char *argv[], char *env[])
 	return (0);
 }
 
-// void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, char *env[])
-// {
-// 	// NON BLOCKING - FOR LINUX OS Only
-// 	(void)config_map;
-// 	if (env == 0)
-// 		std::cout << "Error env" << std::endl;
-// }
+void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, char *env[])
+{
+	// NON BLOCKING - FOR LINUX OS Only
+	(void)config_map;
+	if (env == 0)
+		std::cout << "Error env" << std::endl;
+
+	int	MAX_EVENTS = 10; // Q:how to define this?
+	int	nb_of_events = 0;
+	int	client_fd = 0;
+
+
+	// create address sizes structures
+	socklen_t				client_addr_size;
+	struct sockaddr_un		client_addr;
+
+	client_addr_size = sizeof(client_addr);
+
+	// create a Server instance
+	Server srv(config_map); // constructor setup socket and put it in listening mode
+
+	// create an epoll instance in a file descriptor
+	int epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0
+
+	// create an events structure for the events to be monitored
+	struct epoll_event ev, ep_event[MAX_EVENTS];
+
+	// add file descriptor to be monitored
+	/*
+		EPOLLIN: Event file descriptor is available to read
+		EPOLLOUT: Event file descriptor is available to write
+		EPOLLERR: Event file descriptor error
+		EPOLLHUP: Event file descriptor hang up
+		EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
+	*/
+	// ev.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLHUP;
+	ev.events = EPOLLIN;
+
+	ev.data.fd = srv.get_server_socket();
+
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, srv.get_server_socket(), &ev) == -1)
+	{
+		std::cerr << REDB <<  "Error:\n epoll_ctl server socket could not be set to monitored file descriptor list" << RESET << std::endl;
+		// throw exception
+		// close socket file descritpro
+		srv.close_server_socket();
+		exit(1); // at the moment
+	}
+
+	// map to hold Connection Object pointer per file descriptor
+	std::map<int, Connection *> fd2client_map;
+
+	// main loop 
+	while (1)
+	{
+		//epoll_wait with timeout equal -1 is infinite
+		nb_of_events = epoll_wait(epoll_fd, ep_event, MAX_EVENTS, -1);
+
+		for (int i = 0; i < nb_of_events; i++)
+		{
+			std::cout << "nb of events " << nb_of_events << std::endl; // remove
+
+			if (ep_event[i].events & EPOLLERR)
+			{
+                std::cerr << REDB << "Error in event" << RESET << std::endl;
+                break;
+			}
+
+			else if ((ep_event[i].events & EPOLLIN) == EPOLLIN)
+			{
+				if (ep_event[i].data.fd == srv.get_server_socket()) // Request for a new connection
+				{
+					client_fd = accept(srv.get_server_socket(), (struct sockaddr*)&client_addr, &client_addr_size);
+					if (client_fd == -1)
+					{
+	
+						std::cerr << REDB << "Error accept, Connection refused for connection socket" << client_fd << RESET << std::endl;
+						// Handle error or non-blocking mode
+						break ; // at the moment just return: error handling needs a lot of change here!
+					}
+
+					// set client_fd to be reusablein a closed fd to allow fast reusable socket without waiting for the OS to release the ressource
+					int yes = 1;
+					if (setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+					{
+						std::cerr << REDB << "Error setsockopt to set fd to SO_REUSEADDR " << client_fd << " to reusable" << std::endl;
+						// handle error
+						break; 
+					}
+					// add new Connection file descriptor to the list of monitored file descriptors
+					if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) == -1)
+					{
+						std::cerr << REDB <<  "Error epoll_ctl new client socket could not be set to monitored file descriptor list" << RESET << std::endl;
+						close(client_fd);
+						srv.close_server_socket();
+						break; // at the moment
+					}
+
+					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
+					fd2client_map[client_fd] = new Connection(client_fd, client_addr, env); 
+					std::cout << "New client connected " << client_fd << std::endl;
+					freeaddrinfo((struct addrinfo *)&client_addr);
+				}
+			}
+		}
+
+	}
+	delete fd2client_map[client_fd];
+	close(epoll_fd);
+}
 
 
 // void	launch_webserver_mac_os(std::map<std::string, std::string> &config_map, char *env[])
@@ -130,6 +232,7 @@ int	main(int argc, char *argv[], char *env[])
 // 				}
 // 				// set client socket to nonblocking
 // 				int flags = fcntl(client_fd, F_GETFL, 0);
+// 				std::cout << "socket flags for new connections standard is " << flags << std::endl;
 //                 fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
 
 // 				// add client socket to read and write event set
@@ -181,39 +284,39 @@ int	main(int argc, char *argv[], char *env[])
 // 		}
 // 	}
 
+// // }
+
+
+// void	launch_webserver(std::map<std::string, std::string> &config_map, char *env[])
+// {
+// 	socklen_t				client_addr_size;
+// 	struct sockaddr_un		client_addr;
+
+// 	// Blocking
+// 	client_addr_size = sizeof(client_addr);
+
+// 	Server srv(config_map);
+
+// 	while (true)
+// 	{
+// 		std::cout << "Server Listening in IP: LocalHost and Port: " << srv.get_server_port() << " ..." << std::endl;
+
+// 		int client_fd = accept(srv.get_server_socket(), (struct sockaddr*)&client_addr, &client_addr_size);
+// 		if (client_fd == -1)
+// 		{
+// 			// Handle error or non-blocking mode
+// 			return ; // at the moment just return
+// 		}
+
+// 		Connection	client(client_fd, env);
+
+// 		client.receive_msg();
+// 		client.send_response();
+// 		close(client_fd);
+
+// 	}
+// 		srv.close_server_socket(); // temporary
 // }
-
-
-void	launch_webserver(std::map<std::string, std::string> &config_map, char *env[])
-{
-	socklen_t				client_addr_size;
-	struct sockaddr_un		client_addr;
-
-	// Blocking
-	client_addr_size = sizeof(client_addr);
-
-	Server srv(config_map);
-
-	while (true)
-	{
-		std::cout << "Server Listening in IP: LocalHost and Port: " << srv.get_server_port() << " ..." << std::endl;
-
-		int client_fd = accept(srv.get_server_socket(), (struct sockaddr*)&client_addr, &client_addr_size);
-		if (client_fd == -1)
-		{
-			// Handle error or non-blocking mode
-			return ; // at the moment just return
-		}
-
-		Connection	client(client_fd, env);
-
-		client.receive_msg();
-		client.send_response();
-		close(client_fd);
-
-	}
-		srv.close_server_socket(); // temporary
-}
 
 
 
