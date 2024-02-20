@@ -38,6 +38,7 @@ class Connection
 		char					**_env;
 		Request 				_request;
 		Response				_response;
+		bool					_is_read_complete;
 
 		// Connection(Connection const &src);
 		// Connection		&operator=(Connection const &rhs);
@@ -51,7 +52,10 @@ class Connection
 		void					send_response(void);
 		std::string				get_connection(void) const;
 		// std::string				get_client_ip(void) const;
-
+		bool					is_response_empty(void) const;
+		bool 					get_is_read_complete(void) const;
+		void					set_is_read_complete(bool status); // is it required?
+ 
 };
 
 #endif

@@ -88,48 +88,50 @@ void Server::_setup_server(void)
 		// throw exception
 		exit(1); // at the moment
 	}
-	memset(&hints, 0 , sizeof(hints));
-	hints.ai_family = AF_INET;    // Allow IPv4
-	// if (OS == MAC)
-		hints.ai_socktype = SOCK_STREAM; // Stream socket - only for mac
-	// else
-		// hints.ai_socktype = SOCK_STREAM | SOCK_NONBLOCK; // only for linux
-	hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV | AI_PASSIVE;
-	hints.ai_protocol = IPPROTO_TCP; // only TCP allowed
-	hints.ai_canonname = NULL;
-	hints.ai_addr = NULL;
-	hints.ai_next = NULL;
+	// memset(&hints, 0 , sizeof(hints));
+	// hints.ai_family = AF_INET;    // Allow IPv4
+	// // if (OS == MAC)
+	// 	// hints.ai_socktype = SOCK_STREAM; // Stream socket - only for mac
+	// // else
+	// 	hints.ai_socktype = SOCK_STREAM; // | SOCK_NONBLOCK; // only for linux
+	// hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV | AI_PASSIVE;
+	// hints.ai_protocol = IPPROTO_TCP; // only TCP allowed
+	// hints.ai_canonname = NULL;
+	// hints.ai_addr = NULL;
+	// hints.ai_next = NULL;
 
 //REF other way
+// struct sockaddr_in serverAddr;
+
 // serverAddr.sin_family = AF_INET;
 // serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // Bind to all available interfaces
 // serverAddr.sin_port = htons(PORT); // PORT is the port number
 // if (bind(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
 
 //    status = getaddrinfo(_server_name.c_str(), _server_port.c_str(), &hints, &_result);
-   status = getaddrinfo(NULL, _server_port.c_str(), &hints, &_result);
+//    status = getaddrinfo(NULL, _server_port.c_str(), &hints, &_result);
 
-	if (status != 0)
-	{
-		std::cerr << REDB << "Error: getaddrinfo nb " << status << " - " << gai_strerror(status) << std::endl; // is gai_strerror allowed?
-		// throw exception
-		exit(1); // at the moment just exit
-	}
+// 	if (status != 0)
+// 	{
+// 		std::cerr << REDB << "Error: getaddrinfo nb " << status << " - " << gai_strerror(status) << std::endl; // is gai_strerror allowed?
+// 		// throw exception
+// 		exit(1); // at the moment just exit
+// 	}
 
-	// // result is a list and can be looped to show additional connections. we just want one
-	if (_result->ai_next != NULL)
-	{
-		std::cerr << REDB << "Error: result->ai_next does not point to zero. more lists returned" << RESET << std::endl;
-		// throw exception
-		exit(1); // at the moment just exit
-	}
+// 	// // result is a list and can be looped to show additional connections. we just want one
+// 	if (_result->ai_next != NULL)
+// 	{
+// 		std::cerr << REDB << "Error: result->ai_next does not point to zero. more lists returned" << RESET << std::endl;
+// 		// throw exception
+// 		exit(1); // at the moment just exit
+// 	}
 
 }
 
 void	Server::_setup_socket(void)
 {
 
-	_server_socket = socket(_result->ai_family, _result->ai_socktype, _result->ai_protocol);
+	_server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_server_socket == -1)
 	{
 		std::cerr << REDB << "Error: to create Server Socket" << RESET << std::endl;
@@ -151,7 +153,7 @@ void	Server::_setup_socket(void)
 	// if (OS == MAC)
 	// {
 		int flags = fcntl(_server_socket, F_GETFL, 0, 0); // remove - illegal function
-		std::cout << "flags standard on _server_socket " << flags << std::endl; // remove - illegal function
+		// std::cout << "flags standard on _server_socket " << flags << std::endl; // remove - illegal function
 		// flags = 2;
 		int ret = 0;
 		//  ret =  fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK);;
@@ -165,7 +167,14 @@ void	Server::_setup_socket(void)
 		}
 	// }	
 
-	if (bind(_server_socket, _result->ai_addr, _result->ai_addrlen) == -1)
+	struct sockaddr_in serverAddr;
+	memset(&serverAddr, 0 , sizeof(serverAddr));
+
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // Bind to all available interfaces
+	serverAddr.sin_port = htons(str2int(_server_port)); // PORT is the port number
+	if (bind(_server_socket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
+	// if (bind(_server_socket, _result->ai_addr, _result->ai_addrlen) == -1)
 	{
 		std::cout << REDB <<  "Error: to Bind socket and server_sockaddr. Reason: " << strerror(errno) << RESET << std::endl;
 		close(_server_socket);

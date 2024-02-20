@@ -138,13 +138,18 @@ general-header = Cache-Control            ; Section 14.9
 
 Response::Response(void)
 {
+
+
 	_html_content_size = 0;
 	_html_content.clear();
 	_response.clear();
 	std::cout << "Response default constructor" << std::endl;
 	// map default error pages number and path
+
 	map_default_error_pages(_error_page_map);
+
 	map_reponse_status(_response_status_map);
+
 }
 
 /*
@@ -298,8 +303,11 @@ void	Response::_parse_response(Request const &req)
 	// // read html file content
 		// _response.clear();
 
+
+
 	if (_read_file_data(req) == -1)
 		return ;
+
 	// create a response
 	_create_status_line();
 

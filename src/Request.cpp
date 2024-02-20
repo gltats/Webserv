@@ -14,7 +14,7 @@
 
 Request::Request(void):  _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control("") //, _content_lenght(0)
 {
-
+	std::cout << "Request default constructor " << std::endl;
 }
 
 Request			&Request::operator=(Request const &rhs)
@@ -30,7 +30,7 @@ Request::Request(Request const &src)
 
 Request::~Request(void)
 {
-
+	std::cout << "Request deconstructor" << std::endl;
 }
 
 /*
@@ -244,6 +244,8 @@ void	Request::read_request(char const *request_buffer)
 	_parse_request_line(str);
 	_parser_general_header(str);
 	_parser_request_header(str);
+
+
 
 }
 std::string		Request::get_uri(void) const

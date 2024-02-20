@@ -30,7 +30,7 @@ CLEANING_TOOL := \xF0\x9F\xA7\xBD
 #--------------------------------
 
 # Binary name
-NAME = Webserv
+NAME = webserv
 
 # Compiler and flags
 # CC = clang++ // incorrect compiler

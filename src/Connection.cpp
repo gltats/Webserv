@@ -17,18 +17,20 @@
 
 // }
 
-Connection::Connection(int connection_socket, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2)
+Connection::Connection(int connection_socket, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _is_read_complete(0)
 {
 	_env = env;
 	_buffer_rcv = new char[_buffer_rcv_size];
 	memset(_buffer_rcv, '\0', _buffer_rcv_size); // is memset allowed?
 
-	std::cout << "Client connected" << std::endl;
+	std::cout << "Connection created" << std::endl;
 
 }
 
 Connection::~Connection(void)
 {
+
+	std::cout << "Connection destroy" << std::endl;
 
 	if (_buffer_rcv != 0)
 	{
@@ -52,21 +54,23 @@ Connection::~Connection(void)
 
 void	Connection::receive_msg(void)
 {
-	memset(_buffer_rcv, '\0', _buffer_rcv_size); // is memset allowed?
+		memset(_buffer_rcv, '\0', _buffer_rcv_size); // is memset allowed?
+
 	_size_data_recv = recv(_connection_socket, _buffer_rcv, _buffer_rcv_size, _flags_recv);
 	if (_size_data_recv == -1)
 	{
-		std::cout << "Error: to recv. Reason: " << strerror(errno) << std::endl;
-		std::cout << "Closing sockets and exiting" << std::endl;
+		std::cout << "Error: to recv. Reason: " << strerror(errno) << " # fd = " << _connection_socket << std::endl;
+		std::cout << "Closing connection sockets " << _connection_socket << " and returning" << std::endl;
 		close(_connection_socket);
+		
 		// throw exception
-		exit(1); // at the moment just exiting
+		return; // at the moment just return
 	}
-
-	std::cout << _buffer_rcv << std::endl; // remove
+	std::cout << "received " << _size_data_recv << " bytes" << std::endl;
 	// create Request Object
 	_request.read_request(_buffer_rcv);
 	_request.print_request();
+	_is_read_complete = 1;
 }
 
 std::string	Connection::get_response(void)
@@ -78,8 +82,8 @@ void		Connection::send_response(void)
 {
 
 	size_t	send_size = 0;
-	_response.create_response(_request, _env);
 
+	_response.create_response(_request, _env);
 
 	if (_response.get_response().length() > 0)
 	{
@@ -93,8 +97,9 @@ void		Connection::send_response(void)
 		if (send_size != buffer_send_size)
 		{
 			std::cout << "Error: to send. Reason: " << strerror(errno) << std::endl;
-			std::cout << "Closing sockets and exiting" << std::endl;
-			// close(_connection_socket);
+			std::cout << "Closing connection sockets " << _connection_socket << " and returning" << std::endl;
+
+			close(_connection_socket);
 			return ;
 		}
 		std::cout << "\tnumber of characters sent " << send_size << std::endl;
@@ -107,6 +112,25 @@ std::string		Connection::get_connection(void) const
 {
 	return(_request.get_connection());
 }
+
+bool			Connection::is_response_empty(void) const
+{
+	if (_response.get_response().length() == 0)
+		return(true);
+	else 
+		return(false);
+}
+
+bool			Connection::get_is_read_complete(void) const
+{
+	return(_is_read_complete);
+}
+
+void			Connection::set_is_read_complete(bool status)
+{
+	_is_read_complete = status;
+}
+
 
 
 // std::string	Connection::get_client_ip(void) const
