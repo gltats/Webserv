@@ -20,7 +20,7 @@ void map_config_file(std::map<std::string, std::string>& config_map, ConfigParse
 	config_map["autoindex"] = "on"; // or off
 	config_map["index"] = "html/index.html"; // at the moment index is inside html folder
 	config_map["cgi-dir"] = "cgi-bin"; // folder to search the cgi files
-	config_map["limit_conn"] = "512";
+	config_map["limit_conn"] = int2str(SOMAXCONN); // at the max of SOMAXCONN (usually 128 but can be modified)
 
 	if (VERBOSE == 1)
 	{
