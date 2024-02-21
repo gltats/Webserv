@@ -89,6 +89,33 @@ void	close_connection_linux_os(int epoll_fd, int fd_to_remove, struct epoll_even
 	fd2client_map_ref.erase(fd_to_remove); 
 }
 
+void	print_epoll_events(uint32_t event, int fd)
+{
+	if (event & EPOLLERR)
+		std::cout << "EPOLLERR: " << fd << std::endl;
+
+	else if (event & EPOLLIN)
+		std::cout << "EPOLLIN: " << fd << std::endl;
+
+	else if (event & EPOLLOUT)
+		std::cout << "EPOLLOUT: " << fd << std::endl;
+
+	else if (event & EPOLLRDHUP)
+		std::cout << "EPOLLRDHUP: " << fd << std::endl;
+
+	else if (event & EPOLLHUP)
+		std::cout << "EPOLLHUP: " << fd << std::endl;
+
+	std::cout << std::endl;
+}
+
+/*
+	EPOLLIN: Event file descriptor is available to read
+	EPOLLOUT: Event file descriptor is available to write
+	EPOLLERR: Event file descriptor error
+	EPOLLHUP: Event file descriptor hang up
+	EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
+*/
 void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, char *env[])
 {
 	// NON BLOCKING - FOR LINUX OS Only
@@ -99,9 +126,6 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 	int	MAX_EVENTS = 10; // Q:how to define this?
 	int	nb_of_events = 0;
 	int	client_fd = 0;
-
-	// ignore sigpipe
-	signal(SIGPIPE, SIG_IGN);
 
 	// create address sizes structures
 	socklen_t				client_addr_size;
@@ -116,25 +140,13 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 	int epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0
 
 	// create an events structure for the events to be monitored
-	struct epoll_event ev_server, ev_clients_r, ev_clients_w, ep_event[MAX_EVENTS];
-	memset(&ev_server, '\0', sizeof(ev_server));
+	struct epoll_event ev_server, ep_event[MAX_EVENTS];
+	clear_memory((void *)&ev_server, sizeof(ev_server));
 
 	// add file descriptor to be monitored
-	
-		// EPOLLIN: Event file descriptor is available to read
-		// EPOLLOUT: Event file descriptor is available to write
-		// EPOLLERR: Event file descriptor error
-		// EPOLLHUP: Event file descriptor hang up
-		// EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
-	
-	// ev.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLHUP;
-	// ev.events = EPOLLIN  | EPOLLOUT | EPOLLET;
-	
-	// int event_flags = EPOLLIN | EPOLLOUT;  //| EPOLLET;
-	// int client_event_flags = EPOLLIN  | EPOLLOUT; // | EPOLLET;
-	
-	ev_server.events =  EPOLLIN | EPOLLOUT;
 	ev_server.data.fd = srv.get_server_socket();
+	// set events to be monitored in the file descriptor
+	ev_server.events =  EPOLLIN | EPOLLOUT;
 
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, srv.get_server_socket(), &ev_server) == -1)
 	{
@@ -145,54 +157,25 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 		exit(1); // at the moment
 	}
 
-	// ev_server.events = client_event_flags;
-
-	// ev_clients_r = EPOLL_IN;
-	// ev_clients_w = EPOLL_OUT;
-
-
-	// memset(&ev_clients, '\0', sizeof(ev_server));
-	// ev_clients.events = EPOLLIN  | EPOLLOUT | EPOLLET;
-
 	// map to hold Connection Object pointer per file descriptor
 	std::map<int, Connection *> fd2client_map;
 
-	if (DEBUG == 1)
-		std::cout << std::endl << std::endl;
-
-	std::cout << "server socket is " << srv.get_server_socket() << std::endl;
+	std::cout << "Server socket fd " << srv.get_server_socket() << std::endl;
+	
 	// main loop 
 	while (1)
 	{
 		//epoll_wait with timeout equal -1 is infinite
 		nb_of_events = epoll_wait(epoll_fd, ep_event, MAX_EVENTS, -1);
 
-		std::cout << "nb of events " << nb_of_events << std::endl; // remove
-
 		for (int i = 0; i < nb_of_events; i++)
 		{
 			std::cout << std::endl;
 
 			/* print event triggered and file descriptor*/
-			if (ep_event[i].events & EPOLLERR)
-				std::cout << "EPOLLERR: " << ep_event[i].data.fd << std::endl;
-
-			else if (ep_event[i].events & EPOLLIN)
-				std::cout << "EPOLLIN: " << ep_event[i].data.fd << std::endl;
-
-			else if (ep_event[i].events & EPOLLOUT)
-				std::cout << "EPOLLOUT: " << ep_event[i].data.fd << std::endl;
-
-			else if (ep_event[i].events & EPOLLRDHUP)
-				std::cout << "EPOLLRDHUP: " << ep_event[i].data.fd << std::endl;
-
-			else if (ep_event[i].events & EPOLLHUP)
-				std::cout << "EPOLLHUP: " << ep_event[i].data.fd << std::endl;
-
-			std::cout << std::endl;
-
-			/*  end */
-			std::cout << "event on file descriptor " << ep_event[i].data.fd << std::endl;
+			if (DEBUG == 2)
+				print_epoll_events(ep_event[i].events, ep_event[i].data.fd);
+		
 			if (ep_event[i].events & EPOLLERR)
 			{
            		std::cerr << REDB << "Event Error fd "<< ep_event[i].data.fd << RESET << std::endl;
@@ -205,8 +188,6 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 			{	
 				if (ep_event[i].data.fd == srv.get_server_socket()) // Request for a new connection
 				{
-					if (DEBUG == 1)
-						std::cerr << YELLOW << "Event read - New Client on server socket "<< ep_event[i].data.fd << RESET << std::endl;
 					client_fd = accept(srv.get_server_socket(), (struct sockaddr*)&client_addr, &client_addr_size);
 					if (client_fd == -1)
 					{
@@ -229,12 +210,10 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 					int flags = fcntl(client_fd, F_GETFL, 0, 0); // remove - illegal function
 					int ret =  fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);;
 
-					ev_server.events = client_event_flags;
+					// add file descriptor to be monitored
 					ev_server.data.fd = client_fd;
 
-
 					// add new Connection file descriptor to the list of monitored file descriptors
-					// if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_server) == -1)
 					if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_server) == -1)
 
 					{
@@ -243,32 +222,18 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 						break; // at the moment
 					}
 					
-
 					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
 					fd2client_map[client_fd] = new Connection(client_fd, env); 
 					std::cout << "New client connected in fd " << client_fd << std::endl;
-
-					//testing
-					// fd2client_map[client_fd]->receive_msg();
-
-					// fd2client_map[client_fd]->send_response(); // for testing
-
-					// freeaddrinfo((struct addrinfo *)&client_addr);
 				}
 				else // Request is from a already connected client
 				{
-					if (DEBUG == 1)
-						std::cerr << YELLOW << "Event read data - fd "<< ep_event[i].data.fd << RESET << std::endl;
 					fd2client_map[ep_event[i].data.fd]->receive_msg();
 				}
 			}
 			// send message from client if read ready
 			else if (ep_event[i].events & EPOLLOUT && ep_event[i].data.fd != srv.get_server_socket() && fd2client_map[ep_event[i].data.fd]->get_is_read_complete())
 			{
-				if (DEBUG == 1)
-					std::cout << YELLOW << "Event write in  socket (fd = " << ep_event[i].data.fd << ")" << RESET<<  std::endl;
-
-
 				if (fd2client_map[ep_event[i].data.fd])
 				{
 					fd2client_map[ep_event[i].data.fd]->send_response();
@@ -284,52 +249,33 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 					std::cout << "Error: fd " <<  ep_event[i].data.fd << " does not exist in fd2client_map" << std::endl;
 					exit (1); //test
 					// continue; // correct
-				}
-
-				// if (fd2client_map.find(ep_event[i].events) == fd2client_map.end())
-        		// {
-				// 	std::cout << "Error: fd " <<  ep_event[i].data.fd << " does not exist in fd2client_map" << std::endl;
-				// 	exit (1); //test
-				// 	// continue; // correct
-				// }
-
-				// exit (1); //test
-
-				// if (fd2client_map[ep_event[i].data.fd]->is_response_empty() == false)
-
-
-					
+				}					
 			}
 			// send message from client if read ready
 			else if (ep_event[i].events & EPOLLRDHUP)
 			{
-				if (DEBUG == 1)
-					std::cout << YELLOW << " EPOLLRDHUP - Event Stream socket peer(fd = " << ep_event[i].data.fd << ") closed connection" << RESET << std::endl;
 				close_connection_linux_os(epoll_fd, ep_event[i].data.fd, ev_server, fd2client_map, srv);
 			}
 			
 			else if (ep_event[i].events & EPOLLHUP)
 			{
-				if (DEBUG == 1)
-					std::cout << YELLOW << "EPOLLHUP  - Event file descriptor(fd = " << ep_event[i].data.fd << ") hang up" << RESET << std::endl;
 				close_connection_linux_os(epoll_fd, ep_event[i].data.fd, ev_server, fd2client_map, srv);
 			}
 		}
-		if (DEBUG == 1)
-			std::cout << std::endl << std::endl;
 
 	}
 
-	// // create an map iterator
+	// create an map iterator
 	// std::map<int, Connection *>::iterator it;
+	// int	fd;
 
 	// // clean up any still open file descriptors or Connections
 	// for (int it = fd2client_map.begin(); it != fd2client_map.end(); it++)
 	// {
-	// 	
+		
 	// 		fd 			= fd2client_map->first
 	// 		*Connection = fd2client_map->second
-	// 	
+		
 		
 	// 	// close file descriptor saved in the key
 	// 	close(fd2client_map->first);
@@ -337,7 +283,6 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 	// 	delete fd2client_map->second;
 	// 	// remove entry from map
 	// 	fd2client_map.erase(fd2client_map->first);
-
 	// }
 	// close epoll_fd
 	close(epoll_fd);

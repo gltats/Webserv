@@ -168,7 +168,7 @@ void	Server::_setup_socket(void)
 	// }	
 
 	struct sockaddr_in serverAddr;
-	memset(&serverAddr, 0 , sizeof(serverAddr));
+	clear_memory(&serverAddr, sizeof(serverAddr));
 
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // Bind to all available interfaces

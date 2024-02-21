@@ -21,7 +21,7 @@ Connection::Connection(int connection_socket, char *env[]): _connection_socket(c
 {
 	_env = env;
 	_buffer_rcv = new char[_buffer_rcv_size];
-	memset(_buffer_rcv, '\0', _buffer_rcv_size); // is memset allowed?
+	clear_memory(_buffer_rcv, _buffer_rcv_size);
 
 	std::cout << "Connection created" << std::endl;
 
@@ -54,7 +54,7 @@ Connection::~Connection(void)
 
 void	Connection::receive_msg(void)
 {
-		memset(_buffer_rcv, '\0', _buffer_rcv_size); // is memset allowed?
+	clear_memory(_buffer_rcv, _buffer_rcv_size);
 
 	_size_data_recv = recv(_connection_socket, _buffer_rcv, _buffer_rcv_size, _flags_recv);
 	if (_size_data_recv == -1)

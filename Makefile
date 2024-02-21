@@ -41,7 +41,7 @@ CFLAGS = -Iincludes -std=c++98  # in mac for development
 
 # Folders & files
 # FILES = main ConfigParser # Tatiana's original
-FILES = main_server map signal_handler lib_convertion ConfigParser Server Request Response Connection
+FILES = main_server map signal_handler library ConfigParser Server Request Response Connection
 HEADER_FILES = webserver
 
 # Source files

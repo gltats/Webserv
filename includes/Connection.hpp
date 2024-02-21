@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include <stdlib.h> // for exit
 #include <cerrno> // for errno : only pre-development
-#include <string.h> // for memset: check if it is allowed
 // #include <netinet/in.h> // for sockaddr_un support
 // #include <sys/socket.h> // for sockaddr_un support
 #include <sys/un.h> // for sockaddr_un support

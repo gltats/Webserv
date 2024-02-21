@@ -15,7 +15,11 @@ void	ft_setup_sighandler(void)
 {
 	struct sigaction	sa;
 
-	memset(&sa, 0, sizeof(sa));
+	clear_memory(&sa, sizeof(sa));
+	
+	// ignore sigpipe
+	signal(SIGPIPE, SIG_IGN);
+
 	sigemptyset(&sa.sa_mask);
 	sigaddset(&sa.sa_mask, SIGINT);
 	sa.sa_flags = 0;

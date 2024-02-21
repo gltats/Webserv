@@ -23,7 +23,7 @@
 #include <errno.h> // for tests with perror
 #include <map>
 #include "color_code.hpp"
-#include "lib_convertion.hpp"
+#include "library.hpp"
 
 #ifndef OS_ENUM
 #define OS_ENUM

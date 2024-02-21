@@ -272,7 +272,7 @@ void	Response::_parse_response(Request const &req)
 			int MSGSIZE = 8192*2;
 			ssize_t nb_characters;
 			char inbuf[MSGSIZE];
-			memset(inbuf, '\0',MSGSIZE ); // is this function allowed?
+			clear_memory(inbuf, MSGSIZE);
 			nb_characters = read(STDIN_FILENO, &inbuf, MSGSIZE );
 			if (nb_characters == -1)
 				std::cout << "Received nothing from pipe" << std::endl;
