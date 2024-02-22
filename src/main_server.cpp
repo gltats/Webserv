@@ -266,24 +266,24 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 	}
 
 	// create an map iterator
-	// std::map<int, Connection *>::iterator it;
-	// int	fd;
+	std::map<int, Connection *>::iterator it;
 
-	// // clean up any still open file descriptors or Connections
-	// for (int it = fd2client_map.begin(); it != fd2client_map.end(); it++)
-	// {
-		
-	// 		fd 			= fd2client_map->first
-	// 		*Connection = fd2client_map->second
-		
-		
-	// 	// close file descriptor saved in the key
-	// 	close(fd2client_map->first);
-	// 	// free allocated Connection
-	// 	delete fd2client_map->second;
-	// 	// remove entry from map
-	// 	fd2client_map.erase(fd2client_map->first);
-	// }
+	// clean up any still open file descriptors or Connections
+	for (it = fd2client_map.begin(); it != fd2client_map.end(); it++)
+	{
+		int 		fd 	 = it->first;
+		Connection *conn = it->second;
+
+		// // close file descriptor saved in the key
+		close(fd);
+		// // free allocated Connection
+		delete conn;
+		// remove entry from map
+		fd2client_map.erase(fd);
+		fd = -1;
+	}
+	fd2client_map.clear();
+
 	// close epoll_fd
 	close(epoll_fd);
 	epoll_fd = -1;
