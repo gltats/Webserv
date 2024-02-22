@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main_server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/09 22:16:17 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/22 18:35:42 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,12 @@ void	launch_webserver_linux_os(std::map<std::string, std::string> &config_map, c
 	client_addr_size = sizeof(client_addr);
 
 	// create a Server instance
-	Server srv(config_map); // constructor setup socket and put it in listening mode
+	Server__OS srv(config_map); // constructor setup socket and put it in listening mode
+
+	srv.setup_socket();
+	std::cout << "Socket Setup done" << std::endl;
+	srv.listen_socket();
+	std::cout << "Socket in listenning mode" << std::endl;
 
 	// create an epoll instance in a file descriptor
 	int epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0

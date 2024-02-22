@@ -33,7 +33,6 @@ CLEANING_TOOL := \xF0\x9F\xA7\xBD
 NAME = webserv
 
 # Compiler and flags
-# CC = clang++ // incorrect compiler
 CC = c++
 #CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
 CFLAGS = -Iincludes -std=c++98  # in mac for development
@@ -41,7 +40,22 @@ CFLAGS = -Iincludes -std=c++98  # in mac for development
 
 # Folders & files
 # FILES = main ConfigParser # Tatiana's original
-FILES = main_server map signal_handler library ConfigParser Server Request Response Connection
+
+ifeq ($(shell uname), Darwin) # Mac OS
+	FILES = main_server map signal_handler library ConfigParser Server Request Response Connection
+	OS_NAME = "MAC OS Darwin"
+	CFLAGS += -D__mac__
+
+else ifeq ($(shell uname), Linux) # Linux
+	FILES = main_server map signal_handler library ConfigParser Server Server_OS__linux Request Response Connection
+	OS_NAME = "Linux OS"
+# add a extra linux identifier for docker if missing
+	CFLAGS += -D__linux__
+
+else
+    $(error Error Unsupported operating system. Compilation aborted)
+endif
+
 HEADER_FILES = webserver
 
 # Source files
@@ -56,6 +70,7 @@ all: $(NAME)
 $(NAME): $(OBJ)
 	@echo "$(CYAN)$$T_HEADER$(RESET)"
 	@echo "\n"
+	@echo "$(CYAN)Compilation for $(OS_NAME)$(RESET)"
 	@echo "$(EMOJI_CLOCK)$(ORANGE)Compiling...$(RESET)"
 	@$(CC) $(CFLAGS) $(SRC) -o $(NAME)
 	@echo "$(EMOJI_HAPPY)$(GREEN)DONE ✓✓$(RESET)"

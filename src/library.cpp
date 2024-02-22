@@ -54,12 +54,12 @@ void		clear_memory(void *dest, size_t size)
 	}
 }
 
-void		print_error(std::string &error_msg)
+void		print_error(std::string error_msg)
 {
 	std::cerr << REDB << "Error:\n" << error_msg << RESET << std::endl;
 }
 
-void	    print_error_error_exit(std::string &error_msg, int exit_code)
+void	    print_error_error_exit(std::string error_msg, int exit_code)
 {
 	std::cerr << REDB << "Error:\n" << error_msg << RESET << std::endl;
 	exit(exit_code);

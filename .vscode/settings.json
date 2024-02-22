@@ -58,5 +58,7 @@
 		"variant": "cpp",
 		"vector": "cpp",
 		"algorithm": "cpp"
-	}
+	},
+	"42header.email": "mgranero@student.42wolfsburg.de",
+	"42header.username": "mgranero"
 }

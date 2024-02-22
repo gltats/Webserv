@@ -10,6 +10,19 @@
 // #include "Response.hpp"
 #include "ConfigParser.hpp"
 #include "Server.hpp"
+
+
+# ifdef __linux__
+    #include "Server_OS__linux.hpp"
+
+// # elif defined __mac__
+//# include "Server__mac.hpp"
+
+# else
+    # include "Server_OS__mac.hpp" 
+# endif
+
+
 #include "Connection.hpp"
 #include "Webserv_Exceptions.hpp"
 #include "library.hpp"
