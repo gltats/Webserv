@@ -1,0 +1,11 @@
+# install the postman desktop or the postman agent to be able to send requests to the localhost
+# example 1:
+    select method GET
+    127.0.0.1:4432/html/index.html
+
+# example 2:
+    select method GET
+    127.0.0.1:4432/html/basic.html  
+
+if you use "hostname" instead of "127.0.0.1" it will send an IPv6 request instead of a IPv4
+which will not work on the webserver

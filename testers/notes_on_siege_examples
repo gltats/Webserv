@@ -1,0 +1,60 @@
+# siege initial configuration : call this to get the path where the configuration is
+siege.config
+# sudo nano #file_path
+
+# configure if to use GET instead of HEAD
+# chunked true or false depending on the test
+# protocol HTTP/1.1
+# cache false
+# connection close
+# concurrent 25
+# user agent Chromes
+
+# example for siege use basic
+ #-c2 2 clients concurrency 
+ #-d2 2 secs delay between two requests
+ #-v for verbose : show status
+siege -c2 -d2 -v http://localhost:4432/html/basic.html
+
+# it runs until you press control + D or it finds an error
+
+# to set a timer of execution
+siege -c2 -d2 -t30s -v http://localhost:4432/html/basic.html
+#-t30s sets a 30 seconds execution time
+
+# to set a number of iterations before finishing
+siege -c2 -d2 -r10 -v http://localhost:4432/html/basic.html
+# -r10 runs 10 iterations before exiting
+
+# without-b benchmark flag 
+In contrast, without the -b flag, Siege will run in "normal" mode, where it will simulate user behavior by pausing between requests according to a specified time interval or concurrency level.
+
+#with -b benchmark flag
+#it will generate a constant level of traffic to your target server without pausing #between requests. This mode is useful for stress testing your server by simulating a high #level of concurrent user activity.
+
+siege -c2 -d2 -b -v http://localhost:4432/html/basic.html
+#-b benchmark mode
+
+# version with concurrent and times as default
+siege -b -v http://localhost:4432/html/basic.html
+
+# output will look like this
+
+HTTP/1.1 200     0.05 secs:     101 bytes ==> GET  /html/basic.html
+...
+...
+HTTP/1.1 200     0.06 secs:     101 bytes ==> GET  /html/basic.html
+
+Lifting the server siege...
+Transactions:		       13285 hits
+Availability:		      100.00 %
+Elapsed time:		       30.98 secs
+Data transferred:	        1.28 MB
+Response time:		        0.06 secs
+Transaction rate:	      428.83 trans/sec
+Throughput:		        0.04 MB/sec
+Concurrency:		       24.94
+Successful transactions:       13285
+Failed transactions:	           0
+Longest transaction:	        0.21
+Shortest transaction:	        0.00
