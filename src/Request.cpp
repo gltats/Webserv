@@ -6,13 +6,13 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 10:37:32 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/23 14:41:01 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
-Request::Request(void):  _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control("") //, _content_lenght(0)
+Request::Request(void):  _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body(""), _is_chunked(0) //, _content_lenght(0)
 {
 	std::cout << "Request default constructor " << std::endl;
 }
@@ -208,6 +208,9 @@ int Request::_parser_general_header(std::string buffer)
 	// Connection
 	_connection = _get_key_value(buffer, "Connection: ");
 
+	// Transfer Encoding
+	_transfer_enconding = _get_key_value(buffer, "Transfer-Encoding: ");
+
 	return (0);
 }
 
@@ -240,11 +243,34 @@ int Request::get_request_status(void) const
 
 void	Request::read_request(char const *request_buffer)
 {
+	// convert char buffer to string
 	std::string str(request_buffer); // string constructor that takes a null terminated string
+	
+	// clean up
+	_request_status = 0;
+	_method.clear();
+	_uri.clear();
+	_protocol_version.clear();
+	_user_agent.clear();
+	_accept.clear();
+	_host.clear();
+	_accept_encoding.clear();
+	_connection.clear();
+	_cache_control.clear();
+	_transfer_enconding.clear();
+	_body.clear();
 
+	// get index of end of the header = empty line between headers and body
+	_index_end_of_headers = str.find("\r\n\r\n");
+
+	std::cout << CYAN << "_index_end_of_headers is " << _index_end_of_headers << " - char is " << str[_index_end_of_headers] << RESET <<  std::endl; //remove
+	std::cout << CYAN << "_index_end_of_headers -1 is - char is " << str[_index_end_of_headers - 1 ] << RESET <<  std::endl; //remove
+	
+	// parser
 	_parse_request_line(str);
 	_parser_general_header(str);
 	_parser_request_header(str);
+	// _parse_body(str);
 
 }
 std::string		Request::get_uri(void) const
@@ -286,3 +312,34 @@ std::string		Request::get_cache_control(void) const
 {
 	return (_cache_control);
 }
+
+std::string		Request::get_body(void) const
+{
+	return (_body);
+}
+
+
+std::string		Request::get_transfer_enconding(void) const
+{
+	return (_transfer_enconding);
+}
+
+// if (_transfer_enconding.compare("chunked"))
+// {
+// 	_is_chunked = true;
+
+// }
+/*
+POST /some/path HTTP/1.1
+Host: example.com
+Content-Type: application/json
+Transfer-Encoding: chunked
+
+7\r\n
+abcdefg\r\n
+6\r\n
+123456\r\n
+0\r\n
+\r\n
+*/
+

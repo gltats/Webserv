@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 11:24:41 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/23 20:16:16 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,14 +70,18 @@ void	Connection::receive_request(void)
 		// throw exception
 		return; // at the moment just return
 	}
-	if (VERBOSE == 1)
-		std::cout << "Received " << _size_data_recv << " bytes from fd " << _connection_socket << std::endl;
-	
-	// create Request Object
-	_request.read_request(_buffer_rcv);
-	if (VERBOSE == 1)
-		_request.print_request();
-	_is_read_complete = 1;
+	// if (VERBOSE == 1)
+	// 	std::cout << "Received " << _size_data_recv << " bytes from fd " << _connection_socket << std::endl;
+	if (_size_data_recv > 0)
+	{
+		// create Request Object
+		_request.read_request(_buffer_rcv);
+		if (VERBOSE == 1)
+			_request.print_request();
+		_is_read_complete = 1;
+	}
+	// else
+	// 	print_error_fd("No request received from connection fd ", _connection_socket);
 }
 
 std::string	Connection::get_response(void)
@@ -110,6 +114,9 @@ void		Connection::send_response(void)
 		}
 		if (VERBOSE == 1)
 			std::cout << "\tNumber of characters actually sent " << send_size << std::endl;
+		// _is_write_complete = 1;
+		// _is_read_complete = 0;
+		_is_read_complete = 1;
 	}
 	else
 		close(_connection_socket);

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 11:18:32 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/23 13:31:42 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Connection
 		Request 				_request;
 		Response				_response;
 		bool					_is_read_complete;
+		bool					_is_write_complete;
 		std::string				_client_ip;
 		std::string				_client_port;
 

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 10:38:29 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/23 20:57:53 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,14 +311,17 @@ void	Response::_parse_response(Request const &req)
 	// create a response
 	_create_status_line();
 
-	// append response
+	// // append response
 	_response.append(_status_line);
 
 	// content length
 	std::stringstream	ss_len;
-	ss_len << "Content-Length: " << _html_content_size  << "\r\n";
+
 	ss_len << "Server: Webserv" << "\r\n";
 
+	ss_len << "Content-Length: " << _html_content_size +1  << "\r\n";
+	ss_len << "Content-Type: " << "text/html"  << "\r\n";
+	
 	_response.append(ss_len.str()); // convert string stream to a string
 
 	_response.append("\r\n"); // empty line

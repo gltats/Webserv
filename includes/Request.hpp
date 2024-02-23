@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:21:14 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/04 21:34:58 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/23 14:30:04 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,12 +89,19 @@ class Request
 		std::string		_accept_encoding;
 		std::string		_connection;
 		std::string		_cache_control;
+		std::string		_transfer_enconding;
+		std::string		_body;
+
+		int				_index_end_of_headers;
+
+		bool			_is_chunked;
 
 		int				_parse_request_line(std::string buffer);
 		int				_parser_request_header(std::string buffer);
 		int				_parser_general_header(std::string buffer);
+		void			_parse_body(std::string buffer);
 		std::string		_get_key_value(std::string buffer, std::string needle);
-
+		
 		Request			&operator=(Request const &rhs);
 		Request(Request const &src);
 
@@ -113,6 +120,8 @@ class Request
 		std::string		get_accept_encoding(void) const;
 		std::string		get_connection(void) const;
 		std::string		get_cache_control(void) const;
+		std::string		get_transfer_enconding(void) const;
+		std::string		get_body(void) const;
 
 		void			read_request(char const *request_buffer);
 		void			print_request(void) const;
