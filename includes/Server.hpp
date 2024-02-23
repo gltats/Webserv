@@ -18,27 +18,16 @@
 
 // c basics
 #include <unistd.h>
-#include <stdio.h> // for tests with perror
-#include <string.h>// for tests with perror
-#include <errno.h> // for tests with perror
 #include <map>
+
+// project basics
 #include "color_code.hpp"
 #include "library.hpp"
+#include "Connection.hpp"
 
-// #ifndef OS_ENUM
-// #define OS_ENUM
-// 	enum
-// 	{
-// 		MAC,
-// 		LINUX
-// 	};
-// #endif
-
-
-// # if defined (MAC)
-// 	#define OS MAC
-// 	#include	<sys/event.h> // for kqueue
-// #endif
+#ifndef VERBOSE
+#define VERBOSE 0
+#endif
 
 class Server
 {
@@ -53,9 +42,13 @@ class Server
 		bool								_allow_GET;
 		bool								_allow_POST;
 		bool								_allow_DELETE;
-
-
+		
 		struct addrinfo						*_result;
+		char								**_env;
+
+		// map to hold Connection Object pointer per file descriptor
+		std::map<int, Connection *>			_fd2client_map;
+		int 								_epoll_fd;
 
 		Server(void);
 		Server(Server const & src);
@@ -65,7 +58,7 @@ class Server
 
 	public:
 		// does the server needs the map to the error pages or only the response object?
-		Server(std::map<std::string, std::string> &config_map);
+		Server(std::map<std::string, std::string> &config_map, char *env[]);
 
 		virtual 							~Server(void);
 
@@ -82,7 +75,8 @@ class Server
 		bool								get_allow_DELETE(void) const;
 
 		void								close_server_socket(void);
-
+    	virtual void						launch(void) = 0;
+		void								launch_webserver(void);
 
 };
 

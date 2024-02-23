@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/07 21:55:02 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/23 11:24:41 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,20 +17,24 @@
 
 // }
 
-Connection::Connection(int connection_socket, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _is_read_complete(0)
+Connection::Connection(int connection_socket, struct sockaddr_in &client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _is_read_complete(0)
 {
 	_env = env;
 	_buffer_rcv = new char[_buffer_rcv_size];
 	clear_memory(_buffer_rcv, _buffer_rcv_size);
 
-	std::cout << "Connection created" << std::endl;
+	_obtain_client_ip(client_addr);
+	_obtain_client_port(client_addr);
+
+	if (VERBOSE == 1)
+		std::cout << "Connection constructor" << std::endl;
 
 }
 
 Connection::~Connection(void)
 {
-
-	std::cout << "Connection destroy" << std::endl;
+	if (VERBOSE == 1)
+		std::cout << "Connection deconstructor fd "<< _connection_socket << std::endl;
 
 	if (_buffer_rcv != 0)
 	{
@@ -46,13 +50,13 @@ Connection::~Connection(void)
 	{
 		if (VERBOSE == 1)
 		{
-			std::cout << "closing _connection_socket in Connection" << std::endl;
+			std::cout << "Closing _connection_socket fd in Connection" << std::endl;
 			delete[] _buffer_rcv;
 		}
 	}
 }
 
-void	Connection::receive_msg(void)
+void	Connection::receive_request(void)
 {
 	clear_memory(_buffer_rcv, _buffer_rcv_size);
 
@@ -66,10 +70,13 @@ void	Connection::receive_msg(void)
 		// throw exception
 		return; // at the moment just return
 	}
-	std::cout << "received " << _size_data_recv << " bytes" << std::endl;
+	if (VERBOSE == 1)
+		std::cout << "Received " << _size_data_recv << " bytes from fd " << _connection_socket << std::endl;
+	
 	// create Request Object
 	_request.read_request(_buffer_rcv);
-	_request.print_request();
+	if (VERBOSE == 1)
+		_request.print_request();
 	_is_read_complete = 1;
 }
 
@@ -88,9 +95,8 @@ void		Connection::send_response(void)
 	if (_response.get_response().length() > 0)
 	{
 		size_t buffer_send_size = _response.get_response().length() + 1;
-
-		std::cout << REDB << "trying to send to socket " << _connection_socket << ", message size is "<< buffer_send_size << RESET << std::endl;
-		/* only for debugging - remove for evaluation */
+		if (VERBOSE == 1)
+			std::cout <<"\tTrying to send to socket " << _connection_socket << ", message size is "<< buffer_send_size << RESET << std::endl;
 		
 		send_size = send(_connection_socket, _response.get_response().c_str() , buffer_send_size, 0); // this works
 
@@ -102,7 +108,8 @@ void		Connection::send_response(void)
 			close(_connection_socket);
 			return ;
 		}
-		std::cout << "\tnumber of characters sent " << send_size << std::endl;
+		if (VERBOSE == 1)
+			std::cout << "\tNumber of characters actually sent " << send_size << std::endl;
 	}
 	else
 		close(_connection_socket);
@@ -131,31 +138,37 @@ void			Connection::set_is_read_complete(bool status)
 	_is_read_complete = status;
 }
 
+std::string				Connection::get_client_ip(void) const
+{
+	return (_client_ip);
+}
 
+std::string				Connection::get_client_port(void) const
+{
+	return (_client_port);
+}
 
-// std::string	Connection::get_client_ip(void) const
-// {
+void					Connection::_obtain_client_ip(struct sockaddr_in &client_addr)
+{
+	std::stringstream	ip_str;
 
-// 	// struct sockaddr_in 	*ptr4;
-// 	// struct sockaddr_in6	*ptr6;
-// 	// uint16_t 			port;
+	u_int32_t ip_addr = ntohl(client_addr.sin_addr.s_addr);
 
-// 	// // Client connected throw IPv4
-// 	// if(_client_addr.ssfamily == AF_INET)
-// 	// {
-// 	// 	ptr4 = (struct sockaddr_in *)&_client_addr;
-// 	// 	port = ntohs(ptr4->sin_port);
-// 	// }
-// 	// // Client connected throw IPv6
-// 	// else if(_client_addr.ssfamily == AF_INET6)
-// 	// {
-// 	// 	ptr6 = (struct sockaddr_in6 *)&_client_addr;
-// 	// 	port = ntohs(ptr6->sin_port);
-// 	// }
-// 	// else
-// 	// {
-// 	// 	std::cout << "Socket family not Supported. Please use only IPv4 or IPv6 clients" << std::endl;
-// 	// 	return ;
-// 	// }
+	ip_str << ((ip_addr >> 24) & 0xFF);
+	ip_str << ".";
+	ip_str << ((ip_addr >> 16) & 0xFF);
+	ip_str << ".";
+	ip_str << ((ip_addr >> 8) & 0xFF);
+	ip_str << ".";
+	ip_str << (ip_addr & 0xFF);
 
-// }
+	_client_ip =  ip_str.str();
+}
+
+void					Connection::_obtain_client_port(struct sockaddr_in &client_addr)
+{
+	u_int16_t port;
+
+	port = ntohs(client_addr.sin_port);
+	_client_port = port;
+}

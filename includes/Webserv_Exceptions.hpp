@@ -6,16 +6,26 @@
 class UserRequestTermination: public std::exception
 {
 	public:
-		virtual const char* what() const throw()
-		{
-			return ("Exception: User Request for Termination");
-		}
-
+		virtual const char* what() const throw();
 };
 
-// exception implementation -> must go to cpp file (here just for testing)
-// const char* UserRequestTermination::what() const throw()
-// {
-// 	return ("Exception: User Request for Termination");
-// }
+class ServerCriticalError: public std::exception
+{
+	public:
+		virtual const char* what() const throw();
+};
+
+class InvalidRequest: public std::exception
+{
+	public:
+		virtual const char* what() const throw();
+};
+
+class ResponseError: public std::exception
+{
+	public:
+		virtual const char* what() const throw();
+};
+
+
 #endif

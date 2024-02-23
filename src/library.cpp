@@ -65,6 +65,12 @@ void	    print_error_error_exit(std::string error_msg, int exit_code)
 	exit(exit_code);
 }
 
+void	    print_error_fd(std::string error_msg, int fd)
+{
+	std::cerr << REDB << "Error:\n" << error_msg << " " << fd << RESET << std::endl;
+}
+
+
 // this function must be tested
 // template<typename ExceptionType>
 // void	    print_error_throw_exception(std::string &error_msg, std::exception except_class)

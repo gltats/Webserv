@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/04 21:34:37 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/23 10:37:32 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,28 +131,6 @@ int	Request::_parse_request_line(std::string buffer)
 	return (0);
 }
 
-/*
- 	request-header =	  Accept                   ; Section 14.1
-						| Accept-Charset           ; Section 14.2
-						| Accept-Encoding          ; Section 14.3
-						| Accept-Language          ; Section 14.4
-						| Authorization            ; Section 14.8
-						| Expect                   ; Section 14.20
-						| From                     ; Section 14.22
-						| Host                     ; Section 14.23
-						| If-Match                 ; Section 14.24
-						| If-Modified-Since        ; Section 14.25
-						| If-None-Match            ; Section 14.26
-						| If-Range                 ; Section 14.27
-						| If-Unmodified-Since      ; Section 14.28
-						| Max-Forwards             ; Section 14.31
-						| Proxy-Authorization      ; Section 14.34
-						| Range                    ; Section 14.35
-						| Referer                  ; Section 14.36
-						| TE                       ; Section 14.39
-						| User-Agent               ; Section 14.43
-*/
-
 std::string Request::_get_key_value(std::string buffer, std::string needle)
 {
 	int start = 0;
@@ -176,6 +154,29 @@ std::string Request::_get_key_value(std::string buffer, std::string needle)
 	}
 	return ("");
 }
+
+
+/*
+ 	request-header =	  Accept                   ; Section 14.1
+						| Accept-Charset           ; Section 14.2
+						| Accept-Encoding          ; Section 14.3
+						| Accept-Language          ; Section 14.4
+						| Authorization            ; Section 14.8
+						| Expect                   ; Section 14.20
+						| From                     ; Section 14.22
+						| Host                     ; Section 14.23
+						| If-Match                 ; Section 14.24
+						| If-Modified-Since        ; Section 14.25
+						| If-None-Match            ; Section 14.26
+						| If-Range                 ; Section 14.27
+						| If-Unmodified-Since      ; Section 14.28
+						| Max-Forwards             ; Section 14.31
+						| Proxy-Authorization      ; Section 14.34
+						| Range                    ; Section 14.35
+						| Referer                  ; Section 14.36
+						| TE                       ; Section 14.39
+						| User-Agent               ; Section 14.43
+*/
 
 int Request::_parser_request_header(std::string buffer)
 {
@@ -244,8 +245,6 @@ void	Request::read_request(char const *request_buffer)
 	_parse_request_line(str);
 	_parser_general_header(str);
 	_parser_request_header(str);
-
-
 
 }
 std::string		Request::get_uri(void) const

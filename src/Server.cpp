@@ -15,7 +15,7 @@ Server					&Server::operator=(Server const &rhs)
 	return (*this);
 }
 
-Server::Server(std::map<std::string, std::string> &config_map):  _server_port(config_map["listen"]), _server_socket(-1), _server_name(config_map["server_name"])
+Server::Server(std::map<std::string, std::string> &config_map, char *env[]):  _server_port(config_map["listen"]), _server_socket(-1), _server_name(config_map["server_name"]), _env(env)
 {
 	if (config_map["allow_GET"].compare("y") == 0)
 		_allow_GET = true;
@@ -142,11 +142,16 @@ void	Server::listen_socket(void)
 {
 	if (listen(_server_socket, _max_backlog_queue) == -1)
 	{
-		std::cerr << REDB << "Error: to listen socket. Reason: " << strerror(errno) << RESET << std::endl; // not allowd to use errno
+		print_error("to listen socket");
 		close(_server_socket);
 		//throw exception
 		exit (1); // at the moment just exit
 	}
+}
+
+void	Server::launch_webserver(void)
+{
+	launch();
 }
 
 void	Server::close_server_socket(void)

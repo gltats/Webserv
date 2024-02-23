@@ -9,7 +9,16 @@
 // #include "Request.hpp"
 // #include "Response.hpp"
 #include "ConfigParser.hpp"
+
+#include "Connection.hpp"
+#include "Webserv_Exceptions.hpp"
+#include "library.hpp"
+
 #include "Server.hpp"
+
+# ifndef VERBOSE
+#  define VERBOSE 1
+# endif
 
 
 # ifdef __linux__
@@ -23,13 +32,7 @@
 # endif
 
 
-#include "Connection.hpp"
-#include "Webserv_Exceptions.hpp"
-#include "library.hpp"
 
-# ifndef DEBUG
-#  define DEBUG 1
-# endif
 
 
 void	ft_signal_handler(int signum);

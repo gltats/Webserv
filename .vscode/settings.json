@@ -3,7 +3,7 @@
 		"strstream": "cpp",
 		"__bit_reference": "cpp",
 		"__config": "cpp",
-		"__debug": "cpp",
+		"__VERBOSE": "cpp",
 		"__errc": "cpp",
 		"__hash_table": "cpp",
 		"__locale": "cpp",
@@ -57,7 +57,8 @@
 		"unordered_map": "cpp",
 		"variant": "cpp",
 		"vector": "cpp",
-		"algorithm": "cpp"
+		"algorithm": "cpp",
+		"__debug": "cpp"
 	},
 	"42header.email": "mgranero@student.42wolfsburg.de",
 	"42header.username": "mgranero"
