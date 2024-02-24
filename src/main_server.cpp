@@ -23,12 +23,14 @@ int	main(int argc, char *argv[], char *env[])
 		return (1);
 
 	//--> Edit Here :here goes the parser Config file (being simulated at the moment <--
-	ConfigParser parser_output;
+	// ConfigParser parser_output;
 	// Stop editing
 
 	// map parsed data from config_file (Interface) to be used in Server Object
 	std::map<std::string, std::string> config_map;
-	map_config_file(config_map, parser_output); // <- Tatiana: use this function to map you parser_out to the Server map inputs
+	// map_config_file(config_map, parser_output); // <- Tatiana: use this function to map you parser_out to the Server map inputs
+
+	map_config_file(config_map); // without ConfigParser Files
 
 
 	//setup signal handler
@@ -179,37 +181,6 @@ void	launch_webserver_mac_os(std::map<std::string, std::string> &config_map, cha
 }
 */
 
-/*
-void	launch_webserver(std::map<std::string, std::string> &config_map, char *env[])
-{
-	socklen_t				client_addr_size;
-	struct sockaddr_un		client_addr;
 
-	// Blocking
-	client_addr_size = sizeof(client_addr);
-
-	Server srv(config_map);
-
-	while (true)
-	{
-		std::cout << "Server Listening in IP: LocalHost and Port: " << srv.get_server_port() << " ..." << std::endl;
-
-		int client_fd = accept(srv.get_server_socket(), (struct sockaddr*)&client_addr, &client_addr_size);
-		if (client_fd == -1)
-		{
-			// Handle error or non-blocking mode
-			return ; // at the moment just return
-		}
-
-		Connection	client(client_fd, env);
-
-		client.receive_msg();
-		client.send_response();
-		close(client_fd);
-
-	}
-		srv.close_server_socket(); // temporary
-}
-*/
 
 

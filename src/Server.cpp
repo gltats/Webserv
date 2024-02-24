@@ -36,13 +36,6 @@ Server::~Server(void)
 				std::cout << "Freeing addrinfo" << std::endl;
 		close(_server_socket);
 	}
-	if (_result != 0)
-	{
-		if (VERBOSE == 1)
-			std::cout << "Socket_server_fd closed" << std::endl;
-		freeaddrinfo(_result);
-	}
-
 }
 
 int			Server::get_server_socket(void) const

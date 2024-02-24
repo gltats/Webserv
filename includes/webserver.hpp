@@ -6,9 +6,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include "color_code.hpp"
-// #include "Request.hpp"
-// #include "Response.hpp"
-#include "ConfigParser.hpp"
+
+// #include "ConfigParser.hpp"
 
 #include "Connection.hpp"
 #include "Webserv_Exceptions.hpp"

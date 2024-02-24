@@ -22,7 +22,7 @@ void	ServerOS::setup_socket(void)
 	struct sockaddr_in serverAddr;
     
     // Socket will be created for AF_INET(IPv4), for SOCK_STREAM(TCP) and specific for the TCP protocol
-	_server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	_server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
 	if (_server_socket == -1)
 	{   
         print_error("to create Server Socket");
@@ -218,13 +218,20 @@ void	ServerOS::launch(void)
 						print_error("accept. Connection refused");
 						continue;
 					}
+					// check for IP4 or IP6
+					if (client_addr.sin_family != AF_INET)
+					{
+						print_error_fd("Unsupport Connection socket Family. Only AF_INET (IPv4) is supported", client_fd);
+						_close_connection(_epoll_fd, client_fd, ev_server);
+						continue;
+					}
 
 					// set client_fd to be reusablein a closed fd to allow fast reusable socket without waiting for the OS to release the ressource
 					int yes = 1;
 					if (setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 					{
 						print_error_fd("setsockopt to set fd to SO_REUSEADDR to reusable. fd", client_fd);
-						_close_connection(_epoll_fd, ep_event[i].data.fd, ev_server);
+						_close_connection(_epoll_fd, client_fd, ev_server);
 						print_error("Connection closed. Please retry");
 						continue;
 					}
@@ -239,7 +246,7 @@ void	ServerOS::launch(void)
 					if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_server) == -1)
 					{
 						print_error_fd("epoll_ctl. Not possible to add client to monitored events lists. fd", client_fd);
-						_close_connection(_epoll_fd, ep_event[i].data.fd, ev_server);
+						_close_connection(_epoll_fd, client_fd, ev_server);
 						print_error("Connection closed. Please retry");
 						continue;
 					}

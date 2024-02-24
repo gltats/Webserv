@@ -39,8 +39,6 @@ class Server
 		int									_connection_socket;
 		int									_max_backlog_queue;
 
-		
-		struct addrinfo						*_result;
 		char								**_env;
 
 		// map to hold Connection Object pointer per file descriptor
