@@ -34,8 +34,8 @@ NAME = webserv
 
 # Compiler and flags
 CC = c++
-#CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
-CFLAGS = -Iincludes -std=c++98  # in mac for development
+CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
+#CFLAGS = -Iincludes -std=c++98  # in mac for development
 # CFLAGS =  -Iincludes -std=c++98 -D__linux__  # for development in docker linux
 
 # Folders & files

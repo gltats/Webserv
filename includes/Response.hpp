@@ -75,7 +75,7 @@ class Response
 {
 	private:
 
-		int									_status;
+		// int									_status;
 		std::string							_html_content;
 		size_t								_html_content_size;
 		std::string							_status_line;

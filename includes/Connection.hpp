@@ -39,7 +39,7 @@ class Connection
 		Request 				_request;
 		Response				_response;
 		bool					_is_read_complete;
-		bool					_is_write_complete;
+		// bool					_is_write_complete;
 		std::string				_client_ip;
 		std::string				_client_port;
 

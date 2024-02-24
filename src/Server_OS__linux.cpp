@@ -229,7 +229,7 @@ void	ServerOS::launch(void)
 					}
 					// set connection socket to nonblock too
 					int flags = fcntl(client_fd, F_GETFL, 0, 0); // remove - illegal function
-					int ret =  fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);;
+					fcntl(client_fd, F_SETFL, flags | O_NONBLOCK); // remove - illegal function
 
 					// add file descriptor to be monitored
 					ev_server.data.fd = client_fd;

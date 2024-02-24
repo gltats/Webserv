@@ -15,7 +15,7 @@ Server					&Server::operator=(Server const &rhs)
 	return (*this);
 }
 
-Server::Server(std::map<std::string, std::string> &config_map, char *env[]):  _server_port(config_map["listen"]), _server_socket(-1), _server_name(config_map["server_name"]), _env(env)
+Server::Server(std::map<std::string, std::string> &config_map, char *env[]):  _server_port(config_map["listen"]), _server_name(config_map["server_name"]), _server_socket(-1), _env(env)
 {
 	if (config_map["allow_GET"].compare("y") == 0)
 		_allow_GET = true;

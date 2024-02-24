@@ -48,7 +48,7 @@ void		clear_memory(void *dest, size_t size)
 	}
 	u_str = (unsigned char *) dest;
 
-	for (int i = 0; i < size; i++)
+	for (size_t i = 0; i < size; i++)
 	{
 		u_str[i] = (unsigned char)'\0';
 	}
