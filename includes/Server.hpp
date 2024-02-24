@@ -39,9 +39,6 @@ class Server
 		int									_connection_socket;
 		int									_max_backlog_queue;
 
-		bool								_allow_GET;
-		bool								_allow_POST;
-		bool								_allow_DELETE;
 		
 		struct addrinfo						*_result;
 		char								**_env;
@@ -50,8 +47,12 @@ class Server
 		std::map<int, Connection *>			_fd2client_map;
 		int 								_epoll_fd;
 
-		Server(void);
-		Server(Server const & src);
+		std::map<std::string, std::string> 	&_config_map;
+
+
+
+		// Server(void);
+		// Server(Server const & src);
 		Server								&operator=(Server const &rhs);
 		void								_setup_server(void);
 

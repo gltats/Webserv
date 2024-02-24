@@ -1,13 +1,13 @@
 #include "Server.hpp"
 
-Server::Server(void)
-{
+// Server::Server(void)
+// {
 
-}
-Server::Server(Server const &src)
-{
-	(void)src;
-}
+// }
+// Server::Server(Server const &src)
+// {
+// 	(void)src;
+// }
 
 Server					&Server::operator=(Server const &rhs)
 {
@@ -15,23 +15,9 @@ Server					&Server::operator=(Server const &rhs)
 	return (*this);
 }
 
-Server::Server(std::map<std::string, std::string> &config_map, char *env[]):  _server_port(config_map["listen"]), _server_name(config_map["server_name"]), _server_socket(-1), _env(env)
+Server::Server(std::map<std::string, std::string> &config_map, char *env[]): _server_port(config_map["listen"]), _server_name(config_map["server_name"]), _server_socket(-1), _env(env),  _config_map(config_map)
 {
-	if (config_map["allow_GET"].compare("y") == 0)
-		_allow_GET = true;
-	else
-		_allow_GET = false;
-
-	if (config_map["allow_POST"].compare("y") == 0)
-		_allow_POST = true;
-	else
-		_allow_POST = false;
-
-	if (config_map["allow_DELETE"].compare("y") == 0)
-		_allow_DELETE = true;
-	else
-		_allow_DELETE = false;
-
+	
 	_max_backlog_queue = str2int(config_map["limit_conn"]);
 
 
@@ -161,20 +147,6 @@ void	Server::close_server_socket(void)
 	_server_socket = -1;
 }
 
-bool	Server::get_allow_GET(void) const
-{
-	return (_allow_GET);
-}
-
-bool	Server::get_allow_POST(void) const
-{
-	return (_allow_POST);
-}
-
-bool	Server::get_allow_DELETE(void) const
-{
-	return (_allow_DELETE);
-}
 
 std::string		Server::get_server_name(void) const
 {

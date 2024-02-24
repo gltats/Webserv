@@ -17,9 +17,9 @@
 
 // }
 
-Connection::Connection(int connection_socket, struct sockaddr_in &client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _is_read_complete(0)
+Connection::Connection(std::map<std::string, std::string> &config_map, int connection_socket, struct sockaddr_in &client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _env(env), _request(config_map), _is_read_complete(0)
 {
-	_env = env;
+	// _env = env;
 	_buffer_rcv = new char[_buffer_rcv_size];
 	clear_memory(_buffer_rcv, _buffer_rcv_size);
 

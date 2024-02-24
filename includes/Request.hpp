@@ -18,6 +18,12 @@
 #include <unistd.h>
 #include <sstream>
 #include "color_code.hpp"
+#include "Webserv_Exceptions.hpp"
+#include "library.hpp"
+#include <map>
+
+
+class Connection;
 
 #define		CR	13
 #define		LF	10
@@ -96,18 +102,23 @@ class Request
 
 		bool			_is_chunked;
 
+		bool			_allow_GET;
+		bool			_allow_POST;
+		bool			_allow_DELETE;
+		std::map<std::string, std::string> 	&_config_map;
+
 		int				_parse_request_line(std::string buffer);
 		int				_parser_request_header(std::string buffer);
 		int				_parser_general_header(std::string buffer);
-		void			_parse_body(std::string buffer);
+		int				_parser_body(std::string buffer);
 		std::string		_get_key_value(std::string buffer, std::string needle);
 		
 		Request			&operator=(Request const &rhs);
-		Request(Request const &src);
+		// Request(Request const &src);
 
 
 	public:
-		Request(void);
+		Request(std::map<std::string, std::string> 	&config_map);
 		~Request(void);
 
 		int				get_request_status(void) const;
@@ -122,6 +133,11 @@ class Request
 		std::string		get_cache_control(void) const;
 		std::string		get_transfer_enconding(void) const;
 		std::string		get_body(void) const;
+		
+		bool								get_allow_GET(void) const;
+		bool								get_allow_POST(void) const;
+		bool								get_allow_DELETE(void) const;
+
 
 		void			read_request(char const *request_buffer);
 		void			print_request(void) const;

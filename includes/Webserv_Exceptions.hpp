@@ -21,11 +21,16 @@ class InvalidRequest: public std::exception
 		virtual const char* what() const throw();
 };
 
-class ResponseError: public std::exception
+class MethodNotSupported: public std::exception
 {
 	public:
 		virtual const char* what() const throw();
 };
 
+class ResponseError: public std::exception
+{
+	public:
+		virtual const char* what() const throw();
+};
 
 #endif

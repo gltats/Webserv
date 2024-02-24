@@ -1,0 +1,3 @@
+GET /html/basic.html HTTP/1.0
+Host: Linux42
+

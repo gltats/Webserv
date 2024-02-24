@@ -32,5 +32,8 @@ const char* ResponseError::what() const throw()
    return ("Exception: Error to generate or send Response"); 
 }
 
-
+const char* MethodNotSupported::what() const throw()
+{
+   return ("Exception: Method not supported. Webserv supports GET, POST and DELETE. \nEnable them in Config File."); 
+}
 

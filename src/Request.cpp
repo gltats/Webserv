@@ -11,10 +11,27 @@
 /* ************************************************************************** */
 
 #include "Request.hpp"
+#include "Connection.hpp"
 
-Request::Request(void):  _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body(""), _is_chunked(0) //, _content_lenght(0)
+Request::Request(std::map<std::string, std::string> &config_map): _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body(""), _is_chunked(0), _config_map(config_map)
 {
+	if (_config_map["allow_GET"].compare("y") == 0)
+		_allow_GET = true;
+	else
+		_allow_GET = false;
+
+	if (_config_map["allow_POST"].compare("y") == 0)
+		_allow_POST = true;
+	else
+		_allow_POST = false;
+
+	if (_config_map["allow_DELETE"].compare("y") == 0)
+		_allow_DELETE = true;
+	else
+		_allow_DELETE = false;
+
 	std::cout << "Request default constructor " << std::endl;
+
 }
 
 Request			&Request::operator=(Request const &rhs)
@@ -23,10 +40,10 @@ Request			&Request::operator=(Request const &rhs)
 	return (*this);
 }
 
-Request::Request(Request const &src)
-{
-	(void)src;
-}
+// Request::Request(Request const &src)
+// {
+// 	(void)src;
+// }
 
 Request::~Request(void)
 {
@@ -56,26 +73,25 @@ int	Request::_parse_request_line(std::string buffer)
 
 	}
 	// Get Method : allowed GET, POST, DELETE
-	if (buffer.substr(i, i + 4).compare("GET ") == 0)
+	if (buffer.substr(i, i + 4).compare("GET ") == 0 && _allow_GET == true)
 	{
 		_method = "GET";
 		i = i + 4;
 	}
-	else if (buffer.substr(i, i + 5).compare("POST ") == 0)
+	else if (buffer.substr(i, i + 5).compare("POST ") == 0 && _allow_POST == true)
 	{
 		_method = "POST";
 		i = i + 5;
 	}
-	else if (buffer.substr(i, i + 7).compare("DELETE ") == 0)
+	else if (buffer.substr(i, i + 7).compare("DELETE ") == 0 && _allow_DELETE == true)
 	{
 		_method = "DELETE";
 		i = i + 7;
 	}
 	else
 	{
-		std::cout << REDB << "Error: _parse_request_line. " \
-		<< "Request Line incorrect method. Only HTTP is accepted" << RESET << std::endl;
-		return(-1);
+		std::cout << REDB << "Method: " << buffer.substr(i, i + 4) << RESET << std::endl;
+		throw MethodNotSupported();
 	}
 
 	// Get URI len
@@ -214,6 +230,36 @@ int Request::_parser_general_header(std::string buffer)
 	return (0);
 }
 
+int Request::_parser_body(std::string buffer)
+{
+	// get index of end of the header = empty line between headers and body
+	_index_end_of_headers = buffer.find("\r\n\r\n");
+
+	std::cout << CYAN << "_index_end_of_headers is " << _index_end_of_headers << " - char is " << buffer[_index_end_of_headers] << RESET <<  std::endl; //remove
+	if (_index_end_of_headers == -1)
+	{
+		print_error("Request does not contain mandatory HTTP1.1 empty line.");
+		throw InvalidRequest();
+	}
+	else if (_index_end_of_headers + 4 < (int)buffer.length())
+	{
+		std::cout << CYAN << "_body first " << buffer[_index_end_of_headers + 4] << " body second " << buffer[std::string::npos - 1] <<  std::endl; //remove
+
+		// threre is a body
+		_body = buffer.substr(_index_end_of_headers + 4, std::string::npos - 1);
+	}
+	else
+	{
+		std::cout << CYAN << "No body message " <<  std::endl; //remove
+		_body = "";
+	}
+
+	if (_is_chunked) // consume it for error
+		std::cout << "chunked" << std::endl;
+
+	return (0);
+}
+
 void Request::print_request(void) const
 {
 	std::cout << YELLOW;
@@ -233,6 +279,10 @@ void Request::print_request(void) const
 	std::cout << std::endl;
 	std::cout << "\tGeneral Header" << std::endl;
 	std::cout << "\t\tConnection:<" << _connection << ">" << std::endl;
+	std::cout << std::endl;
+	std::cout << "\tBody:\n<" << _body << ">" << std::endl;
+	
+	std::cout << std::endl;
 	std::cout << RESET;
 }
 
@@ -260,17 +310,13 @@ void	Request::read_request(char const *request_buffer)
 	_transfer_enconding.clear();
 	_body.clear();
 
-	// get index of end of the header = empty line between headers and body
-	_index_end_of_headers = str.find("\r\n\r\n");
-
-	std::cout << CYAN << "_index_end_of_headers is " << _index_end_of_headers << " - char is " << str[_index_end_of_headers] << RESET <<  std::endl; //remove
-	std::cout << CYAN << "_index_end_of_headers -1 is - char is " << str[_index_end_of_headers - 1 ] << RESET <<  std::endl; //remove
 	
+
 	// parser
 	_parse_request_line(str);
 	_parser_general_header(str);
 	_parser_request_header(str);
-	// _parse_body(str);
+	_parser_body(str);
 
 }
 std::string		Request::get_uri(void) const
@@ -323,6 +369,23 @@ std::string		Request::get_transfer_enconding(void) const
 {
 	return (_transfer_enconding);
 }
+
+
+bool		Request::get_allow_GET(void) const
+{
+	return (_allow_GET);
+}
+
+bool		Request::get_allow_POST(void) const
+{		
+	return (_allow_POST);
+}
+
+bool		Request::get_allow_DELETE(void) const
+{
+	return (_allow_DELETE);
+}
+
 
 // if (_transfer_enconding.compare("chunked"))
 // {
