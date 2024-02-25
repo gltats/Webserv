@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/22 19:40:10 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/25 15:18:35 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,15 +23,13 @@ int	main(int argc, char *argv[], char *env[])
 		return (1);
 
 	//--> Edit Here :here goes the parser Config file (being simulated at the moment <--
-	// ConfigParser parser_output;
+	ConfigParser parser_output;
 	// Stop editing
 
 	// map parsed data from config_file (Interface) to be used in Server Object
 	std::map<std::string, std::string> config_map;
-	// map_config_file(config_map, parser_output); // <- Tatiana: use this function to map you parser_out to the Server map inputs
-
-	map_config_file(config_map); // without ConfigParser Files
-
+	
+	map_config_file(config_map, parser_output); // <- Tatiana: use this function to map you parser_out to the Server map inputs
 
 	//setup signal handler
 	ft_setup_sighandler();

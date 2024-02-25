@@ -1,10 +1,8 @@
 #include "webserver.hpp"
 
 // Interface to Parser -> Server
-// void map_config_file(std::map<std::string, std::string>& config_map, ConfigParser const &parser_output)
-void map_config_file(std::map<std::string, std::string>& config_map)
+void map_config_file(std::map<std::string, std::string>& config_map, ConfigParser const &parser_output)
 {
-	// parser_output.~ConfigParser(); // only to avoid unused argument by the compiler
 	// Tatiana: keep the left side (key) and map the value as from your parser_out as a string
 
 	// names based on Tatiana's parser print function:
