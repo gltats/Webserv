@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/22 18:11:51 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/25 14:59:38 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ class Response
 		char 								**_envp;
 		std::map<std::string, std::string>	_error_page_map;
 		std::map<std::string, std::string>	_response_status_map;
+		std::map<std::string, std::string> 	&_config_map;
 
 		// Response(Response const &src);
 		Response							&operator=(Response const &rhs);
@@ -93,7 +94,7 @@ class Response
 
 
 	public:
-		Response(void);
+		Response(std::map<std::string, std::string> &config_map);
 		~Response(void);
 		void								create_response(Request const &req, char *env[]);
 

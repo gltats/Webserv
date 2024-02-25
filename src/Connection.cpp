@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/24 17:51:53 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/25 15:04:28 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 // }
 
-Connection::Connection(std::map<std::string, std::string> &config_map, int connection_socket, struct sockaddr_in &client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _env(env), _request(config_map), _is_read_complete(0)
+Connection::Connection(std::map<std::string, std::string> &config_map, int connection_socket, struct sockaddr_in &client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _env(env), _request(config_map), _response(config_map), _is_read_complete(0)
 {
 	// _env = env;
 	_buffer_rcv = new char[_buffer_rcv_size];

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 20:57:53 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/25 15:02:36 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ general-header = Cache-Control            ; Section 14.9
 // 	std::cout << "Response default constructor" << std::endl;
 // }
 
-Response::Response(void)
+Response::Response(std::map<std::string, std::string> &config_map): _config_map(config_map)
 {
 
 
@@ -149,6 +149,10 @@ Response::Response(void)
 	map_default_error_pages(_error_page_map);
 
 	map_reponse_status(_response_status_map);
+
+	if (_config_map["autoindex"].compare("on") == 0)
+		std::cout << "used config_map to avoid unused variable error" << std::endl;
+
 
 }
 
