@@ -97,6 +97,10 @@ void	ServerOS::launch(void) //new generic
 
 		Connection	client(_config_map ,client_fd, client_addr, _env); 
 
+		std::cout << "New client connected in fd " << client_fd << std::endl;
+		std::cout << "Client IP: " << client.get_client_ip() << std::endl;
+		std::cout << "Client PORT: " << client.get_client_port() << std::endl;
+
 		client.receive_request();
 		client.send_response();
 

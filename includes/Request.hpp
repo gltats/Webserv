@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:21:14 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 14:30:04 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/24 21:04:36 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,8 +99,7 @@ class Request
 		std::string		_body;
 
 		int				_index_end_of_headers;
-
-		bool			_is_chunked;
+		int				_index_start_of_body;
 
 		bool			_allow_GET;
 		bool			_allow_POST;
@@ -112,7 +111,8 @@ class Request
 		int				_parser_general_header(std::string buffer);
 		int				_parser_body(std::string buffer);
 		std::string		_get_key_value(std::string buffer, std::string needle);
-		
+		void			_handle_chunked(void);
+
 		Request			&operator=(Request const &rhs);
 		// Request(Request const &src);
 

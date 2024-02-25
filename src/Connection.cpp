@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 20:16:16 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/24 17:51:53 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,8 +174,10 @@ void					Connection::_obtain_client_ip(struct sockaddr_in &client_addr)
 
 void					Connection::_obtain_client_port(struct sockaddr_in &client_addr)
 {
-	u_int16_t port;
+	u_int16_t 			port;
+	int					int_port;
 
 	port = ntohs(client_addr.sin_port);
-	_client_port = port;
+	int_port = port;
+	_client_port = int2str(int_port);
 }

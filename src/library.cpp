@@ -32,7 +32,8 @@ int			str2int(std::string str)
 
 	if (str2nb.fail() == true)
 	{
-		std::cerr << REDB << "Error:\nConversion failed in str2int. The input string '" << str << "' is not a valid integer." << RESET << std::endl;
+		std::cerr << REDB << "Error:\nConversion failed in str2int. The input string '" << str << "' is not a valid integer. Returned -1" << RESET << std::endl;
+		nb = -1;
 	}
 	return (nb);
 }

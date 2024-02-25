@@ -6,14 +6,14 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 14:41:01 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/25 14:45:18 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include "Connection.hpp"
 
-Request::Request(std::map<std::string, std::string> &config_map): _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body(""), _is_chunked(0), _config_map(config_map)
+Request::Request(std::map<std::string, std::string> &config_map): _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body(""), _config_map(config_map)
 {
 	if (_config_map["allow_GET"].compare("y") == 0)
 		_allow_GET = true;
@@ -142,6 +142,8 @@ int	Request::_parse_request_line(std::string buffer)
 	{
 		if (buffer.substr(j + 1, k).compare("HTTP/1.1"))
 			_protocol_version = "HTTP/1.1";
+		else
+			throw InvalidRequest();
 	}
 
 	return (0);
@@ -234,6 +236,7 @@ int Request::_parser_body(std::string buffer)
 {
 	// get index of end of the header = empty line between headers and body
 	_index_end_of_headers = buffer.find("\r\n\r\n");
+	_index_start_of_body = _index_end_of_headers + 4;
 
 	std::cout << CYAN << "_index_end_of_headers is " << _index_end_of_headers << " - char is " << buffer[_index_end_of_headers] << RESET <<  std::endl; //remove
 	if (_index_end_of_headers == -1)
@@ -241,12 +244,12 @@ int Request::_parser_body(std::string buffer)
 		print_error("Request does not contain mandatory HTTP1.1 empty line.");
 		throw InvalidRequest();
 	}
-	else if (_index_end_of_headers + 4 < (int)buffer.length())
+	else if (_index_start_of_body < (int)buffer.length())
 	{
-		std::cout << CYAN << "_body first " << buffer[_index_end_of_headers + 4] << " body second " << buffer[std::string::npos - 1] <<  std::endl; //remove
+		std::cout << CYAN << "_body first " << buffer[_index_start_of_body] << " body second " << buffer[std::string::npos - 1] <<  std::endl; //remove
 
 		// threre is a body
-		_body = buffer.substr(_index_end_of_headers + 4, std::string::npos - 1);
+		_body = buffer.substr(_index_start_of_body, std::string::npos - 1);
 	}
 	else
 	{
@@ -254,9 +257,12 @@ int Request::_parser_body(std::string buffer)
 		_body = "";
 	}
 
-	if (_is_chunked) // consume it for error
-		std::cout << "chunked" << std::endl;
-
+	// std::cout << "->Transfer enconding is "  << get_transfer_enconding() << std::endl; // remove
+	// if (_transfer_enconding.compare("chunked") == 0)
+	// {
+	// 	std::cout << "CHUNKED" << std::endl; // remove
+	// 	_handle_chunked();
+	// }
 	return (0);
 }
 
@@ -310,14 +316,12 @@ void	Request::read_request(char const *request_buffer)
 	_transfer_enconding.clear();
 	_body.clear();
 
-	
 
 	// parser
 	_parse_request_line(str);
 	_parser_general_header(str);
 	_parser_request_header(str);
 	_parser_body(str);
-
 }
 std::string		Request::get_uri(void) const
 {
@@ -386,6 +390,25 @@ bool		Request::get_allow_DELETE(void) const
 	return (_allow_DELETE);
 }
 
+/*
+Transfer-Encoding: chunked
+
+
+chunked
+Data is sent in a series of chunks. 
+The Content-Length header is omitted in this case
+and at the beginning of each chunk you need to add
+the length of the current chunk in hexadecimal format,
+followed by '\r\n' and then the chunk itself, followed by another '\r\n'.
+The terminating chunk is a regular chunk, with the exception that its length is zero.
+It is followed by the trailer, which consists of a (possibly empty) sequence of header fields.
+
+Transfer-Encoding: gzip, chunked
+This is why Transfer-Encoding is defined as overriding Content-Length,
+
+A server MAY reject a request that contains both Content-Length and Transfer-Encoding or process such a request in accordance with the Transfer-Encoding alone. Regardless, the server MUST close the connection after responding to such a request to avoid the potential attacks.
+
+*/
 
 // if (_transfer_enconding.compare("chunked"))
 // {
@@ -406,3 +429,47 @@ abcdefg\r\n
 \r\n
 */
 
+void		Request::_handle_chunked(void)
+{
+	size_t			total_content_length = 0;
+	int				chunk_length = 0;
+	size_t 			pos_start = 0;
+	size_t 			pos_end = 0;
+	std::string 	chunked_str = "";
+
+	while (1)
+	{
+		// get length of current chunk
+		pos_end = _body.find("\r\n", pos_start);
+		
+		std::cout << "pos_end is " << pos_end << ", pos_start is " << pos_start << std::endl;
+		chunk_length = str2int(_body.substr(pos_start, pos_end - 1));
+		if (pos_end == std::string::npos || chunk_length == -1)
+		{
+			print_error("_handle_chunked");
+			throw InvalidRequest();
+		}
+		// get chunk
+		pos_start = pos_end + 2;
+		pos_end = _body.find("\r\n", pos_start);
+		chunked_str.append(_body.substr(pos_start, pos_end));
+		if (pos_end - pos_start != (size_t) chunk_length)
+		{
+			print_error("_handle_chunked: Chunk real size does not match passed chunk size");
+			std::cout << "Lenght Chunk: Read from chunk is" << chunk_length << ", calculated from message " << pos_end - pos_start << std::endl; //remove
+			throw InvalidRequest();
+		}
+		total_content_length += (size_t) chunk_length;
+
+
+		std::cout << "chunk len: <" << chunk_length << ">" << std::endl;
+		std::cout << "chunk: <" << chunked_str << ">" << std::endl;
+		std::cout << "total_content_length: <" << total_content_length << ">" << std::endl;
+
+		// go forward for next loop
+		pos_start = pos_end + 2;
+	}
+	
+
+
+}
