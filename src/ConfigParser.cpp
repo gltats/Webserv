@@ -147,17 +147,25 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 					parameters["location"] = location;
 				}
 			}
-			// else if (key == "allow_methods")
-			// {
-			// 	std::string methods[] = {"GET", "POST", "DELETE"};
-			// 	for (size_t i = 0; i < sizeof(methods) / sizeof(methods[0]); i++)
-			// 	{
-			// 		if ()
-			// 		{
-			// 			throw std::invalid_argument("Invalid value for 'allow_methods'");
-			// 		}
-			// 	}
-			// }
+			else if (key == "allow_methods")
+			{
+				if (value.find("GET") != std::string::npos)
+				{
+					parameters["GET"] = "Get";
+				}
+				if (value.find("POST") != std::string::npos)
+				{
+					parameters["POST"] = "Post";
+				}
+				if (value.find("DELETE") != std::string::npos)
+				{
+					parameters["DELETE"] = "Delete";
+				}
+				if (value.find("GET") == std::string::npos && value.find("POST") == std::string::npos && value.find("DELETE") == std::string::npos)
+				{
+					throw std::invalid_argument("Invalid method in allow_methods");
+				}
+			}
 		}
 	}
 	return parameters;
@@ -169,7 +177,6 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	std::string serverName = parameters["server_name"];
 	std::string bodySize = parameters["body_size"];
 	std::string errorNumber = parameters["error_number"];
-	
 
 	// Check if the "listen" parameter is repeated
 	if (listenValues.find(listenValue) != listenValues.end())
@@ -180,10 +187,10 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 		throw std::invalid_argument("Empty value on configuration file");
 	else if (!std::all_of(listenValue.begin(), listenValue.end(), ::isdigit) || !std::all_of(bodySize.begin(), bodySize.end(), ::isdigit)) // check if the value is a digit
 		throw std::invalid_argument("Value is not a digit");
- 	if (errorNumber != "400" && errorNumber != "401" && errorNumber != "403" && errorNumber != "404" && errorNumber != "405" && errorNumber != "408" &&errorNumber != "413" &&errorNumber != "414" &&errorNumber != "415" &&errorNumber != "418" && errorNumber != "500" && errorNumber != "501" && errorNumber != "504" && errorNumber != "505")
+	if (errorNumber != "400" && errorNumber != "401" && errorNumber != "403" && errorNumber != "404" && errorNumber != "405" && errorNumber != "408" && errorNumber != "413" && errorNumber != "414" && errorNumber != "415" && errorNumber != "418" && errorNumber != "500" && errorNumber != "501" && errorNumber != "504" && errorNumber != "505")
 	{
-        throw std::invalid_argument("Invalid value for 'error_number'");
-    }
+		throw std::invalid_argument("Invalid value for 'error_number'");
+	}
 
 	listenValues.insert(listenValue);
 	listenValues.insert(serverName);
@@ -301,6 +308,12 @@ void ConfigParser::print()
 		std::cout << "autoindex:" << parameters["autoindex"] << std::endl;
 		std::cout << "index:" << parameters["indexing"] << std::endl;
 		std::cout << "scripts:" << parameters["cgi"] << std::endl;
+		std::cout << "--------------------------------------" << std::endl;
+		//PRINT METHODS:
+		std::cout << "------------- Methods -------------" << std::endl;
+		std::cout << "GET: " << parameters["GET"] << std::endl;
+		std::cout << "POST: " << parameters["POST"] << std::endl;
+		std::cout << "DELETE: " << parameters["DELETE"] << std::endl;
 		std::cout << "--------------------------------------" << std::endl;
 	}
 	std::cout << "--------------------------------------" << std::endl;
