@@ -147,32 +147,17 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 					parameters["location"] = location;
 				}
 			}
-			else if (key == "allow_methods")
-			{
-				std::vector<std::string> methods;
-				size_t startPos = 0;
-				size_t spacePos = value.find(' ');
-				while (spacePos != std::string::npos)
-				{
-					std::string method = value.substr(startPos, spacePos - startPos);
-					methods.push_back(method);
-					startPos = spacePos + 1;
-					spacePos = value.find(' ', startPos);
-				}
-				std::string lastMethod = value.substr(startPos);
-				methods.push_back(lastMethod);
-
-				if (methods.size() > 3)
-				{
-					throw std::invalid_argument("Too many values for 'allow_methods'");
-				}
-
-				for (size_t j = 0; j < methods.size(); j++)
-				{
-					std::string paramName = "allow_method" + std::to_string(j + 1);
-					parameters[paramName] = methods[j];
-				}
-			}
+			// else if (key == "allow_methods")
+			// {
+			// 	std::string methods[] = {"GET", "POST", "DELETE"};
+			// 	for (size_t i = 0; i < sizeof(methods) / sizeof(methods[0]); i++)
+			// 	{
+			// 		if ()
+			// 		{
+			// 			throw std::invalid_argument("Invalid value for 'allow_methods'");
+			// 		}
+			// 	}
+			// }
 		}
 	}
 	return parameters;
