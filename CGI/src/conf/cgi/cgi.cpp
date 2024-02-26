@@ -36,7 +36,7 @@ char    **setEnv(Response::Cgi cgi, std::string fileName)
 	environment[4] = strdup(variable.c_str());
 
 	variable = "REQUEST_METHOD=";
-	variable.append(cgi.getCgiMethode());
+	variable.append(cgi.getCgiMethod());
 	environment[5] = strdup(variable.c_str());
 
 	variable = "SERVER_PORT=";
@@ -86,7 +86,8 @@ std::string    Response::executeCgi(std::string fileName, Cgi cgi)
 		throw std::invalid_argument("missing lines");
 	}
 
-	std::string cmd = server.locations[_l].fatscgi_pass;
+	// I need server locations here !!!!!!!!!!
+	// std::string cmd = server.locations..................;
 
 	remove("./tmpFile");
 
@@ -101,7 +102,7 @@ std::string    Response::executeCgi(std::string fileName, Cgi cgi)
 		dup2(fd, 1);
 		close(fd);
 
-		if (cgi.getCgiMethode() == "POST")
+		if (cgi.getCgiMethod() == "POST")
 		{
 			write(fds[1], cgi.getCgiQuery().c_str(), cgi.getCgiQuery().length());
 			dup2(fds[0], 0);

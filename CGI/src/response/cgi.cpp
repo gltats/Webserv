@@ -12,7 +12,7 @@ int Response::runcgi()
 int Response::fillClass()
 {
 	Cgi cgi;
-	cgi.setCgiMethode(request.get_methode());
+	cgi.setCgiMethod(request.get_method());
 	cgi.setCgiPath(*this);
 	cgi.setCgiQuery(_query);
 	cgi.setCgiroot(server.root);
@@ -20,7 +20,7 @@ int Response::fillClass()
 	cgi.setCgiredirectStatus(_ret);
 	cgi.setCgicontentLength(request.get_header("Content-Length"));
 	cgi.setCgicontentType(request.get_header("Content-Type"));
-	cgi.setCoockies(request.get_header("Cookie"));
+	cgi.setCookies(request.get_header("Cookie"));
 	cgi.setCgiserverProtocol();
 	cgi.setCgiPort(request.get_port());
 	try {
@@ -35,9 +35,9 @@ int Response::fillClass()
 	return 1;
 }
 
-void Response::Cgi::setCgiMethode(std::string _methode)
+void Response::Cgi::setCgiMethod(std::string _method)
 {
-	Methode = _methode;
+	Method = _method;
 }
 
 void Response::Cgi::setCgiPath(Response &response)
@@ -63,9 +63,9 @@ void Response::Cgi::setCgiredirectStatus(int _ret)
 	this->redirectStatus = ss.str();
 }
 
-void Response::Cgi::setCgicontentLength(std::string _lenght)
+void Response::Cgi::setCgicontentLength(std::string _length)
 {
-	contentLength = _lenght;
+	contentLength = _length;
 }
 
 void Response::Cgi::setCookies(std::string cookie)
@@ -132,7 +132,7 @@ std::string		Response::Cgi::getCgiServerName()
 
 std::string		Response::Cgi::getCgiMethod()
 {
-	return Methode;
+	return Method;
 }
 
 std::string		Response::Cgi::getCgiserverProtocol()
@@ -147,5 +147,5 @@ std::string		Response::Cgi::getCgiPort()
 
 std::string		Response::Cgi::getCookies()
 {
-	return Coockies;
+	return Cookies;
 }
