@@ -168,7 +168,6 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 						parameters["NoAllowedMethods"] = "NoAllowedMethods";
 					}
 				}
-
 				else
 				{
 					throw std::invalid_argument("Invalid method in allow_methods");
@@ -356,3 +355,49 @@ std::string ConfigParser::getBodySize(const std::map<std::string, std::string> &
 {
 	return parameters.at("body_size");
 }
+
+std::string ConfigParser::getErrorNumber(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("error_number");
+}
+
+std::string ConfigParser::getErrorLocation(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("error_location");
+}
+
+std::string ConfigParser::getLocation(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("location");
+}
+
+std::string ConfigParser::getPost(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("POST");
+}
+
+std::string ConfigParser::getGet(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("GET");
+}
+
+std::string ConfigParser::getDelete(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("DELETE");
+}
+
+std::string ConfigParser::getAutoindex(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("autoindex");
+}
+
+std::string ConfigParser::getIndexing(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("indexing");
+}
+
+std::string ConfigParser::getCgi(const std::map<std::string, std::string> &parameters)
+{
+	return parameters.at("cgi");
+}
+
