@@ -149,19 +149,27 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 			}
 			else if (key == "allow_methods")
 			{
-				if (value.find("GET") != std::string::npos)
+				if (value.find("GET") != std::string::npos || value.find("POST") != std::string::npos || value.find("DELETE") != std::string::npos || value.empty())
 				{
-					parameters["GET"] = "Get";
+					if (value.find("GET") != std::string::npos)
+					{
+						parameters["GET"] = "Get";
+					}
+					if (value.find("POST") != std::string::npos)
+					{
+						parameters["POST"] = "Post";
+					}
+					if (value.find("DELETE") != std::string::npos)
+					{
+						parameters["DELETE"] = "Delete";
+					}
+					if (value.empty())
+					{
+						parameters["NoAllowedMethods"] = "NoAllowedMethods";
+					}
 				}
-				if (value.find("POST") != std::string::npos)
-				{
-					parameters["POST"] = "Post";
-				}
-				if (value.find("DELETE") != std::string::npos)
-				{
-					parameters["DELETE"] = "Delete";
-				}
-				if (value.find("GET") == std::string::npos && value.find("POST") == std::string::npos && value.find("DELETE") == std::string::npos)
+
+				else
 				{
 					throw std::invalid_argument("Invalid method in allow_methods");
 				}
@@ -309,11 +317,15 @@ void ConfigParser::print()
 		std::cout << "index:" << parameters["indexing"] << std::endl;
 		std::cout << "scripts:" << parameters["cgi"] << std::endl;
 		std::cout << "--------------------------------------" << std::endl;
-		//PRINT METHODS:
+		// PRINT METHODS:
 		std::cout << "------------- Methods -------------" << std::endl;
 		std::cout << "GET: " << parameters["GET"] << std::endl;
 		std::cout << "POST: " << parameters["POST"] << std::endl;
 		std::cout << "DELETE: " << parameters["DELETE"] << std::endl;
+		if (!parameters["NoAllowedMethods"].empty())
+		{
+			std::cout << "NoAllowedMethods: " << parameters["NoAllowedMethods"] << std::endl;
+		}
 		std::cout << "--------------------------------------" << std::endl;
 	}
 	std::cout << "--------------------------------------" << std::endl;
