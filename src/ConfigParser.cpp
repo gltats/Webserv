@@ -308,9 +308,10 @@ void ConfigParser::print()
 		std::cout << "listen: " << getListenValue(serverParameters[i]) << std::endl;
 		std::cout << "server_name: " << getServerName(serverParameters[i]) << std::endl;
 		std::cout << "body_size: " << getBodySize(serverParameters[i]) << std::endl;
-		std::cout << "error_page: " << parameters["error_number"] << std::endl;
-		std::cout << "error_page: " << parameters["error_location"] << std::endl;
-		std::cout << "location:" << parameters["location"] << std::endl;
+		std::cout << "error_page_number: " << getErrorNumber(serverParameters[i]) << parameters["error_number"] << std::endl;
+		std::cout << "error_location: " << getErrorLocation(serverParameters[i]) << parameters["error_location"] << std::endl;
+		std::cout << "location:" << getLocation(serverParameters[i]) << std::endl;
+
 		std::cout << "allowed methods:" << parameters["allow_methods"] << std::endl;
 		std::cout << "autoindex:" << parameters["autoindex"] << std::endl;
 		std::cout << "index:" << parameters["indexing"] << std::endl;
