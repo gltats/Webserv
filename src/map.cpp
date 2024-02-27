@@ -1,35 +1,35 @@
 #include "webserver.hpp"
 
 // Interface to Parser -> Server
-void map_config_file(std::map<std::string, std::string>& config_map, ConfigParser const &parser_output)
-{
-	// Tatiana: keep the left side (key) and map the value as from your parser_out as a string
+// void map_config_file(std::map<std::string, std::string>& config_map, ConfigParser const &parser_output)
+// {
+// 	// Tatiana: keep the left side (key) and map the value as from your parser_out as a string
 
-	// names based on Tatiana's parser print function:
-	// server{listen2024;server_namewebserv42.com;body_size10000000;error_page404/error/error404.html;location/{allow_methodsGETPOSTDELETE;autoindexon;indexindex.html;cgi;}
+// 	// names based on Tatiana's parser print function:
+// 	// server{listen2024;server_namewebserv42.com;body_size10000000;error_page404/error/error404.html;location/{allow_methodsGETPOSTDELETE;autoindexon;indexindex.html;cgi;}
 
-	config_map["listen"] = "4432"; // port to be listen for docker
-	// config_map["listen"] = "4433"; // port to be listen when docker is on
-	config_map["server_name"] = "webserv42.com";
-	config_map["body_size"] = "10000000";
-	config_map["error_page404"] = "/error/error404.html";
-	config_map["allow_GET"] = "y"; // or n
-	config_map["allow_POST"] = "y"; // or n
-	config_map["allow_DELETE"] = "y"; // or n
-	config_map["autoindex"] = "on"; // or off
-	config_map["index"] = "html/index.html"; // at the moment index is inside html folder
-	config_map["cgi-dir"] = "cgi-bin"; // folder to search the cgi files
-	config_map["limit_conn"] = int2str(SOMAXCONN); // at the max of SOMAXCONN (usually 128 but can be modified)
+// 	config_map["listen"] = "4432"; // port to be listen for docker
+// 	// config_map["listen"] = "4433"; // port to be listen when docker is on
+// 	config_map["server_name"] = "webserv42.com";
+// 	config_map["body_size"] = "10000000";
+// 	config_map["error_page404"] = "/error/error404.html";
+// 	config_map["allow_GET"] = "y"; // or n
+// 	config_map["allow_POST"] = "y"; // or n
+// 	config_map["allow_DELETE"] = "y"; // or n
+// 	config_map["autoindex"] = "on"; // or off
+// 	config_map["index"] = "html/index.html"; // at the moment index is inside html folder
+// 	config_map["cgi-dir"] = "cgi-bin"; // folder to search the cgi files
+// 	config_map["limit_conn"] = int2str(SOMAXCONN); // at the max of SOMAXCONN (usually 128 but can be modified)
 
-	if (VERBOSE == 1)
-	{
-		// print config_map
-		std::cout << WHITEB << "Printing config_map" << RESET << std::endl;
-		for (std::map<std::string, std::string>::const_iterator it = config_map.begin(); it != config_map.end(); ++it)
-			std::cout << "\t" << it->first << " = " << it->second << "; " << std::endl;
-		std::cout << std::endl;
-	}
-}
+// 	if (VERBOSE == 1)
+// 	{
+// 		// print config_map
+// 		std::cout << WHITEB << "Printing config_map" << RESET << std::endl;
+// 		for (std::map<std::string, std::string>::const_iterator it = config_map.begin(); it != config_map.end(); ++it)
+// 			std::cout << "\t" << it->first << " = " << it->second << "; " << std::endl;
+// 		std::cout << std::endl;
+// 	}
+// }
 
 void	map_default_error_pages (std::map<std::string, std::string>& error_page_map)
 {

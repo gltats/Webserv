@@ -6,29 +6,38 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/25 14:45:18 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 21:14:09 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include "Connection.hpp"
 
-Request::Request(std::map<std::string, std::string> &config_map): _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body(""), _config_map(config_map)
+Request::Request(ConfigParser &configParser): _configParser(configParser), _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body("")
 {
-	if (_config_map["allow_GET"].compare("y") == 0)
-		_allow_GET = true;
-	else
-		_allow_GET = false;
+	//temporary until configParser is integrated
+	_allow_GET = true;
+	_allow_POST = true;
+	_allow_DELETE = true;
 
-	if (_config_map["allow_POST"].compare("y") == 0)
-		_allow_POST = true;
-	else
-		_allow_POST = false;
 
-	if (_config_map["allow_DELETE"].compare("y") == 0)
-		_allow_DELETE = true;
-	else
-		_allow_DELETE = false;
+	// if (_config_map["allow_GET"].compare("y") == 0)
+	// 	_allow_GET = true;
+	// else
+	// 	_allow_GET = false;
+
+	// if (_config_map["allow_POST"].compare("y") == 0)
+	// 	_allow_POST = true;
+	// else
+	// 	_allow_POST = false;
+
+	// if (_config_map["allow_DELETE"].compare("y") == 0)
+	// 	_allow_DELETE = true;
+	// else
+	// 	_allow_DELETE = false;
+
+	if (_configParser.getSize() != 0)
+		std::cout << "";
 
 	std::cout << "Request default constructor " << std::endl;
 

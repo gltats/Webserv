@@ -30,7 +30,7 @@ CLEANING_TOOL := \xF0\x9F\xA7\xBD
 #--------------------------------
 
 # Binary name
-NAME = webserv
+NAME = webserver
 
 # Compiler and flags
 CC = c++

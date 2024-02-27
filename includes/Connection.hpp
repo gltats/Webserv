@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 13:31:42 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 21:07:09 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ class Connection
 		// Connection		&operator=(Connection const &rhs);
 		// Connection(void);
 	public:
-		Connection(std::map<std::string, std::string> &config_map, int connection_socket, struct sockaddr_in &_client_addr, char *env[]);
+		Connection(ConfigParser &configParser, int connection_socket, struct sockaddr_in &_client_addr, char *env[]);
 		~Connection(void);
 
 		void								receive_request(void);

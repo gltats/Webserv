@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/25 15:18:35 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 21:02:20 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,22 +14,23 @@
 
 
 // Interface to Parser -> Server
-// Tatiana please adapt map_config_file function in file map.cpp
+
+/*
+	run it by calling ./webserver configs/default.conf
+*/
 
 int	main(int argc, char *argv[], char *env[])
 {
 	// to eliminate unused arguments error
-	if (argc == 0 || argv == 0 || env == 0)
-		return (1);
+	if (argc != 2)
+		print_error_error_exit("Please pass a configuration file to the webserver.\nFor example: ./webserv configs/default.conf", 1);
 
-	//--> Edit Here :here goes the parser Config file (being simulated at the moment <--
-	ConfigParser parser_output;
-	// Stop editing
-
-	// map parsed data from config_file (Interface) to be used in Server Object
-	std::map<std::string, std::string> config_map;
-	
-	map_config_file(config_map, parser_output); // <- Tatiana: use this function to map you parser_out to the Server map inputs
+ 	ConfigParser configParser;
+	try {
+		configParser.getConfig(argv[1]);
+	} catch (const std::invalid_argument& e) {
+		std::cerr << "webserver Parser: " << e.what() << std::endl;
+	}
 
 	//setup signal handler
 	ft_setup_sighandler();
@@ -38,7 +39,7 @@ int	main(int argc, char *argv[], char *env[])
 	try
 	{
 		// create a Server instance
-		ServerOS srv(config_map, env); // constructor setup socket and put it in listening mode
+		ServerOS srv(configParser, env); // constructor setup socket and put it in listening mode
 
 		srv.setup_socket();
 		std::cout << "Socket Setup done" << std::endl;

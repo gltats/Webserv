@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/25 14:59:38 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 20:57:20 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,8 @@ class Response
 {
 	private:
 
+		ConfigParser 						&_configParser;
+
 		// int									_status;
 		std::string							_html_content;
 		size_t								_html_content_size;
@@ -83,7 +85,6 @@ class Response
 		char 								**_envp;
 		std::map<std::string, std::string>	_error_page_map;
 		std::map<std::string, std::string>	_response_status_map;
-		std::map<std::string, std::string> 	&_config_map;
 
 		// Response(Response const &src);
 		Response							&operator=(Response const &rhs);
@@ -94,7 +95,7 @@ class Response
 
 
 	public:
-		Response(std::map<std::string, std::string> &config_map);
+		Response(ConfigParser &configParser);
 		~Response(void);
 		void								create_response(Request const &req, char *env[]);
 
