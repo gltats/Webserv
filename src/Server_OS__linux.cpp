@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 20:46:31 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 21:31:32 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,7 +252,7 @@ void	ServerOS::launch(void)
 					}
 					
 					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
-					_fd2client_map[client_fd] = new Connection(configParser ,client_fd, client_addr, _env); 
+					_fd2client_map[client_fd] = new Connection(_configParser ,client_fd, client_addr, _env); 
 					std::cout << "New client connected in fd " << client_fd << std::endl;
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
 					std::cout << "Client PORT: " << _fd2client_map[client_fd]->get_client_port() << std::endl;

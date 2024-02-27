@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_server.cpp                                    :+:      :+:    :+:   */
+/*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 21:02:20 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 21:32:02 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ int	main(int argc, char *argv[], char *env[])
 {
 	// to eliminate unused arguments error
 	if (argc != 2)
-		print_error_error_exit("Please pass a configuration file to the webserver.\nFor example: ./webserv configs/default.conf", 1);
+		print_error_error_exit("Please pass a configuration file to the webserver.\nFor example: ./webserver configs/default.conf", 1);
 
  	ConfigParser configParser;
 	try {
