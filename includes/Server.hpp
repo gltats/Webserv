@@ -32,6 +32,9 @@
 class Server
 {
 	protected:
+		ConfigParser 						&_configParser;
+
+
 		std::string 						_server_port;
 		std::string							_server_name;
 
@@ -45,9 +48,6 @@ class Server
 		std::map<int, Connection *>			_fd2client_map;
 		int 								_epoll_fd;
 
-		std::map<std::string, std::string> 	&_config_map;
-
-
 
 		// Server(void);
 		// Server(Server const & src);
@@ -57,7 +57,7 @@ class Server
 
 	public:
 		// does the server needs the map to the error pages or only the response object?
-		Server(std::map<std::string, std::string> &config_map, char *env[]);
+		Server(ConfigParser &configParser, char *env[]);
 
 		virtual 							~Server(void);
 

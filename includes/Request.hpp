@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:21:14 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/24 21:04:36 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 20:58:57 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include "color_code.hpp"
 #include "Webserv_Exceptions.hpp"
 #include "library.hpp"
+#include "ConfigParser.hpp"
 #include <map>
 
 
@@ -84,6 +85,8 @@ class Connection;
 class Request
 {
 	private:
+		ConfigParser 	&_configParser;
+
 		int				_request_status;
 
 		std::string		_method;
@@ -104,7 +107,6 @@ class Request
 		bool			_allow_GET;
 		bool			_allow_POST;
 		bool			_allow_DELETE;
-		std::map<std::string, std::string> 	&_config_map;
 
 		int				_parse_request_line(std::string buffer);
 		int				_parser_request_header(std::string buffer);
@@ -118,7 +120,7 @@ class Request
 
 
 	public:
-		Request(std::map<std::string, std::string> 	&config_map);
+		Request(ConfigParser &configParser);
 		~Request(void);
 
 		int				get_request_status(void) const;
@@ -134,9 +136,9 @@ class Request
 		std::string		get_transfer_enconding(void) const;
 		std::string		get_body(void) const;
 		
-		bool								get_allow_GET(void) const;
-		bool								get_allow_POST(void) const;
-		bool								get_allow_DELETE(void) const;
+		bool			get_allow_GET(void) const;
+		bool			get_allow_POST(void) const;
+		bool			get_allow_DELETE(void) const;
 
 
 		void			read_request(char const *request_buffer);

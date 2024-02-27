@@ -6,13 +6,13 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 13:57:20 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/27 21:31:32 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server_OS__linux.hpp"
 
-ServerOS::ServerOS(std::map<std::string, std::string> &config_map, char *env[]): Server(config_map, env)
+ServerOS::ServerOS(ConfigParser &configParser, char *env[]): Server(configParser, env)
 {
 	
 }
@@ -252,7 +252,7 @@ void	ServerOS::launch(void)
 					}
 					
 					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
-					_fd2client_map[client_fd] = new Connection(_config_map ,client_fd, client_addr, _env); 
+					_fd2client_map[client_fd] = new Connection(_configParser ,client_fd, client_addr, _env); 
 					std::cout << "New client connected in fd " << client_fd << std::endl;
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
 					std::cout << "Client PORT: " << _fd2client_map[client_fd]->get_client_port() << std::endl;

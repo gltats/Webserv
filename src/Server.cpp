@@ -15,10 +15,13 @@ Server					&Server::operator=(Server const &rhs)
 	return (*this);
 }
 
-Server::Server(std::map<std::string, std::string> &config_map, char *env[]): _server_port(config_map["listen"]), _server_name(config_map["server_name"]), _server_socket(-1), _env(env),  _config_map(config_map)
+// server_port, and config_map must come from a getter from configParser
+// Server::Server(ConfigParser &configParser, char *env[]):  _configParser(configParser), _server_port(_configParser.get_listen()), _server_name(_configParser.get_server_name()), _server_socket(-1), _env(env)
+Server::Server(ConfigParser &configParser, char *env[]): _configParser(configParser), _server_port("4432"), _server_name("42webserver"), _server_socket(-1), _env(env)
 {
 	
-	_max_backlog_queue = str2int(config_map["limit_conn"]);
+	// _max_backlog_queue = _configParser.get_limit_conn();
+	_max_backlog_queue = 128; // SOMAXXCON
 
 
 	std::cout << "Server constructor" << std::endl;
@@ -33,8 +36,9 @@ Server::~Server(void)
 	if (_server_socket != -1)
 	{
 		if (VERBOSE == 1)
-				std::cout << "Freeing addrinfo" << std::endl;
+				std::cout << "Closing server socket " << std::endl;
 		close(_server_socket);
+		_server_socket = -1;
 	}
 }
 

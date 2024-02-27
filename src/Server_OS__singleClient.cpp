@@ -12,7 +12,7 @@
 
 #include "Server_OS__singleClient.hpp"
 
-ServerOS::ServerOS(std::map<std::string, std::string> &config_map, char *env[]): Server(config_map, env)
+ServerOS::ServerOS(ConfigParser &configParser, char *env[]): Server(configParser, env)
 {
 	
 }
@@ -95,7 +95,7 @@ void	ServerOS::launch(void) //new generic
 			continue;
 		}
 
-		Connection	client(_config_map ,client_fd, client_addr, _env); 
+		Connection	client(_configParser ,client_fd, client_addr, _env); 
 
 		std::cout << "New client connected in fd " << client_fd << std::endl;
 		std::cout << "Client IP: " << client.get_client_ip() << std::endl;

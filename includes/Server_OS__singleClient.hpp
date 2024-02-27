@@ -24,7 +24,7 @@
 class ServerOS : public Server
 {
     public:
-        ServerOS(std::map<std::string, std::string> &config_map, char *env[]);
+        ServerOS(ConfigParser &configParser, char *env[]);
         ~ServerOS(void);
         virtual void	setup_socket(void);
         virtual void	launch(void);
