@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 21:13:58 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/29 20:32:33 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,10 +136,10 @@ general-header = Cache-Control            ; Section 14.9
 // 	std::cout << "Response default constructor" << std::endl;
 // }
 
-Response::Response(ConfigParser &configParser): _configParser(configParser)
+Response::Response(int server_index, ConfigParser &configParser, Request &_request): _configParser(configParser)
 {
-	// to avoid error of unsed _configParser
-	if (_configParser.getSize() != 0)
+	// to avoid error of unused argumentss
+	if (_configParser.getSize() != 0 || server_index == -1 || _request.get_method().compare("Hi") == 0)
 		std::cout << "";
 
 

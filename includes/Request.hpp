@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:21:14 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 20:58:57 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/29 20:35:28 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ class Request
 
 
 	public:
-		Request(ConfigParser &configParser);
+		Request(int server_index, ConfigParser &configParser);
 		~Request(void);
 
 		int				get_request_status(void) const;

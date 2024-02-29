@@ -17,7 +17,7 @@ Server					&Server::operator=(Server const &rhs)
 
 // server_port, and config_map must come from a getter from configParser
 // Server::Server(ConfigParser &configParser, char *env[]):  _configParser(configParser), _server_port(_configParser.get_listen()), _server_name(_configParser.get_server_name()), _server_socket(-1), _env(env)
-Server::Server(ConfigParser &configParser, char *env[]): _configParser(configParser), _server_port("4432"), _server_name("42webserver"), _server_socket(-1), _env(env)
+Server::Server(int server_index, ConfigParser &configParser, char *env[]): _server_index(server_index), _configParser(configParser), _server_port("4432"), _server_name("42webserver"), _server_socket(-1), _env(env)
 {
 	
 	// _max_backlog_queue = _configParser.get_limit_conn();
@@ -28,6 +28,7 @@ Server::Server(ConfigParser &configParser, char *env[]): _configParser(configPar
 
 	_setup_server();
 	std::cout << "Server Setup done" << std::endl;
+
 
 }
 
@@ -121,7 +122,7 @@ void Server::_setup_server(void)
 // 	std::cout << "Binding sucessful" << std::endl;
 // }
 
-void	Server::listen_socket(void)
+void	Server::_listen_socket(void)
 {
 	if (listen(_server_socket, _max_backlog_queue) == -1)
 	{
@@ -132,10 +133,6 @@ void	Server::listen_socket(void)
 	}
 }
 
-void	Server::launch_webserver(void)
-{
-	launch();
-}
 
 void	Server::close_server_socket(void)
 {

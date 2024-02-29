@@ -23,11 +23,15 @@
 
 class ServerOS : public Server
 {
+    private:
+        virtual void	_setup_socket(void);
+        virtual void	_loop(void);
+
     public:
-        ServerOS(ConfigParser &configParser, char *env[]);
+        ServerOS(int server_index, ConfigParser &configParser, char *env[]);
         ~ServerOS(void);
-        virtual void	setup_socket(void);
-        virtual void	launch(void);
+        virtual void	launch_webserver(void);
+
 };
 
 #endif
