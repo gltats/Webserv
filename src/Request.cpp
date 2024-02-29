@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 21:14:09 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/28 20:56:23 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,12 +122,12 @@ int	Request::_parse_request_line(std::string buffer)
 	else
 	{
 		_uri = buffer.substr(i, j - i);
-		if (_uri.compare("/") == 0)
-		{
-			std::cout << REDB << "Error: _parse_request_line. " \
-			<< "Request Line No URI passed." << RESET << std::endl;
-			return(-1);
-		}
+		// if (_uri.compare("/") == 0)
+		// {
+		// 	std::cout << REDB << "Error: _parse_request_line. " \
+		// 	<< "Request Line No URI passed." << RESET << std::endl;
+		// 	return(-1);
+		// }
 		_uri = buffer.substr(i + 1, j - i - 1);
 	}
 
