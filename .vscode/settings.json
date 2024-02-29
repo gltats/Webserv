@@ -75,7 +75,8 @@
 		"numbers": "cpp",
 		"ranges": "cpp",
 		"span": "cpp",
-		"cinttypes": "cpp"
+		"cinttypes": "cpp",
+		"set": "cpp"
 	},
 	"42header.email": "mgranero@student.42wolfsburg.de",
 	"42header.username": "mgranero"

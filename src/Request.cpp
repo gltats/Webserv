@@ -6,15 +6,19 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 21:14:09 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/29 20:36:12 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include "Connection.hpp"
 
-Request::Request(ConfigParser &configParser): _configParser(configParser), _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body("")
+Request::Request(int server_index, ConfigParser &configParser): _configParser(configParser), _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body("")
 {
+	// to avoid unused error
+	if (server_index == -1)
+		std::cout << "" << std::endl;
+
 	//temporary until configParser is integrated
 	_allow_GET = true;
 	_allow_POST = true;

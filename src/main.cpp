@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 21:32:02 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/29 21:39:07 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,20 +32,23 @@ int	main(int argc, char *argv[], char *env[])
 		std::cerr << "webserver Parser: " << e.what() << std::endl;
 	}
 
+	
 	//setup signal handler
 	ft_setup_sighandler();
 
-	// launch webserver loop
 	try
 	{
-		// create a Server instance
-		ServerOS srv(configParser, env); // constructor setup socket and put it in listening mode
+		// ServerOS *servers[configParser.getNbServers()];
 
-		srv.setup_socket();
-		std::cout << "Socket Setup done" << std::endl;
-		srv.listen_socket();
-		std::cout << "Socket in listening mode" << std::endl;
-		srv.launch_webserver();
+		// for (size_t i = 0; i < configParser.getNbServers(); i++)
+		// {
+			// create multiple servers as configuration
+			// servers[i] = new ServerOS(i, configParser, env);
+			// servers[i].launch_webserver();
+			// create a Server instance
+			ServerOS srv(0, configParser, env); // constructor setup socket and put it in listening mode
+			srv.launch_webserver();
+		// }
 	}
 	catch(const UserRequestTermination& e)
 	{
@@ -59,6 +62,9 @@ int	main(int argc, char *argv[], char *env[])
 	{
 		std::cerr << e.what() << std::endl;
 	}
+	// free servers
+	// delete servers[];
+	
 	return (0);
 }
 

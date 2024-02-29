@@ -32,6 +32,7 @@
 class Server
 {
 	protected:
+		int									_server_index;
 		ConfigParser 						&_configParser;
 
 
@@ -53,16 +54,17 @@ class Server
 		// Server(Server const & src);
 		Server								&operator=(Server const &rhs);
 		void								_setup_server(void);
-
+		virtual void						_setup_socket(void) = 0;
+		virtual void						_loop(void) = 0;
+		void								_listen_socket(void);
 
 	public:
 		// does the server needs the map to the error pages or only the response object?
-		Server(ConfigParser &configParser, char *env[]);
+		Server(int server_index, ConfigParser &configParser, char *env[]);
 
 		virtual 							~Server(void);
 
-		virtual void						setup_socket(void) = 0;
-		void								listen_socket(void);
+		virtual void						launch_webserver(void)  = 0;
 
 
 		int									get_server_socket(void) const;
@@ -74,8 +76,6 @@ class Server
 		bool								get_allow_DELETE(void) const;
 
 		void								close_server_socket(void);
-    	virtual void						launch(void) = 0;
-		void								launch_webserver(void);
 
 };
 

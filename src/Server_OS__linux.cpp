@@ -6,18 +6,28 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/27 21:31:32 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/02/29 21:17:59 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server_OS__linux.hpp"
 
-ServerOS::ServerOS(ConfigParser &configParser, char *env[]): Server(configParser, env)
+ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env)
 {
 	
 }
 
-void	ServerOS::setup_socket(void)
+void	ServerOS::launch_webserver(void)
+{
+
+	_setup_socket();
+	std::cout << "Socket Setup done" << std::endl;
+	_listen_socket();
+	std::cout << "Socket in listening mode" << std::endl;
+	_loop();
+}
+
+void	ServerOS::_setup_socket(void)
 {
 	struct sockaddr_in serverAddr;
     
@@ -142,7 +152,7 @@ void	ServerOS::_print_epoll_events(uint32_t event, int fd)
 	EPOLLHUP: Event file descriptor hang up
 	EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
 */
-void	ServerOS::launch(void)
+void	ServerOS::_loop(void)
 {
 	// NON BLOCKING - FOR LINUX OS Only
 
@@ -252,7 +262,7 @@ void	ServerOS::launch(void)
 					}
 					
 					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
-					_fd2client_map[client_fd] = new Connection(_configParser ,client_fd, client_addr, _env); 
+					_fd2client_map[client_fd] = new Connection(_server_index, _configParser ,client_fd, client_addr, _env); 
 					std::cout << "New client connected in fd " << client_fd << std::endl;
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
 					std::cout << "Client PORT: " << _fd2client_map[client_fd]->get_client_port() << std::endl;

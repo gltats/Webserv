@@ -12,12 +12,22 @@
 
 #include "Server_OS__singleClient.hpp"
 
-ServerOS::ServerOS(ConfigParser &configParser, char *env[]): Server(configParser, env)
+ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env)
 {
 	
 }
 
-void	ServerOS::setup_socket(void)
+void	ServerOS::launch_webserver(void)
+{
+
+	_setup_socket();
+	std::cout << "Socket Setup done" << std::endl;
+	_listen_socket();
+	std::cout << "Socket in listening mode" << std::endl;
+	_loop();
+}
+
+void	ServerOS::_setup_socket(void)
 {
 	struct sockaddr_in serverAddr;
     
@@ -67,7 +77,7 @@ ServerOS::~ServerOS(void)
 	close_server_socket();
 }
 
-void	ServerOS::launch(void) //new generic
+void	ServerOS::_loop(void) //new generic
 {
 	// BLOCKING - FOR LINUX OS and MAC. One Client Only
 
@@ -95,7 +105,7 @@ void	ServerOS::launch(void) //new generic
 			continue;
 		}
 
-		Connection	client(_configParser ,client_fd, client_addr, _env); 
+		Connection	client(_server_index, _configParser,client_fd, client_addr, _env); 
 
 		std::cout << "New client connected in fd " << client_fd << std::endl;
 		std::cout << "Client IP: " << client.get_client_ip() << std::endl;
