@@ -1,6 +1,7 @@
 
 
 #include <iostream>
+#include <map>
 #include "includes/color_code.hpp"
 
 // value to trigger "Request-URI Too Long" status 414
@@ -19,6 +20,8 @@ std::string _method;
 std::string _uri;
 std::string _protocol;
 std::string _version;
+
+std::unordered_map<std::string, std::string> _headers_map;
 
 class MethodNotAllowedException: public std::exception
 {
@@ -71,7 +74,12 @@ std::string           extract_until_delimiter(std::string *str, std::string deli
     if (idx != std::string::npos)
     {
         extract = str->substr(0, idx);
-         str->erase(0, idx + delimiter.length());
+        str->erase(0, idx + delimiter.length());
+    }
+    else if (str->length() > 0)
+    {
+        extract = *str;
+        str->clear();
     }
     return (extract);
 }
@@ -151,6 +159,61 @@ void    check_uri(void)
     std::cout << CYAN << "URI Version : " << _uri << RESET << std::endl;
 }
 
+/*
+    we could have getters for every entry
+    or a map with what was passed, and what you want to use you try to get it from a map
+*/
+void    parser_header_line(std::string line)
+{
+    // get key
+    std::string key = extract_until_delimiter(&line, ": ");
+
+    // get value
+    std::string value = line;
+
+    // match
+    _headers_map[key] = value;
+}
+
+void    check_headers_map(void)
+{
+     // create an map iterator element
+	std::unordered_map<std::string, std::string>::iterator it;
+
+	// clean up any still open file descriptors or Connections
+	for (it = _headers_map.begin(); it != _headers_map.end(); it++)
+	{
+        if (it->first.length() == 0 || it->second.length() == 0)
+        {
+            std::cerr << REDB << "Key or Value empty" << RESET << std::endl;
+            throw BadRequestException();
+        }
+    } 
+}
+
+
+void    print_headers_map(void)
+{
+     // create an map iterator element
+	std::unordered_map<std::string, std::string>::iterator it;
+
+	// clean up any still open file descriptors or Connections
+	for (it = _headers_map.begin(); it != _headers_map.end(); it++)
+	{
+        std::cout << "Key:<" << it->first << "> | Value:<" << it->second << ">" << std::endl;
+    } 
+}
+
+std::string    get_header_per_key(std::string header_key)
+{
+    std::unordered_map<std::string, std::string>::iterator it = _headers_map.find(header_key);
+
+    if (it == _headers_map.end())
+    {
+        return ("");
+    }
+    return(it->second);
+}
 
 void    response(void)
 {
@@ -161,14 +224,16 @@ void    response(void)
 
     std::string line;
     // parse first line -> request line
-    parse_request_line(extract_until_delimiter(&_headers, "\r\n"));
+    line = extract_until_delimiter(&_headers, "\r\n");
+    parse_request_line(line);
 
     while (1)
     {
         line.clear();
         line = extract_until_delimiter(&_headers, "\r\n");
         if (line.length() == 0)
-            break;
+            break; 
+        parser_header_line(line);
     }
 
 
@@ -178,6 +243,7 @@ void    response(void)
         check_uri();
         check_protocol();
         check_version();
+        check_headers_map();
     }
     catch(const MethodNotAllowedException& e)
     {
@@ -200,12 +266,6 @@ void    response(void)
         exit (2);
     }
     
-       
-
-    std::cout << std::endl;
-    std::cout << "headers <" << _headers << ">" << std::endl;
-    std::cout << std::endl;
-    std::cout << "body <" << _body << ">" << std::endl;
 
     std::cout << std::endl;
     std::cout << "PARSED :" << std::endl;
@@ -213,6 +273,13 @@ void    response(void)
     std::cout << "uri      <" << _uri << ">" << std::endl;
     std::cout << "protocol <" << _protocol << ">" << std::endl;
     std::cout << "version  <" << _version << ">" << std::endl;
+
+    std::cout << "-------- Headers --------" << std::endl;
+    print_headers_map();
+
+    std::cout << "---------GET HEADER VALUE-------" << std::endl;
+    std::cout << "Existing Key 'Host' value is : <" << get_header_per_key("Host") << ">" << std::endl;
+    std::cout << "Non-Existing Key 'Lasagna' value is : <" << get_header_per_key("Lasagna") << ">" << std::endl;
 
 }
 
@@ -231,7 +298,7 @@ void    response(void)
 int     main(void)
 {
 
-    _buffer = "GET /html/basic.html HTTP/1.1\r\nHost: Maira\r\nContent-Lenght: 12\r\n\r\nMozilla i am here\nTransfer-Encoding: chunked\nDeveloper Network";
+    _buffer = "GET /html/basic.html HTTP/1.1\r\nHost: Maira\r\nContent-Lenght: 12\r\nTransfer-Encoding: chunked\r\nAccept: enconding\r\n\r\nMozilla i am here\nSomething written\nDeveloper Network";
 
     response();
     return (0);
