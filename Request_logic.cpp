@@ -125,18 +125,18 @@ void _remove_trailing_LWS(std::string &str)
 void _replace_middle_LWS(std::string &str)
 {
     size_t      idx;
-    size_t      idx_last_match = -1;
+
     size_t      idx_next_match;
 
     while (1)
     {
         // try to find option 1: CRLFSP
-        idx = str.find("\r\n ", idx_last_match + 1, 3);
+        idx = str.find("\r\n ", 0 , 3);
         if (idx == std::string::npos)
         {
             // CR + LF + SP not found, try option 2
             // try to find option 1: CRLFHT
-            idx = str.find("\r\n\t", idx_last_match + 1);
+            idx = str.find("\r\n\t", 0);
             if (idx == std::string::npos)
             {
                 // no LWS found -> nothing to remove
@@ -154,16 +154,14 @@ void _replace_middle_LWS(std::string &str)
         {
             std::cout << "replace idx " << idx << std::endl;
             str.replace(idx, 3, " ");
-            idx_last_match = idx;
         }
         else
         {
             str.erase(idx, 3);
             std::cout << "erased idx " << idx << " up to " << idx + 3 << std::endl;
-            idx_last_match = idx + 2;
         }
-             
-        
+         std::cout << "string is <" << str << ">" << std::endl;
+        idx_last_match = idx;
     }
 }
 
