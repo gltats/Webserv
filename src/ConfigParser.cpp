@@ -163,11 +163,11 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	std::string errorNumber = parameters["error_number"];
 
 	// Check if the "listen" parameter is repeated
-	if (listenValues.find(listenValue) != listenValues.end())
-	{
-		throw std::runtime_error("Error: 'listen' parameter is repeated");
-	}
-	else if (listenValue.empty() || serverName.empty() || bodySize.empty()) // empty parameters
+	// if (listenValues.find(listenValue) != listenValues.end())
+	// {
+	// 	throw std::runtime_error("Error: 'listen' parameter is repeated");
+	// }
+	if (listenValue.empty() || serverName.empty() || bodySize.empty()) // empty parameters
 		throw std::invalid_argument("Empty value on configuration file");
 	else if (!std::all_of(listenValue.begin(), listenValue.end(), ::isdigit) || !std::all_of(bodySize.begin(), bodySize.end(), ::isdigit)) // check if the value is a digit
 		throw std::invalid_argument("Value is not a digit");
