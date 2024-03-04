@@ -93,8 +93,6 @@ void ConfigParser::splitServers(std::string &content)
 
 std::map<std::string, std::string> ConfigParser::parseParameters(const std::string &serverConfig)
 {
-	std::map<std::string, std::string> parameters;
-
 	for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
 	{
 		std::string key = keys[i];

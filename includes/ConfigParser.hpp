@@ -24,6 +24,7 @@
 
 class ConfigFile;
 
+
 static std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "autoindex", "indexing", "cgi"};
 
 

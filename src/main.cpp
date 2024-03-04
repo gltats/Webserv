@@ -26,6 +26,8 @@ void test()
         ConfigParser configParser;
         try {
             configParser.getConfig("configs/default.conf");
+            std::cout << "Test a: " << configParser.parameters["listen"] << std::endl;
+            std::cout << "Test b: " << configParser.getListenValue(configParser.parameters) << std::endl;
         } catch (const std::invalid_argument& e) {
             std::cerr << "Test 1: " << e.what() << std::endl;
         } catch (const std::runtime_error& e) {
