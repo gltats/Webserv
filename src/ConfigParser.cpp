@@ -60,6 +60,15 @@ void ConfigParser::getConfig(const std::string &configtFile)
 	removeWhiteSpace(content);
 	splitServers(content);
 
+	//another way to do it
+	// for (size_t i = 0; i < this->_nb_server; i++)
+	// {
+	// 	ServerConfig server;
+	// 	createServer(this->_server_config[i], server);
+	// 	this->_servers.push_back(server);
+	// }
+	// if (this->_nb_server > 1)
+	// 	checkServers();
 	// Parse the parameters for each server
 	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
 	{
@@ -74,20 +83,20 @@ void ConfigParser::getConfig(const std::string &configtFile)
 // helper functions
 void ConfigParser::splitServers(std::string &content)
 {
-	size_t startPos = content.find("server{");
-	size_t endPos = content.find("}}", startPos);
+	startServer = content.find("server{");
+	endServer = content.find("}}", startServer);
 
 	if (content.find("server", 0) == std::string::npos)
 		throw std::invalid_argument("Server was not found");
-	while (startPos != std::string::npos && endPos != std::string::npos)
+	while (startServer != std::string::npos && endServer != std::string::npos)
 	{
 		if (content.find("server", 0) == std::string::npos)
 			throw std::invalid_argument("1 Server found");
-		std::string server = content.substr(startPos, endPos - startPos + 1);
+		std::string server = content.substr(startServer, endServer - startServer + 1);
 		this->servers.push_back(server);
 
-		startPos = content.find("server{", endPos);
-		endPos = content.find("}", startPos);
+		startServer = content.find("server{", endServer);
+		endServer = content.find("}", startServer);
 	}
 }
 
@@ -242,6 +251,8 @@ void ConfigParser::print()
 		std::cout << "--------------------------------------" << std::endl;
 	}
 	std::cout << "--------------------------------------" << std::endl;
+	// printing other server:
+	// std::cout <<  servers.size() << std::endl;
 }
 
 // getters
