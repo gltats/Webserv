@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <ctime>
-#include "../includes/config.hpp"
+#include "../CGI/includes/config.hpp"
 
 class Response {
 

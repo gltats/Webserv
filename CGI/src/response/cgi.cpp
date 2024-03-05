@@ -1,5 +1,5 @@
 
-#include "../../includes/response.hpp"
+#include "../../../includes/response_arafa.hpp"
 
 int Response::runcgi()
 {
