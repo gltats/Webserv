@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/29 20:30:28 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/06 23:08:39 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ class Response
 
 
 	public:
-		Response(int server_index, ConfigParser &configParser, Request &_request);
+		Response(int server_index, ConfigParser &configParser, Request &_request, char *env[]);
 
 		
 

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/29 20:32:51 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/06 23:12:29 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,19 +30,22 @@
 class Connection
 {
 	private:
+		int 								_server_index;
+		ConfigParser 						&_configParser;
+		char								**_env;
 		int									_connection_socket;
 		ssize_t								_size_data_recv;
 		int									_flags_recv;
 		const size_t						_buffer_rcv_size;
 		char								*_buffer_rcv;
-		char								**_env;
 		Request 							_request;
 		Response							_response;
 		bool								_is_read_complete;
 		// bool					_			is_write_complete;
+
 		std::string							_client_ip;
 		std::string							_client_port;
-	
+
 		void								_obtain_client_ip(struct sockaddr_in &client_addr);
 		void								_obtain_client_port(struct sockaddr_in &client_addr);
 
@@ -63,7 +66,6 @@ class Connection
 		std::string							get_client_ip(void) const;
 		std::string							get_client_port(void) const;
 	
-
 };
 
 #endif
