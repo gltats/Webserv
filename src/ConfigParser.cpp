@@ -24,7 +24,7 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &copy)
 {
 	if (this != &copy)
 	{
-		
+
 		this->_size = copy._size;
 		this->servers = copy.servers;
 		this->parameters = copy.parameters;
@@ -52,24 +52,27 @@ ConfigParser::~ConfigParser()
 // main function:
 void ConfigParser::getConfig(const std::string &configtFile)
 {
-	ConfigFile file(configtFile); 
+	ConfigFile file(configtFile);
 	// Check if the file exists, has the correct path and is readable
 	file.checkPath(configtFile);
 	std::string content = file.content;
+	// std::cout << "Heeeeereer Content: " << content << std::endl;
 	removeComments(content);
+	std::istringstream stream(content);
+	std::string line;
+	while (std::getline(stream, line))
+	{
+
+			std::cout << "Valid line: " << line << std::endl;
+
+		if(!(line.empty() || line.back() == ';' || line.back() == '{' || line.back() == '}' || line.back() == ' ' || line.back() == '\t'))
+		{
+			std::cout << "Invalid line: " << line << std::endl;
+			throw std::invalid_argument("Invalid configuration line");
+		}
+	}
 	removeWhiteSpace(content);
 	splitServers(content);
-
-	//another way to do it
-	// for (size_t i = 0; i < this->_nb_server; i++)
-	// {
-	// 	ServerConfig server;
-	// 	createServer(this->_server_config[i], server);
-	// 	this->_servers.push_back(server);
-	// }
-	// if (this->_nb_server > 1)
-	// 	checkServers();
-	// Parse the parameters for each server
 	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
 	{
 		parameters = parseParameters(*it);
@@ -252,7 +255,7 @@ void ConfigParser::print()
 	}
 	std::cout << "--------------------------------------" << std::endl;
 	// printing other server:
-	// std::cout <<  servers.size() << std::endl;
+	std::cout << servers.size() << std::endl;
 }
 
 // getters
@@ -321,4 +324,3 @@ std::string ConfigParser::getCgi(const std::map<std::string, std::string> &param
 {
 	return parameters.at("cgi");
 }
-
