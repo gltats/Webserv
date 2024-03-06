@@ -12,6 +12,16 @@
 
 #include "library.hpp"
 
+std::string	size_t2str(size_t nb)
+{
+	std::stringstream	nb2str;
+	std::string			str;
+
+	nb2str << nb;
+	str = nb2str.str();
+	return (str);
+}
+
 std::string	int2str(int nb)
 {
 	std::stringstream	nb2str;

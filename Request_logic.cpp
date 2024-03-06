@@ -38,7 +38,8 @@
 #include <iostream>
 #include <map>
 #include <stdlib.h>
-#include "includes/color_code.hpp"
+#include "color_code.hpp"
+#include "library.hpp"
 
 // value to trigger "Request-URI Too Long" status 414
 #define MAX_REQUEST_LINE_LEN 8000
@@ -795,30 +796,217 @@ size_t  get_content_length(void)
     return (_content_len);
 }
 
+void     set_content_length(size_t len)
+{
+    _content_len = len;
+    _headers_map["Content-Length"] = size_t2str(_content_len);
+}
+
 int    get_error(void)
 {
     return (_error);
 }
 
-void     _convert_content_length(void)
+size_t     _convert_str2size_t(std::string str)
 {
     char*           endptr;
-    std::string     str_content_len = get_header_per_key("Content-Length");
+    size_t          nb;
 
-    if (str_content_len.length() == 0)
-        _content_len = 0;
-    else if (str_content_len.length() > 0 && str_content_len[0] == '0')
-        _content_len = 0;
+    if (str.length() == 0)
+        nb = 0;
+    else if (str.length() > 0 && str[0] == '0')
+        nb = 0;
     else
     {
-        _content_len = std::strtol(str_content_len.c_str(), &endptr, 10);
-        if (_content_len == 0 || std::strlen(endptr) > 0)
+        nb = std::strtol(str.c_str(), &endptr, 10);
+        if (nb == 0 || std::strlen(endptr) > 0)
         {
-            std::cerr << REDB << "error to convert content length from string to long" << RESET << std::endl;
+            std::cerr << REDB << "error to convert string " << str << " to size_t" << RESET << std::endl;
             throw BadRequestException();
         }
     }
+    return (nb);
 }
+
+
+size_t     _convert_str2hex(std::string str)
+{
+    char*           endptr;
+    size_t          nb;
+
+    if (str.length() == 0)
+        nb = 0;
+    else if (str.length() > 0 && str[0] == '0')
+        nb = 0;
+    else
+    {
+        nb = std::strtol(str.c_str(), &endptr, 16);
+        if (nb == 0 || std::strlen(endptr) > 0)
+        {
+            std::cerr << REDB << "error to convert string " << str << " to hex" << RESET << std::endl;
+            throw BadRequestException();
+        }
+    }
+    return (nb);
+}
+
+void     _convert_content_length(void)
+{
+    set_content_length(_convert_str2size_t(get_header_per_key("Content-Length")));
+}
+
+
+// Transfer Encoding
+/*
+    transfer-coding    = "chunked" ; Section 4.1
+                        / "compress" ; Section 4.2.1
+                        / "deflate" ; Section 4.2.2
+                        / "gzip" ; Section 4.2.3
+                        / transfer-extension
+     transfer-extension = token *( OWS ";" OWS transfer-parameter )
+   registered within the HTTP Transfer Coding registry, as defined in
+   Section 8.4.  They are used in the TE (Section 4.3) and
+   Transfer-Encoding (Section 3.3.1) header fields.
+
+
+   A recipient MUST be able to parse the chunked transfer coding
+   (Section 4.1) because it plays a crucial role in framing messages
+   when the payload body size is not known in advance. 
+
+
+If any transfer coding
+   other than chunked is applied to a request payload body, the sender
+   MUST apply chunked as the final transfer coding to ensure that the
+   message is properly framed.  If any transfer coding other than
+   chunked is applied to a response payload body, the sender MUST either
+   apply chunked as the final transfer coding or terminate the message
+   by closing the connection.
+
+    For example,
+
+     Transfer-Encoding: gzip, chunked
+
+   indicates that the payload body has been compressed using the gzip
+   coding and then chunked using the chunked coding while forming the
+   message body.
+
+ chunked-body   = *chunk
+                      last-chunk
+                      trailer-part
+                      CRLF
+
+     chunk          = chunk-size [ chunk-ext ] CRLF
+                      chunk-data CRLF
+     chunk-size     = 1*HEXDIG
+     last-chunk     = 1*("0") [ chunk-ext ] CRLF
+
+     chunk-data     = 1*OCTET ; a sequence of chunk-size octets
+
+    HEXDIG (hexadecimal 0-9/A-F/a-f)
+
+     The chunk-size field is a string of hex digits indicating the size of
+   the chunk-data in octets.  The chunked transfer coding is complete
+   when a chunk with a chunk-size of zero is received, possibly followed
+   by a trailer, and finally terminated by an empty line.
+
+   A recipient MUST ignore unrecognized chunk extensions.  A server
+   ought to limit the total length of chunk extensions received in a
+   request to an amount reasonable for the services provided, in the
+   same way that it applies length limitations and timeouts for other
+   parts of a message, and generate an appropriate 4xx (Client Error)
+   response if that amount is exceeded.
+
+4.1.3.  Decoding Chunked
+
+   A process for decoding the chunked transfer coding can be represented
+   in pseudo-code as:
+
+     length := 0
+     read chunk-size, chunk-ext (if any), and CRLF
+     while (chunk-size > 0) {
+        read chunk-data and CRLF
+        append chunk-data to decoded-body
+        length := length + chunk-size
+        read chunk-size, chunk-ext (if any), and CRLF
+     }
+     read trailer field
+     while (trailer field is not empty) {
+        if (trailer field is allowed to be sent in a trailer) {
+            append trailer field to existing header fields
+        }
+        read trailer-field
+     }
+     Content-Length := length
+     Remove "chunked" from Transfer-Encoding
+     Remove Trailer from existing header fields
+
+    POST /upload HTTP/1.1
+    Host: example.com
+    Content-Type: application/octet-stream
+    Transfer-Encoding: chunked
+
+    4; param1=value1; param2=value2
+    data
+    5; param3=value3
+    chunked
+    0
+    Trailer-Header1: value1
+    Trailer-Header2: value2
+
+    unchunked:4data5chunked
+*/
+
+void    _process_chunk(std::string str)
+{
+    size_t          accum_length = 0;
+    std::string     accum_body = "";
+    std::string     str_chunk_size;
+    size_t          chunk_size;
+    std::string     chunk_data;
+
+    if (str.rfind("\r\n\r\n") == std::string::npos)
+    {
+        std::cerr << REDB  << "error format last-chunk terminator CRLF CRLF not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    while(str.length() > 0)
+    {
+        str_chunk_size = extract_until_delimiter(&str, "\r\n");
+        if (str_chunk_size.length() == 0)
+        {
+            std::cerr << REDB  << "error to retrieve chunk size from request" << RESET << std::endl;
+            throw BadRequestException();
+        }
+
+        chunk_size = _convert_str2hex(str_chunk_size);
+
+        chunk_data = extract_until_delimiter(&str, "\r\n");
+        if (chunk_data.length() != chunk_size)
+        {
+            std::cerr << REDB  << "chunk data length does not match chunk size" << RESET << std::endl;
+            throw BadRequestException();
+        }
+        else if (chunk_size == 0 && str.length() == 0)
+        {
+            // chunk has reached its end
+            // new body and new content length
+            _body = accum_body;
+            set_content_length(accum_length); 
+            return ;
+        }
+        accum_length += chunk_size;
+        accum_body.append(chunk_data);
+    }
+    std::cerr << REDB  << "error format last-chunk" << RESET << std::endl;
+    throw BadRequestException();
+}
+
+/*
+    file transfer
+    multipart/form-data
+
+*/
+
 
 void    _process_body(std::string body)
 {
@@ -828,7 +1016,6 @@ void    _process_body(std::string body)
     if (get_header_per_key("Content-Length").length() > 0)
     {
         _convert_content_length();
-        size_t _content_len = get_content_length();
         if (_content_len != _body.length())
         {
             std::cerr << REDB  << "mismatch from Content-Header field value and actual body length received" << RESET << std::endl;
@@ -842,18 +1029,88 @@ void    _process_body(std::string body)
     }   
     else if (transfer_enconding.length() > 0)
     {
-        // handle chunked
-
-
-        // handle file transfer?
+        if (transfer_enconding.compare("chunked") == 0)
+            _process_chunk(_body);
+        else
+        {
+            std::cerr << REDB << "Transfer-Encoding: " << transfer_enconding << ", is not supported" << RESET << std::endl;
+            throw BadRequestException();
+        }
     }    
+
+     // handle file transfer?
+
     //  _check_body_octet(_body);
 }
+
+
+
+
+/*
+Content lenght
+
+A user agent SHOULD send a Content-Length in a request message when
+   no Transfer-Encoding is sent and the request method defines a meaning
+   for an enclosed payload body.  For example, a Content-Length header
+   field is normally sent in a POST request even when the value is 0
+   (indicating an empty payload body). 
+    (e.g., "Content-Length: 42, 42"),
+   indicating that duplicate Content-Length header fields have been
+   generated or combined by an upstream message processor, then the
+   recipient MUST either reject the message as invalid or replace the
+   duplicated field-values with a single valid Content-Length field
+   containing that decimal value prior to determining the message body
+   length or forwarding the message.
+
+   If a message is received with both a Transfer-Encoding and a
+       Content-Length header field, the Transfer-Encoding overrides the
+       Content-Length.  Such a message might indicate an attempt to
+       perform request smuggling (Section 9.5) or response splitting
+       (Section 9.4) and ought to be handled as an error.  A sender MUST
+       remove the received Content-Length field prior to forwarding such
+       a message downstream
+       If a valid Content-Length header field is present without
+       Transfer-Encoding, its decimal value defines the expected message
+       body length in octets.  If the sender closes the connection or
+       the recipient times out before the indicated number of octets are
+       received, the recipient MUST consider the message to be
+       incomplete and close the connection.
+
+          A server MAY reject a request that contains a message body but not a
+   Content-Length by responding with 411 (Length Required).
+   A server that receives an incomplete request message, usually due to
+   a canceled request or a triggered timeout exception, MAY send an
+   error response prior to closing the connection.
 
 /*
     RFC 2616 - 4.2 Message Headers
     Field names
    are case-insensitive
+An HTTP/1.1 user agent MUST NOT preface
+   or follow a request with an extra CRLF.  If terminating the request
+   message body with a line-ending is desired, then the user agent MUST
+   count the terminating CRLF octets as part of the message body length
+   In the interest of robustness, a server that is expecting to receive
+   and parse a request-line SHOULD ignore at least one empty line (CRLF)
+   received prior to the request-line.
+
+
+
+
+Fielding & Reschke           Standards Track                   [Page 34]
+
+RFC 7230           HTTP/1.1 Message Syntax and Routing         June 2014
+
+
+   Although the line terminator for the start-line and header fields is
+   the sequence CRLF, a recipient MAY recognize a single LF as a line
+   terminator and ignore any preceding CR.
+
+   When a server listening only for HTTP request messages, or processing
+   what appears from the start-line to be an HTTP request message,
+   receives a sequence of octets that does not match the HTTP-message
+   grammar aside from the robustness exceptions listed above, the server
+   SHOULD respond with a 400 (Bad Request) response.
 
 */
 //implement
@@ -939,6 +1196,9 @@ void    request(void)
     print_headers_map();
 
     std::cout << "---------GET HEADER VALUE-------" << std::endl;
+    std::cout << "'Content-Length' value is : <" << get_header_per_key("Content-Length") << ">" << std::endl;
+    std::cout << "'Transfer-Encoding' value is : <" << get_header_per_key("Transfer-Encoding") << ">" << std::endl;
+
     std::cout << "Existing Key 'Host' value is : <" << get_header_per_key("Host") << ">" << std::endl;
     std::cout << "Non-Existing Key 'Lasagna' value is : <" << get_header_per_key("Lasagna") << ">" << std::endl;
 
@@ -973,8 +1233,14 @@ int     main(void)
     //tests
    // _buffer = "";
 
+    // duplicate field name but with appending characteristics
     // _buffer = "GET / HTTP/1.1\r\nHost: Leila : John\r\nHost: 123123, 12313d\r\n\r\n";
-     _buffer = "GET / HTTP/1.1\r\nHost:Maira\r\nContent-Length: 2\r\n\r\nOi";
+    //_buffer = "GET / HTTP/1.1\r\nHost:Maira\r\nContent-Length: 2\r\n\r\nOi";
+
+    // chunked
+    //_buffer = "GET / HTTP/1.1\r\nHost: Maira\r\nTransfer-Encoding: chunked\r\n\r\n2\r\nOi\r\n1\r\n!\r\n0\r\n\r\n";
+    // bigger chunk
+    _buffer = "GET / HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n2A\r\nThis chunk has 42 characters incl alphanum\r\n1\r\n!\r\n0\r\n\r\n";
 
     //  _buffer = "GET / HTTP/1.1\r\nHost:Maira\r\nContent-Length: 12\r\nTransfer-Encoding: chunked\r\nAccept: enconding\r\n\r\nMozilla i am here\nSomething written\nDeveloper Network";
     // _buffer = "B\r\n \r\n E";
