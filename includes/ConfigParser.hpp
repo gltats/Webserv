@@ -32,6 +32,7 @@ private:
 	std::string _path;
 	size_t _size;
 	void removeNewLines(std::string &content);
+	bool isDigit(const std::string& str);
 	// std::vector<std::string> servers;
 	// std::map<std::string, std::string> parameters;
 	// std::vector<std::map<std::string, std::string> > serverParameters;

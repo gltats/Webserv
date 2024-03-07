@@ -64,7 +64,7 @@ void ConfigParser::getConfig(const std::string &configtFile)
 	while (std::getline(stream, line))
 	{
 		std::cout << "Valid line: " << line << std::endl;
-		
+
 		if (!line.empty())
 		{
 			char lastChar = line.at(line.size() - 1);
@@ -186,8 +186,10 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	// }
 	if (listenValue.empty() || serverName.empty() || bodySize.empty()) // empty parameters
 		throw std::invalid_argument("Empty value on configuration file");
-	else if (!std::all_of(listenValue.begin(), listenValue.end(), ::isdigit) || !std::all_of(bodySize.begin(), bodySize.end(), ::isdigit)) // check if the value is a digit
+	else if (!isDigit(listenValue) || !isDigit(bodySize))
+	{
 		throw std::invalid_argument("Value is not a digit");
+	}
 	if (errorNumber != "400" && errorNumber != "401" && errorNumber != "403" && errorNumber != "404" && errorNumber != "405" && errorNumber != "408" && errorNumber != "413" && errorNumber != "414" && errorNumber != "415" && errorNumber != "418" && errorNumber != "500" && errorNumber != "501" && errorNumber != "504" && errorNumber != "505")
 	{
 		throw std::invalid_argument("Invalid value for 'error_number'");
@@ -197,6 +199,16 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	listenValues.insert(serverName);
 	listenValues.insert(bodySize);
 	listenValues.insert(errorNumber);
+}
+
+
+bool ConfigParser::isDigit(const std::string& str) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        if (!::isdigit(*it)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void ConfigParser::removeWhiteSpace(std::string &content)
