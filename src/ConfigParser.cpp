@@ -58,21 +58,26 @@ void ConfigParser::getConfig(const std::string &configtFile)
 	std::string content = file.content;
 	// std::cout << "Heeeeereer Content: " << content << std::endl;
 	removeComments(content);
+	removeWhiteSpace(content);
 	std::istringstream stream(content);
 	std::string line;
 	while (std::getline(stream, line))
 	{
-
-			std::cout << "Valid line: " << line << std::endl;
-
-		if(!(line.empty() || line.back() == ';' || line.back() == '{' || line.back() == '}' || line.back() == ' ' || line.back() == '\t'))
+		std::cout << "Valid line: " << line << std::endl;
+		
+		if (!line.empty())
 		{
-			std::cout << "Invalid line: " << line << std::endl;
-			throw std::invalid_argument("Invalid configuration line");
+			char lastChar = line.at(line.size() - 1);
+			if (!(line.empty() || lastChar == ';' || lastChar == '{' || lastChar == '}'))
+			{
+				std::cout << "Invalid line: " << line << std::endl;
+				throw std::invalid_argument("Invalid configuration line");
+			}
 		}
 	}
-	removeWhiteSpace(content);
+	removeNewLines(content);
 	splitServers(content);
+
 	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
 	{
 		parameters = parseParameters(*it);
@@ -199,6 +204,18 @@ void ConfigParser::removeWhiteSpace(std::string &content)
 	std::string::iterator it = content.begin();
 	while (it != content.end())
 	{
+		if (*it == ' ' || *it == '\t')
+			it = content.erase(it);
+		else
+			++it;
+	}
+}
+
+void ConfigParser::removeNewLines(std::string &content)
+{
+	std::string::iterator it = content.begin();
+	while (it != content.end())
+	{
 		if (*it == ' ' || *it == '\t' || *it == '\n' || *it == '\r' || *it == '\f' || *it == '\v')
 			it = content.erase(it);
 		else
@@ -213,7 +230,14 @@ void ConfigParser::removeComments(std::string &content)
 	while (pos != std::string::npos)
 	{
 		size_t endOfLine = content.find_first_of("\n", pos);
-		content.erase(pos, endOfLine - pos);
+		if (endOfLine != std::string::npos) // If there is a newline after the comment
+		{
+			content.erase(pos, endOfLine - pos + 1); // Erase the comment and the newline
+		}
+		else
+		{
+			content.erase(pos, endOfLine - pos); // If there is no newline, erase to the end of the string
+		}
 		pos = content.find('#');
 	}
 }

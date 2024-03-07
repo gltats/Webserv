@@ -31,6 +31,7 @@ class ConfigParser
 private:
 	std::string _path;
 	size_t _size;
+	void removeNewLines(std::string &content);
 	// std::vector<std::string> servers;
 	// std::map<std::string, std::string> parameters;
 	// std::vector<std::map<std::string, std::string> > serverParameters;
@@ -42,6 +43,7 @@ public:
 	std::vector<std::string> servers;
 	std::vector<std::map<std::string, std::string> > serverParameters;
 	std::set<std::string> listenValues;
+	std::vector<std::string> locations;
 	ConfigParser();
 	// ConfigParser(std::string const ConfigFile);
 	ConfigParser(const ConfigParser &copy);
