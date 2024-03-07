@@ -22,6 +22,7 @@ std::string	size_t2str(size_t nb)
 	return (str);
 }
 
+
 std::string	int2str(int nb)
 {
 	std::stringstream	nb2str;

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:08:58 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/07 21:28:47 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,14 +346,18 @@ Response::~Response(void)
 
 }
 
+#include <fcntl.h>
 int	Response::_read_file_data(Request const &req)
 {
 	std::ifstream 		html_file;
 	std::stringstream	ss;
+	std::string file = ".";
+	file.append(req.get_uri());
 	// std::string			fcontent;
 
 	// std::cout << "...trying to open <" <<req.get_uri() << ">" << std::endl;
-	html_file.open(req.get_uri().c_str(), std::ifstream::in);
+	
+	html_file.open(file.c_str(), std::ifstream::in);
 	if (html_file.is_open() == 0)
 	{
 		std::cout << REDB << "Error: _get_file_data. File could not be openned" << RESET << std::endl;

@@ -17,10 +17,10 @@
 # include <sstream>
 # include <stdlib.h>
 # include "Webserv_Exceptions.hpp"
-# include "color_code.hpp"
+# include <color_code.hpp>
 
-std::string	int2str(int nb);
 std::string	size_t2str(size_t nb);
+std::string	int2str(int nb);
 int     	str2int(std::string);
 void	    clear_memory(void *dest, size_t size);
 void	    print_error(std::string error_msg);

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include "color_code.hpp"
 
-// #include "ConfigParser.hpp"
+#include "ConfigParser.hpp"
 
 #include "Connection.hpp"
 #include "Webserv_Exceptions.hpp"
