@@ -5,484 +5,1257 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/04 21:23:30 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/29 20:36:12 by mgranero         ###   ########.fr       */
+/*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
+/*   Updated: 2024/03/06 23:07:14 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
-#include "Connection.hpp"
 
-Request::Request(int server_index, ConfigParser &configParser): _configParser(configParser), _request_status(0), _method(""), _uri(""), _protocol_version(""), _user_agent(""), _accept(""), _host(""), _accept_encoding(""), _connection(""), _cache_control(""), _transfer_enconding(""), _body("")
+Request::Request(int server_index, ConfigParser &configParser)
 {
-	// to avoid unused error
-	if (server_index == -1)
-		std::cout << "" << std::endl;
+    // consume
+    if (server_index == -1 || configParser.getSize() < 0)
+        std::cout << "" ;
+    
+    _cleanMemory();
 
-	//temporary until configParser is integrated
-	_allow_GET = true;
-	_allow_POST = true;
-	_allow_DELETE = true;
-
-
-	// if (_config_map["allow_GET"].compare("y") == 0)
-	// 	_allow_GET = true;
-	// else
-	// 	_allow_GET = false;
-
-	// if (_config_map["allow_POST"].compare("y") == 0)
-	// 	_allow_POST = true;
-	// else
-	// 	_allow_POST = false;
-
-	// if (_config_map["allow_DELETE"].compare("y") == 0)
-	// 	_allow_DELETE = true;
-	// else
-	// 	_allow_DELETE = false;
-
-	if (_configParser.getSize() != 0)
-		std::cout << "";
-
-	std::cout << "Request default constructor " << std::endl;
+    // for testing: must come from configParser
+    _allow_GET = true; // get from configParser
+    _allow_POST = true; // get from configParser
+    _allow_DELETE = true; // get from configParser
 
 }
-
-Request			&Request::operator=(Request const &rhs)
-{
-	(void)rhs;
-	return (*this);
-}
-
-// Request::Request(Request const &src)
-// {
-// 	(void)src;
-// }
 
 Request::~Request(void)
 {
-	std::cout << "Request deconstructor" << std::endl;
+
+}
+
+void    Request::_cleanMemory(void)
+{
+    _body.clear();
+    _method.clear();
+    _headers.clear();
+    _method.clear();
+    _uri.clear();
+    _protocol.clear();
+    _version.clear();
+    
+    _content_len = 0;
+    _error = 0;
+
+    _headers_map.clear();
+}
+
+void                Request::parse_request(char const *buffer)
+{
+    std::string     line;
+    std::string     request_buffer = buffer;
+
+    _cleanMemory();
+
+    try
+    {
+        _split_headers_body(request_buffer);
+
+        // parse first line -> request line
+        line = _extract_until_delimiter(&_headers, "\r\n");
+        _process_request_line(line);
+
+        while (1)
+        {
+            line.clear();
+            line = _extract_until_delimiter(&_headers, "\r\n");
+            if (line.length() == 0)
+                break; 
+            _process_header_line(line);
+        }
+
+        _process_body(_body);
+    }
+    catch(const MethodNotAllowedException& e)
+    {
+        _error = 405;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }
+    catch(const BadRequestException& e)
+    {
+        _error = 400;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }
+    catch(const HTTPVersionNotSupportedException& e)
+    {
+        _error = 505;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }
+    catch(const UnsupportedMediaTypeException& e)
+    {
+        _error = 415;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }
+    catch(const RequestEntityTooLargeException& e)
+    {
+        _error = 413;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }
+    catch(const RequestURITooLongException& e)
+    {
+        _error = 414;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }
+
+    catch(const NotImplemented& e)
+    {
+        _error = 501;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }   
+}
+
+// General Functions
+
+/*
+    RFC7230
+    A recipient MUST parse for such bad whitespace and remove
+    it before interpreting the protocol element.
+
+        OWS            = *( SP / HTAB )
+                    ; optional whitespace
+        RWS            = 1*( SP / HTAB )
+                    ; required whitespace
+        BWS            = OWS
+                    ; "bad" whitespace
+    
+    HTAB (horizontal tab)
+    SP (space)
+*/
+void                Request::_remove_leading_whitespace(std::string &str)
+{
+    size_t  idx;
+
+    while (1)
+    {
+        // find SP or HTAB
+        idx = str.find_first_of(" \t", 0);
+        if (idx == std::string::npos || idx != 0)
+        {
+            // if there is none, return or is not at the index 0
+            return ; 
+        }
+        // remove leading whitespace
+        str.erase(0, 1);
+    }
+}
+void                Request::_remove_trailing_whitespace(std::string &str)
+{
+    size_t  idx;
+
+    while (1)
+    {
+        idx = str.find_first_of(" \t", str.length() - 1);
+        if (idx == std::string::npos || idx != str.length() - 1)
+        {
+            // if there is none, return or is not at the index last
+                return ;
+        }
+        // remove trailing LWS
+        str.erase(str.length() - 1, 1);
+    }
+}
+
+// it returns the string it finds from begin until delimiter (delimiter exclusive)
+// this function destroys str at each execution removing characters from begin until delimiters end
+std::string         Request::_extract_until_delimiter(std::string *str, std::string delimiter)
+{
+   size_t      idx;
+    std::string extract = "";
+
+    idx = str->find(delimiter, 0);
+    if (idx != std::string::npos)
+    {
+        extract = str->substr(0, idx);
+        str->erase(0, idx + delimiter.length());
+    }
+    else if (str->length() > 0)
+    {
+        extract = *str;
+        str->clear();
+    }
+    return (extract);
+}
+
+
+/*
+    RFC 7230
+    Historically(RFC2616), HTTP header field values could be extended over
+    multiple lines by preceding each extra line with at least one space
+    or horizontal tab (obs-fold).  This specification deprecates such
+    line folding except within the message/http media type
+    (Section 8.3.1).  A sender MUST NOT generate a message that includes
+    line folding (i.e., that has any field-value that contains a match to
+    the obs-fold rule) unless the message is intended for packaging
+    within the message/http media type.
+
+    A server that receives an obs-fold in a request message that is not
+    within a message/http container MUST either reject the message by
+    sending a 400 (Bad Request), preferably with a representation
+    explaining that obsolete line folding is unacceptable, or replace
+    each received obs-fold with one or more SP octets prior to
+    interpreting the field value or forwarding the message downstream.
+
+*/
+void                Request::_check_field_value_obs_fold(std::string field_value)
+{
+   if (field_value[0] == ' ' || field_value[0] == '\t')
+   {
+        std::cerr << REDB << "whitespace in header field name, or deprecated field value \
+        fold or unsupported Content-Type message/http" << RESET << std::endl;
+        throw UnsupportedMediaTypeException();
+   }
+}
+void                Request::_split_headers_body(std::string &buffer)
+{
+    if (buffer.length() == 0)
+    {
+        std::cerr << REDB << "Empty request" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    else if (buffer.find( "\r\n\r\n") == std::string::npos)
+    {
+        std::cerr << REDB << "Empty line indicating the end of the header section not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    std::string copy_buffer = buffer;
+    _headers = _extract_until_delimiter(&copy_buffer, "\r\n\r\n");
+    _body = copy_buffer;
+}
+
+size_t              Request::_convert_str2size_t(std::string str)
+{
+    char*           endptr;
+    size_t          nb;
+
+    if (str.length() == 0)
+        nb = 0;
+    else if (str.length() > 0 && str[0] == '0')
+        nb = 0;
+    else
+    {
+        nb = strtol(str.c_str(), &endptr, 10);
+        if (nb == 0 || strlen(endptr) > 0)
+        {
+            std::cerr << REDB << "error to convert string " << str << " to size_t" << RESET << std::endl;
+            throw BadRequestException();
+        }
+    }
+    return (nb);
+}
+size_t              Request::_convert_str2hex(std::string str)
+{
+    char*           endptr;
+    size_t          nb;
+
+    if (str.length() == 0)
+        nb = 0;
+    else if (str.length() > 0 && str[0] == '0')
+        nb = 0;
+    else
+    {
+        nb = strtol(str.c_str(), &endptr, 16);
+        if (nb == 0 || strlen(endptr) > 0)
+        {
+            std::cerr << REDB << "error to convert string " << str << " to hex" << RESET << std::endl;
+            throw BadRequestException();
+        }
+    }
+    return (nb);
+}
+
+
+// ---------------- Request Start Line -----------------//
+
+/*
+    RFC2616
+    In the interest of robustness, servers SHOULD ignore any empty
+   line(s) received where a Request-Line is expected. In other words, if
+   the server is reading the protocol stream at the beginning of a
+   message and receives a CRLF first, it should ignore the CRLF.
+
+*/
+/*
+    The Request-Line begins with a method token, followed by the
+   Request-URI and the protocol version, and ending with CRLF. The
+   elements are separated by SP characters. No CR or LF is allowed
+   except in the final CRLF sequence.
+
+        Request-Line   = Method SP Request-URI SP HTTP-Version CRLF
+
+
+    RFC7230
+   Recipients typically parse the request-line into its component parts
+   by splitting on whitespace (see Section 3.5), since no whitespace is
+   allowed in the three components.  Unfortunately, some user agents
+   fail to properly encode or exclude whitespace found in hypertext
+   references, resulting in those disallowed characters being sent in a
+   request-target.
+
+   Recipients of an invalid request-line SHOULD respond with either a
+   400 (Bad Request) error or a 301 (Moved Permanently) redirect with
+   the request-target properly encoded.  A recipient SHOULD NOT attempt
+   to autocorrect and then process the request without a redirect, since
+   the invalid request-line might be deliberately crafted to bypass
+   security filters along the request chain.
+
+*/
+
+
+/*
+    RFC7230
+    Various ad hoc limitations on request-line length are found in
+    practice.  It is RECOMMENDED that all HTTP senders and recipients
+    support, at a minimum, request-line lengths of 8000 octets.
+*/
+void                Request::_check_request_line_size(std::string str)
+{
+    size_t len = str.length();
+    if (len == 0)
+    {  
+        std::cerr << REDB << "No request line found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    else if (len > MAX_REQUEST_LINE_LEN)  
+    {
+        std::cerr << REDB << "Uri too long" << RESET << std::endl;
+        throw RequestURITooLongException();
+    }   
+}
+void                Request::_parse_request_line(std::string request_line)
+{
+    _method = _extract_until_delimiter(&request_line, " ");
+    _uri = _extract_until_delimiter(&request_line, " ");   
+    _protocol = _extract_until_delimiter(&request_line, "/");  
+    _version = request_line;
+    request_line.clear();
+}
+
+
+/*
+    RFC2616
+    An origin server SHOULD return the status code 405 (Method Not Allowed)
+    if the method is known by the origin server but not allowed for the
+    requested resource, and 501 (Not Implemented) if the method is
+    unrecognized or not implemented by the origin server.
+
+    RFC7230
+    Recipients of an invalid request-line SHOULD respond with either a
+    400 (Bad Request) error or a 301 (Moved Permanently) redirect with
+    the request-target properly encoded.  A recipient SHOULD NOT attempt
+    to autocorrect and then process the request without a redirect, since
+    the invalid request-line might be deliberately crafted to bypass
+    security filters along the request chain.
+
+    possible methods in HTTP 1.1:
+    GET: Retrieves data from the server.
+    HEAD: Retrieves only the headers of a resource without the body content.
+    POST: Submits data to be processed to a specified resource.
+    PUT: Uploads a representation of the specified resource.
+    DELETE: Deletes the specified resource.
+    OPTIONS: Retrieves the HTTP methods supported by the server for a specified URL.
+    TRACE: Echoes the received request so that a client can see what (if any) changes or additions have been made by intermediate servers.
+    CONNECT: Converts the request connection to a transparent TCP/IP tunnel.
+    PATCH: Applies partial modifications to a resource.
+
+*/
+void               Request::_check_method(void)
+{
+ if (_method.length() == 0)
+    {
+        std::cerr << REDB << "Method is empty" << RESET << std::endl;
+        throw BadRequestException();  
+    }
+    else if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)    
+    {
+        if (_method.compare("HEAD") == 0 || _method.compare("PUT") == 0 || _method.compare("OPTIONS") == 0
+        || _method.compare("TRACE") == 0 || _method.compare("CONNECT") == 0  || _method.compare("PATCH") == 0 )
+        {
+            std::cerr << REDB << "Method <" << _method << ">" << RESET << std::endl;
+            throw  NotImplemented();
+        }
+        else
+        {
+            std::cerr << REDB << "Method <" << _method << ">" << RESET << std::endl;
+            throw BadRequestException();   
+        }        
+    }
+    else if ((_method.compare("GET") == 0 && _allow_GET == false)
+        || (_method.compare("POST") == 0 && _allow_POST == false)
+        || (_method.compare("DELETE") == 0 && _allow_DELETE == false))
+    {
+        std::cerr << REDB << "Method <" << _method << ">" << RESET << std::endl;
+        throw MethodNotAllowedException();
+    }
+    // Valid Method
+}
+void                Request::_check_protocol(void)
+{
+    if (_protocol.length() == 4 && _protocol.compare("HTTP") == 0)
+    {
+        std::cout << CYAN << "Valid Protocol <" << _protocol << ">" << RESET << std::endl;
+    }
+    else
+    {
+        std::cerr << REDB << "Invalid Protocol <" << _protocol << ">" << RESET << std::endl;
+        throw BadRequestException();
+    }
+}
+void                Request::_check_version(void)
+{
+    if (_version.length() == 3 && _version.compare("1.1") == 0)
+    {
+        std::cout << CYAN << "Valid Version <" << _version << ">" <<  RESET << std::endl;
+    }
+    else
+    {
+        std::cerr << REDB << "Version <" << _version << ">" << RESET << std::endl;
+        throw HTTPVersionNotSupportedException();
+    }
+}
+
+
+/*
+    Recipients of an invalid request-line SHOULD respond with either a
+   400 (Bad Request) error or a 301 (Moved Permanently) redirect with
+   the request-target properly encoded.  A recipient SHOULD NOT attempt
+   to autocorrect and then process the request without a redirect, since
+   the invalid request-line might be deliberately crafted to bypass
+   security filters along the request chain.
+
+   HTTP does not place a predefined limit on the length of a
+   request-line, as described in Section 2.5.  A server that receives a
+   method longer than any that it implements SHOULD respond with a 501
+   (Not Implemented) status code.  
+*/
+
+/*
+    RFC 7230   
+    request-target longer than any URI it wishes to parse MUST respond
+    with a 414 (URI Too Long) status code (see Section 6.5.12 of
+    [RFC7231]).
+*/
+void                Request::_check_uri(void)
+{
+    if (_uri.length() == 0)
+    {
+        std::cerr << REDB << "Empty uri" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    else if (_uri.find_first_of(" \t", 0) != std::string::npos)
+    {
+        std::cerr << REDB << "whitespace in uri" << RESET << std::endl;
+        throw BadRequestException();
+    }
+}
+void                Request::_process_request_line(std::string request_line)
+{
+    _check_request_line_size(request_line);
+    _parse_request_line(request_line);
+    _check_method();
+    _check_uri();
+    _check_protocol();
+    _check_version();
+}
+
+// ---------------- Headers  -----------------//
+
+/*
+    A server that receives a request header field, or set of fields,
+    larger than it wishes to process MUST respond with an appropriate 4xx
+    (Client Error) status code.  Ignoring such header fields would
+    increase the server's vulnerability to request smuggling attacks
+    (Section 9.5).
+*/
+void                Request::_check_str_us_ascii(std::string &str)
+{
+    // consume
+    if (str.length() == 0)
+        std::cout << "";
+    // for (size_t i = 0; i < str.length(); ++i)
+    // {
+    //     if (str[i] < 0 || str[i] > 127)
+    //     {
+    //         str.erase(i, 1);
+    //         i--;
+    //     }    
+    // }
 }
 
 /*
-	Request-Line   = Method SP Request-URI SP HTTP-Version CRLF
+    RFC 7230
+    field-name     = token
+    field-value    = *( field-content / obs-fold )
+    field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+    field-vchar    = VCHAR / obs-text
+
+    VCHAR (any visible [USASCII] character).
 */
-int	Request::_parse_request_line(std::string buffer)
+void                Request::_check_vchar(std::string &str)
 {
-	int i = 0;
-
-	// ignore initial CRLF
-	while(buffer[i] != '\0')
-	{
-		if (buffer[i] == CR && buffer[i + 1] == LF)
-			i++;
-		else if (buffer[i] == 'G' || buffer[i] == 'P' || buffer[i] == 'D')
-			break;
-		else
-		{
-			std::cout << REDB << "Error: _parse_request_line. " \
-			<< "Request Line in incorrect format" << RESET << std::endl;
-			return(-1);
-		}
-
-	}
-	// Get Method : allowed GET, POST, DELETE
-	if (buffer.substr(i, i + 4).compare("GET ") == 0 && _allow_GET == true)
-	{
-		_method = "GET";
-		i = i + 4;
-	}
-	else if (buffer.substr(i, i + 5).compare("POST ") == 0 && _allow_POST == true)
-	{
-		_method = "POST";
-		i = i + 5;
-	}
-	else if (buffer.substr(i, i + 7).compare("DELETE ") == 0 && _allow_DELETE == true)
-	{
-		_method = "DELETE";
-		i = i + 7;
-	}
-	else
-	{
-		std::cout << REDB << "Method: " << buffer.substr(i, i + 4) << RESET << std::endl;
-		throw MethodNotSupported();
-	}
-
-	// Get URI len
-	int j = i;
-	while (buffer[j] != '\0')
-	{
-		if (buffer[j] == SP)
-			break;
-		j++;
-	}
-
-	//Get URI string
-	if (buffer[j] == '\0')
-	{
-		std::cout << REDB << "Error: _parse_request_line. " \
-		<< "Request Line URI format" << RESET << std::endl;
-		return(-1);
-	}
-	else
-	{
-		_uri = buffer.substr(i, j - i);
-		if (_uri.compare("/") == 0)
-		{
-			std::cout << REDB << "Error: _parse_request_line. " \
-			<< "Request Line No URI passed." << RESET << std::endl;
-			return(-1);
-		}
-		_uri = buffer.substr(i + 1, j - i - 1);
-	}
-
-
-	// Check Protocol Version HTTP/1.1
-	int k = j;
-	while (buffer[k] != '\0' && buffer[k + 1] != '\0')
-	{
-		if (buffer[k] == CR && buffer[k + 1] == LF)
-			break;
-		k++;
-	}
-
-	if (buffer[k] == '\0' || buffer[k + 1] == '\0')
-	{
-		std::cout << REDB << "Error: _parse_request_line. " \
-		<< "Request Line Protocol Version format" << RESET << std::endl;
-		return(-1);
-	}
-	else
-	{
-		if (buffer.substr(j + 1, k).compare("HTTP/1.1"))
-			_protocol_version = "HTTP/1.1";
-		else
-			throw InvalidRequest();
-	}
-
-	return (0);
-}
-
-std::string Request::_get_key_value(std::string buffer, std::string needle)
-{
-	int start = 0;
-	int end = 0;
-	int i;
-
-	start = buffer.find(needle);
-	if (start != -1)
-	{
-		i = start;
-		while (buffer[i] != '\0')
-		{
-			if (buffer[i] == CR && buffer[i + 1] == LF)
-			{
-				end = i - 1;
-				break;
-			}
-			i++;
-		}
-		return( buffer.substr(start + needle.length(), end - (start + needle.length()) + 1) );
-	}
-	return ("");
-}
-
-
-/*
- 	request-header =	  Accept                   ; Section 14.1
-						| Accept-Charset           ; Section 14.2
-						| Accept-Encoding          ; Section 14.3
-						| Accept-Language          ; Section 14.4
-						| Authorization            ; Section 14.8
-						| Expect                   ; Section 14.20
-						| From                     ; Section 14.22
-						| Host                     ; Section 14.23
-						| If-Match                 ; Section 14.24
-						| If-Modified-Since        ; Section 14.25
-						| If-None-Match            ; Section 14.26
-						| If-Range                 ; Section 14.27
-						| If-Unmodified-Since      ; Section 14.28
-						| Max-Forwards             ; Section 14.31
-						| Proxy-Authorization      ; Section 14.34
-						| Range                    ; Section 14.35
-						| Referer                  ; Section 14.36
-						| TE                       ; Section 14.39
-						| User-Agent               ; Section 14.43
-*/
-
-int Request::_parser_request_header(std::string buffer)
-{
-	_user_agent = _get_key_value(buffer, "User-Agent: ");
-	_accept = _get_key_value(buffer, "Accept: ");
-	_host = _get_key_value(buffer, "Host: ");
-	_connection = _get_key_value(buffer, "Connection: ");
-	_accept_encoding = _get_key_value(buffer, "Accept-Encoding: ");
-	_cache_control = _get_key_value(buffer, "Cache-Control: ");
-	return (0);
+    _check_str_us_ascii(str);
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (std::isprint(str[i]) == 0)
+        {
+            std::cerr << REDB << "incorrect use of non visible char nb=" << static_cast<int>(str[i]) << ", \
+            in field name or field value :<" << str << ">" << RESET << std::endl;
+            throw BadRequestException();
+        }
+    }
 }
 
 /*
-		general-header =  Cache-Control            ; Section 14.9
-					| Connection               ; Section 14.10
-					| Date                     ; Section 14.18
-					| Pragma                   ; Section 14.32
-					| Trailer                  ; Section 14.40
-					| Transfer-Encoding        ; Section 14.41
-					| Upgrade                  ; Section 14.42
-					| Via                      ; Section 14.45
-					| Warning                  ; Section 14.46
+    field-name     = token
+    token          = 1*tchar
+
+    tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+                    / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+                    / DIGIT / ALPHA
+                    ; any VCHAR, except delimiters
+
+    Most HTTP header field values are defined using common syntax
+    components (token, quoted-string, and comment) separated by
+    whitespace or specific delimiting characters.  Delimiters are chosen
+    from the set of US-ASCII visual characters not allowed in a token
+    (DQUOTE and "(),/:;<=>?@[\]{}").
 */
-int Request::_parser_general_header(std::string buffer)
+void                Request::_check_token(std::string &str)
 {
-	// Cache Control
-	_cache_control = _get_key_value(buffer, "Cache-Control: ");
+    char    dquote = 34; // "
+    char    escape = 92; // escape
+    size_t  idx0  = str.find_first_of("(),/:;<=>?@[]{}");
+    size_t  idx1 = str.find_first_of(dquote);
+    size_t  idx2 = str.find_first_of(escape);
 
-	// Connection
-	_connection = _get_key_value(buffer, "Connection: ");
-
-	// Transfer Encoding
-	_transfer_enconding = _get_key_value(buffer, "Transfer-Encoding: ");
-
-	return (0);
+    _check_vchar(str);
+    if (idx0 != std::string::npos)
+    {
+        std::cerr << REDB << "delimiter not allowed in token pos("<< idx0 << ") - char (" << str[idx0] << ") in string " << str << ">" << RESET << std::endl;
+        throw BadRequestException();
+    }
+        if (idx1 != std::string::npos)
+    {
+        std::cerr << REDB << "delimiter not allowed in token pos("<< idx1 << ") - char (" << str[idx1] << ") in string " << str << ">" << RESET << std::endl;
+        throw BadRequestException();
+    }
+        if (idx2 != std::string::npos)
+    {
+        std::cerr << REDB << "delimiter not allowed in token pos("<< idx2 << ") - char (" << str[idx2] << ") in string " << str << ">" << RESET << std::endl;
+        throw BadRequestException();
+    }
 }
 
-int Request::_parser_body(std::string buffer)
+/*
+   A server that receives a request header field, or set of fields,
+   larger than it wishes to process MUST respond with an appropriate 4xx
+   (Client Error) status code.  Ignoring such header fields would
+   increase the server's vulnerability to request smuggling attacks
+   (Section 9.5).
+*/
+void                Request::_check_field_name_len(std::string str)
 {
-	// get index of end of the header = empty line between headers and body
-	_index_end_of_headers = buffer.find("\r\n\r\n");
-	_index_start_of_body = _index_end_of_headers + 4;
-
-	std::cout << CYAN << "_index_end_of_headers is " << _index_end_of_headers << " - char is " << buffer[_index_end_of_headers] << RESET <<  std::endl; //remove
-	if (_index_end_of_headers == -1)
-	{
-		print_error("Request does not contain mandatory HTTP1.1 empty line.");
-		throw InvalidRequest();
-	}
-	else if (_index_start_of_body < (int)buffer.length())
-	{
-		std::cout << CYAN << "_body first " << buffer[_index_start_of_body] << " body second " << buffer[std::string::npos - 1] <<  std::endl; //remove
-
-		// threre is a body
-		_body = buffer.substr(_index_start_of_body, std::string::npos - 1);
-	}
-	else
-	{
-		std::cout << CYAN << "No body message " <<  std::endl; //remove
-		_body = "";
-	}
-
-	// std::cout << "->Transfer enconding is "  << get_transfer_enconding() << std::endl; // remove
-	// if (_transfer_enconding.compare("chunked") == 0)
-	// {
-	// 	std::cout << "CHUNKED" << std::endl; // remove
-	// 	_handle_chunked();
-	// }
-	return (0);
+    size_t  len = str.length();
+      
+    // check for empty key
+    if (len == 0)
+    {
+        std::cerr << REDB << "Header field name empty or separator ':' not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    else if (len > MAX_FIELD_NAME_LEN)
+    {
+        std::cerr << REDB << "Header field name length is too big" << RESET << std::endl;
+        throw BadRequestException();
+    }
+}
+void                Request::_check_field_value_len(std::string str)
+{
+    size_t  len = str.length();
+      
+    // a value can be empty check for empty key
+    if (len > MAX_FIELD_VALUE_LEN)
+    {
+        std::cerr << REDB << "Header field value length is too big" << RESET << std::endl;
+        throw BadRequestException();
+    }
 }
 
-void Request::print_request(void) const
+/*
+    RFC 7230
+    Each header field consists of a case-insensitive field name followed
+    by a colon (":"), optional leading whitespace, the field value, and
+    optional trailing whitespace.
+
+    A sender MUST NOT generate multiple header fields with the same field
+    name in a message unless either the entire field value for that
+    header field is defined as a comma-separated list [i.e., #(values)]
+    or the header field is a well-known exception (as noted below).
+
+    A recipient MAY combine multiple header fields with the same field
+    name into one "field-name: field-value" pair, without changing the
+    semantics of the message, by appending each subsequent field value to
+    the combined field value in order, separated by a comma.  The order
+    in which header fields with the same field name are received is
+    therefore significant to the interpretation of the combined field
+    value; a proxy MUST NOT change the order of these field values when
+    forwarding a message.
+*/
+void                Request::_parser_header_line(std::string line)
 {
-	std::cout << YELLOW;
-	std::cout << "\tRequest Line" << std::endl;
-	std::cout << "\t\tMethod:<" << _method << ">" << std::endl;
-	std::cout << "\t\tUri:<" << _uri << ">" << std::endl;
-	std::cout << "\t\tProtocol/Version:<" << _protocol_version << ">" << std::endl;
-	std::cout << std::endl;
+ // get key = field name
+    std::string key = _extract_until_delimiter(&line, ":");
 
-	std::cout << "\tRequest Header" << std::endl;
-	std::cout << "\t\tUser-Agent:<" << _user_agent << ">" << std::endl;
-	std::cout << "\t\tAccept:<" << _accept << ">" << std::endl;
-	std::cout << "\t\tCache-Control:<" << _cache_control << ">" << std::endl;
-	std::cout << "\t\tHost:<" << _host << ">" << std::endl;
-	std::cout << "\t\tAccept-Encoding:<" << _accept_encoding << ">" << std::endl;
+    // get value = field value
+    std::string value = line;
 
-	std::cout << std::endl;
-	std::cout << "\tGeneral Header" << std::endl;
-	std::cout << "\t\tConnection:<" << _connection << ">" << std::endl;
-	std::cout << std::endl;
-	std::cout << "\tBody:\n<" << _body << ">" << std::endl;
-	
-	std::cout << std::endl;
+    // check field name size
+    _check_field_name_len(key);
+
+    // check field value size
+    _check_field_value_len(value);
+          
+    // check for vchar and invalid characters for token = field name
+    _check_token(key);
+
+    // check visible chars in field value
+    _check_vchar(value);
+
+    // remove leading  LWS from value
+    _remove_leading_whitespace(value);
+
+    // remove trailing LWS from value
+    _remove_trailing_whitespace(value);
+
+    // check if header field name is duplicated or not
+    std::map<std::string, std::string>::iterator it = _headers_map.find(key);
+
+    // key does not exist in the the map and can be added
+    if (it == _headers_map.end())
+    {
+        _headers_map[key] = value;
+    }
+    // key already exist in map
+    else
+    {
+        // check if the repeated field name is   "field-name: field-value" for "field-value, field-value" 
+        size_t idx_dp = _headers_map[key].find_first_of(":");
+        size_t exist_len = _headers_map[key].length();
+        if (exist_len > 0 && idx_dp != std::string::npos && idx_dp < exist_len)
+        {
+            size_t idx_comma = value.find_first_of(",");
+            size_t new_len = value.length();
+            if (new_len > 0 && idx_comma != std::string::npos && idx_dp < new_len)
+            {
+                // append new value
+                _headers_map[key].append(", ");
+                _headers_map[key].append(value);
+            }
+            else
+            {
+                std::cerr << REDB << "Invalid duplicated header field-name" << RESET << std::endl;
+                throw BadRequestException();
+            }
+        }
+        else
+        {
+            std::cerr << REDB << "Invalid duplicated header field-name" << RESET << std::endl;
+            throw BadRequestException();
+        } 
+    }
+}
+void                Request::_process_header_line(std::string header_line)
+{
+    _check_field_value_obs_fold(header_line);
+    _parser_header_line(header_line);
+}
+
+void                Request::print_headers_map(void)
+{
+     // create an map iterator element
+	std::map<std::string, std::string>::iterator it;
+
+	for (it = _headers_map.begin(); it != _headers_map.end(); it++)
+	{
+        std::cout << "\tKey:<" << it->first << "> | Value:<" << it->second << ">" << std::endl;
+    } 
+}
+
+void                Request::print_request(void)
+{
+    std::cout << YELLOW << std::endl;
+    std::cout << "-------- Request Line --------" << std::endl;
+    std::cout << "\tMethod   <" << get_method() << ">" << std::endl;
+    std::cout << "\tUri      <" << get_uri() << ">" << std::endl;
+    std::cout << "\tProtocol <" << get_protocol() << ">" << std::endl;
+    std::cout << "\tVersion  <" << get_version() << ">" << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "-------- Headers --------" << std::endl;
+    print_headers_map();
+    std::cout << std::endl;
+
+    std::cout << "---------  BODY  -------" << std::endl;
+    std::cout << "\tBody " << std::endl << "<" << get_body() << ">" << std::endl; 
+    std::cout << std::endl;
+    
 	std::cout << RESET;
 }
 
-int Request::get_request_status(void) const
+
+// ---------------- Body  -----------------//
+
+void                Request::_process_body(std::string body)
 {
-	return (_request_status);
+  std::string transfer_enconding = get_header_per_key("Transfer-Encoding");
+    
+    // consume body
+    if (body.length() == 0)
+        std::cout << "";
+
+
+     // if header content len is passed, convert content length to long
+    if (get_header_per_key("Content-Length").length() > 0)
+    {
+        _convert_content_length();
+        if (_content_len != _body.length())
+        {
+            std::cerr << REDB  << "mismatch from Content-Header field value and actual body length received" << RESET << std::endl;
+            throw BadRequestException();
+        }
+        else if (_content_len > MAX_BODY_SIZE)
+        {
+            std::cerr << REDB << "body is bigger than define max body size in ConfigFile" << RESET << std::endl;
+            throw RequestEntityTooLargeException();
+        }
+    }   
+    else if (transfer_enconding.length() > 0)
+    {
+        if (transfer_enconding.compare("chunked") == 0)
+            _process_chunk(_body);
+        else
+        {
+            std::cerr << REDB << "Transfer-Encoding: " << transfer_enconding << ", is not supported" << RESET << std::endl;
+            throw BadRequestException();
+        }
+    }    
+
+     // handle file transfer?
+
+    //  _check_body_octet(_body);
 }
 
-void	Request::read_request(char const *request_buffer)
+// ---------------- Chunked Body  -----------------//
+
+
+// Transfer Encoding
+/*
+    transfer-coding    = "chunked" ; Section 4.1
+                        / "compress" ; Section 4.2.1
+                        / "deflate" ; Section 4.2.2
+                        / "gzip" ; Section 4.2.3
+                        / transfer-extension
+     transfer-extension = token *( OWS ";" OWS transfer-parameter )
+   registered within the HTTP Transfer Coding registry, as defined in
+   Section 8.4.  They are used in the TE (Section 4.3) and
+   Transfer-Encoding (Section 3.3.1) header fields.
+
+
+   A recipient MUST be able to parse the chunked transfer coding
+   (Section 4.1) because it plays a crucial role in framing messages
+   when the payload body size is not known in advance. 
+
+
+If any transfer coding
+   other than chunked is applied to a request payload body, the sender
+   MUST apply chunked as the final transfer coding to ensure that the
+   message is properly framed.  If any transfer coding other than
+   chunked is applied to a response payload body, the sender MUST either
+   apply chunked as the final transfer coding or terminate the message
+   by closing the connection.
+
+    For example,
+
+     Transfer-Encoding: gzip, chunked
+
+   indicates that the payload body has been compressed using the gzip
+   coding and then chunked using the chunked coding while forming the
+   message body.
+
+ chunked-body   = *chunk
+                      last-chunk
+                      trailer-part
+                      CRLF
+
+     chunk          = chunk-size [ chunk-ext ] CRLF
+                      chunk-data CRLF
+     chunk-size     = 1*HEXDIG
+     last-chunk     = 1*("0") [ chunk-ext ] CRLF
+
+     chunk-data     = 1*OCTET ; a sequence of chunk-size octets
+
+    HEXDIG (hexadecimal 0-9/A-F/a-f)
+
+     The chunk-size field is a string of hex digits indicating the size of
+   the chunk-data in octets.  The chunked transfer coding is complete
+   when a chunk with a chunk-size of zero is received, possibly followed
+   by a trailer, and finally terminated by an empty line.
+
+   A recipient MUST ignore unrecognized chunk extensions.  A server
+   ought to limit the total length of chunk extensions received in a
+   request to an amount reasonable for the services provided, in the
+   same way that it applies length limitations and timeouts for other
+   parts of a message, and generate an appropriate 4xx (Client Error)
+   response if that amount is exceeded.
+
+4.1.3.  Decoding Chunked
+
+   A process for decoding the chunked transfer coding can be represented
+   in pseudo-code as:
+
+     length := 0
+     read chunk-size, chunk-ext (if any), and CRLF
+     while (chunk-size > 0) {
+        read chunk-data and CRLF
+        append chunk-data to decoded-body
+        length := length + chunk-size
+        read chunk-size, chunk-ext (if any), and CRLF
+     }
+     read trailer field
+     while (trailer field is not empty) {
+        if (trailer field is allowed to be sent in a trailer) {
+            append trailer field to existing header fields
+        }
+        read trailer-field
+     }
+     Content-Length := length
+     Remove "chunked" from Transfer-Encoding
+     Remove Trailer from existing header fields
+
+    POST /upload HTTP/1.1
+    Host: example.com
+    Content-Type: application/octet-stream
+    Transfer-Encoding: chunked
+
+    4; param1=value1; param2=value2
+    data
+    5; param3=value3
+    chunked
+    0
+    Trailer-Header1: value1
+    Trailer-Header2: value2
+
+    unchunked:4data5chunked
+*/
+void                Request::_convert_content_length(void)
 {
-	// convert char buffer to string
-	std::string str(request_buffer); // string constructor that takes a null terminated string
-	
-	// clean up
-	_request_status = 0;
-	_method.clear();
-	_uri.clear();
-	_protocol_version.clear();
-	_user_agent.clear();
-	_accept.clear();
-	_host.clear();
-	_accept_encoding.clear();
-	_connection.clear();
-	_cache_control.clear();
-	_transfer_enconding.clear();
-	_body.clear();
-
-
-	// parser
-	_parse_request_line(str);
-	_parser_general_header(str);
-	_parser_request_header(str);
-	_parser_body(str);
+    set_content_length(_convert_str2size_t(get_header_per_key("Content-Length")));
 }
-std::string		Request::get_uri(void) const
+void                Request::_process_chunk(std::string str)
 {
-	return (_uri);
+    size_t          accum_length = 0;
+    std::string     accum_body = "";
+    std::string     str_chunk_size;
+    size_t          chunk_size;
+    std::string     chunk_data;
+
+    if (str.rfind("\r\n\r\n") == std::string::npos)
+    {
+        std::cerr << REDB  << "error format last-chunk terminator CRLF CRLF not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    while(str.length() > 0)
+    {
+        str_chunk_size = _extract_until_delimiter(&str, "\r\n");
+        if (str_chunk_size.length() == 0)
+        {
+            std::cerr << REDB  << "error to retrieve chunk size from request" << RESET << std::endl;
+            throw BadRequestException();
+        }
+
+        chunk_size = _convert_str2hex(str_chunk_size);
+
+        chunk_data = _extract_until_delimiter(&str, "\r\n");
+        if (chunk_data.length() != chunk_size)
+        {
+            std::cerr << REDB  << "chunk data length does not match chunk size" << RESET << std::endl;
+            throw BadRequestException();
+        }
+        else if (chunk_size == 0 && str.length() == 0)
+        {
+            // chunk has reached its end
+            // new body and new content length
+            _body = accum_body;
+            set_content_length(accum_length); 
+            return ;
+        }
+        accum_length += chunk_size;
+        accum_body.append(chunk_data);
+    }
+    std::cerr << REDB  << "error format last-chunk" << RESET << std::endl;
+    throw BadRequestException();
 }
 
-std::string		Request::get_method(void) const
+
+// ---------------- Transfer file  -----------------//
+
+/* to be added */
+
+
+// ---------------- Getters/Setters  -----------------//
+
+
+std::string         Request::get_header_per_key(std::string const &header_key) const
 {
-	return (_method);
+    std::map<std::string, std::string>::const_iterator it = _headers_map.find(header_key);
+
+    if (it == _headers_map.end())
+    {
+        return ("");
+    }
+    return(it->second);
 }
 
-std::string		Request::get_protocol_version(void) const
+size_t              Request::get_content_length(void)
 {
-	return (_protocol_version);
+    return (_content_len);
 }
 
-std::string		Request::get_user_agent(void) const
+void                Request::set_content_length(size_t len)
 {
-	return (_user_agent);
+    _content_len = len;
+    _headers_map["Content-Length"] = size_t2str(_content_len);
 }
 
-std::string		Request::get_host(void) const
+int                 Request::get_error(void)
 {
-	return (_host);
+    return (_error);
 }
-
-std::string		Request::get_accept_encoding(void) const
+        
+std::string         Request::get_method(void) const
 {
-	return (_accept_encoding);
+    return (_method);
 }
 
-std::string		Request::get_connection(void) const
+std::string         Request::get_uri(void) const
 {
-	return (_connection);
+    return (_uri);
 }
 
-std::string		Request::get_cache_control(void) const
+std::string         Request::get_protocol(void) const
 {
-	return (_cache_control);
+    return (_protocol);
 }
 
-std::string		Request::get_body(void) const
+std::string         Request::get_version(void) const
 {
-	return (_body);
+    return (_version);
 }
 
-
-std::string		Request::get_transfer_enconding(void) const
+std::string         Request::get_user_agent(void) const
 {
-	return (_transfer_enconding);
+    return (get_header_per_key("User-Agent"));
 }
 
-
-bool		Request::get_allow_GET(void) const
+std::string         Request::get_host(void) const
 {
-	return (_allow_GET);
+    return (get_header_per_key("Host"));
 }
 
-bool		Request::get_allow_POST(void) const
-{		
-	return (_allow_POST);
-}
-
-bool		Request::get_allow_DELETE(void) const
+std::string        Request::get_accept_encoding(void) const
 {
-	return (_allow_DELETE);
+    return (get_header_per_key("Accept-Encoding"));
 }
+
+std::string         Request::get_transfer_encoding(void) const
+{
+    return (get_header_per_key("Transfer-Encoding"));
+}
+
+std::string         Request::get_connection(void) const
+{
+    return (get_header_per_key("Connection"));
+}
+
+std::string         Request::get_cache_control(void) const
+{
+    return (get_header_per_key("Cache-Control"));
+}
+
+std::string         Request::get_date(void) const
+{
+    return (get_header_per_key("Date"));
+}
+
+std::string         Request::get_pragma(void) const
+{
+    return (get_header_per_key("Pragma"));
+}
+
+std::string         Request::get_trailer(void) const
+{
+    return (get_header_per_key("Trailer"));
+}
+
+std::string         Request::get_upgrade(void) const
+{
+    return (get_header_per_key("Upgrade"));
+}
+
+std::string         Request::get_via(void) const
+{
+    return (get_header_per_key("Via"));
+}
+
+std::string         Request::get_warning(void) const
+{
+    return (get_header_per_key("Warning"));
+}
+
+std::string         Request::get_accept_charset(void) const
+{
+    return (get_header_per_key("Accept-Charset"));
+}
+
+std::string         Request::get_accept_language(void) const
+{
+    return (get_header_per_key("Accept-Language"));
+}
+
+std::string         Request::get_accept_authorization(void) const
+{
+    return (get_header_per_key("Authorization"));
+}
+
+std::string         Request::get_except(void) const
+{
+    return (get_header_per_key("Exception"));
+}
+
+std::string         Request::get_from(void) const
+{
+    return (get_header_per_key("From"));
+}
+
+std::string         Request::get_if_match(void) const
+{
+    return (get_header_per_key("If-Match"));
+}
+
+std::string         Request::get_if_modified_since(void) const
+{
+    return (get_header_per_key("If-Modified-Since"));
+}
+
+std::string        Request::get_if_none_match(void) const
+{
+    return (get_header_per_key("If-None-Match"));
+}
+
+std::string         Request::get_if_range(void) const
+{
+    return (get_header_per_key("If-Range"));
+}
+
+std::string         Request::get_if_unmodified_since(void) const
+{
+    return (get_header_per_key("If-Unmodified-Since"));
+}
+
+std::string         Request::get_max_forwards(void) const
+{
+    return (get_header_per_key("Max-Forwards"));
+}
+
+std::string         Request::get_proxy_authorization(void) const
+{
+    return (get_header_per_key("Proxy-Authorization"));
+}
+
+std::string         Request::get_range(void) const
+{
+    return (get_header_per_key("Range"));
+}
+
+std::string         Request::get_referer(void) const
+{
+    return (get_header_per_key("Referer"));
+}
+
+std::string         Request::get_te(void) const
+{
+    return (get_header_per_key("TE"));
+}
+
+std::string		    Request::get_body(void) const
+{
+    return (_body);
+}
+
+// To do's:
 
 /*
-Transfer-Encoding: chunked
+ The presence of a message-body in a request is signaled by the
+   inclusion of a Content-Length or Transfer-Encoding header field in
+   the request's message-headers. A message-body MUST NOT be included in
+   a request if the specification of the request method (section 5.1.1)
+   does not allow sending an entity-body in requests. 
+*/
+// check body
+//implement 
 
+// BODY
 
-chunked
-Data is sent in a series of chunks. 
-The Content-Length header is omitted in this case
-and at the beginning of each chunk you need to add
-the length of the current chunk in hexadecimal format,
-followed by '\r\n' and then the chunk itself, followed by another '\r\n'.
-The terminating chunk is a regular chunk, with the exception that its length is zero.
-It is followed by the trailer, which consists of a (possibly empty) sequence of header fields.
+/*
+    RFC 7230
+      The message body (if any) of an HTTP message is used to carry the
+   payload body of that request or response.  The message body is
+   identical to the payload body unless a transfer coding has been
+   applied, as described in Section 3.3.1.
 
-Transfer-Encoding: gzip, chunked
-This is why Transfer-Encoding is defined as overriding Content-Length,
+    message-body = *OCTET
 
-A server MAY reject a request that contains both Content-Length and Transfer-Encoding or process such a request in accordance with the Transfer-Encoding alone. Regardless, the server MUST close the connection after responding to such a request to avoid the potential attacks.
+      The rules for when a message body is allowed in a message differ for
+   requests and responses.
+
+      The presence of a message body in a request is signaled by a
+   Content-Length or Transfer-Encoding header field.  Request message
+   framing is independent of method semantics, even if the method does
+   not define any use for a message body.
+
 
 */
 
-// if (_transfer_enconding.compare("chunked"))
+/*
+    message-body = *OCTET
+    OCTET   =  %x00-FF (any 8-bit sequence of data)
+*/
+// void    _check_body_octet(std::string str)
 // {
-// 	_is_chunked = true;
-
+//     for (size_t i = 0; i < str.length(); i++)
+//     {
+//         if (str[i] < 0 && str[i] > 255 )
+//         {
+//             std::cerr << REDB << "body OCTET characters is not in the range of x00-FF" << RESET << std::endl;
+//             throw BadRequestException();
+//         }
+//     }
 // }
-/*
-POST /some/path HTTP/1.1
-Host: example.com
-Content-Type: application/json
-Transfer-Encoding: chunked
 
-7\r\n
-abcdefg\r\n
-6\r\n
-123456\r\n
-0\r\n
-\r\n
+/* finish void                Request::_process_body(std::string body)
 */
 
-void		Request::_handle_chunked(void)
-{
-	size_t			total_content_length = 0;
-	int				chunk_length = 0;
-	size_t 			pos_start = 0;
-	size_t 			pos_end = 0;
-	std::string 	chunked_str = "";
 
-	while (1)
-	{
-		// get length of current chunk
-		pos_end = _body.find("\r\n", pos_start);
-		
-		std::cout << "pos_end is " << pos_end << ", pos_start is " << pos_start << std::endl;
-		chunk_length = str2int(_body.substr(pos_start, pos_end - 1));
-		if (pos_end == std::string::npos || chunk_length == -1)
-		{
-			print_error("_handle_chunked");
-			throw InvalidRequest();
-		}
-		// get chunk
-		pos_start = pos_end + 2;
-		pos_end = _body.find("\r\n", pos_start);
-		chunked_str.append(_body.substr(pos_start, pos_end));
-		if (pos_end - pos_start != (size_t) chunk_length)
-		{
-			print_error("_handle_chunked: Chunk real size does not match passed chunk size");
-			std::cout << "Lenght Chunk: Read from chunk is" << chunk_length << ", calculated from message " << pos_end - pos_start << std::endl; //remove
-			throw InvalidRequest();
-		}
-		total_content_length += (size_t) chunk_length;
+/*
+Content lenght
+
+A user agent SHOULD send a Content-Length in a request message when
+   no Transfer-Encoding is sent and the request method defines a meaning
+   for an enclosed payload body.  For example, a Content-Length header
+   field is normally sent in a POST request even when the value is 0
+   (indicating an empty payload body). 
+    (e.g., "Content-Length: 42, 42"),
+   indicating that duplicate Content-Length header fields have been
+   generated or combined by an upstream message processor, then the
+   recipient MUST either reject the message as invalid or replace the
+   duplicated field-values with a single valid Content-Length field
+   containing that decimal value prior to determining the message body
+   length or forwarding the message.
+
+   If a message is received with both a Transfer-Encoding and a
+       Content-Length header field, the Transfer-Encoding overrides the
+       Content-Length.  Such a message might indicate an attempt to
+       perform request smuggling (Section 9.5) or response splitting
+       (Section 9.4) and ought to be handled as an error.  A sender MUST
+       remove the received Content-Length field prior to forwarding such
+       a message downstream
+       If a valid Content-Length header field is present without
+       Transfer-Encoding, its decimal value defines the expected message
+       body length in octets.  If the sender closes the connection or
+       the recipient times out before the indicated number of octets are
+       received, the recipient MUST consider the message to be
+       incomplete and close the connection.
+
+          A server MAY reject a request that contains a message body but not a
+   Content-Length by responding with 411 (Length Required).
+   A server that receives an incomplete request message, usually due to
+   a canceled request or a triggered timeout exception, MAY send an
+   error response prior to closing the connection.
+
+    RFC 2616 - 4.2 Message Headers
+    Field names
+   are case-insensitive
+An HTTP/1.1 user agent MUST NOT preface
+   or follow a request with an extra CRLF.  If terminating the request
+   message body with a line-ending is desired, then the user agent MUST
+   count the terminating CRLF octets as part of the message body length
+   In the interest of robustness, a server that is expecting to receive
+   and parse a request-line SHOULD ignore at least one empty line (CRLF)
+   received prior to the request-line.
 
 
-		std::cout << "chunk len: <" << chunk_length << ">" << std::endl;
-		std::cout << "chunk: <" << chunked_str << ">" << std::endl;
-		std::cout << "total_content_length: <" << total_content_length << ">" << std::endl;
-
-		// go forward for next loop
-		pos_start = pos_end + 2;
-	}
-	
 
 
-}
+Fielding & Reschke           Standards Track                   [Page 34]
+
+RFC 7230           HTTP/1.1 Message Syntax and Routing         June 2014
+
+
+   Although the line terminator for the start-line and header fields is
+   the sequence CRLF, a recipient MAY recognize a single LF as a line
+   terminator and ignore any preceding CR.
+
+   When a server listening only for HTTP request messages, or processing
+   what appears from the start-line to be an HTTP request message,
+   receives a sequence of octets that does not match the HTTP-message
+   grammar aside from the robustness exceptions listed above, the server
+   SHOULD respond with a 400 (Bad Request) response.
+
+*/
+//implement
+
+/*
+    RFC 7230
+    The normal procedure for parsing an HTTP message is to read the
+   start-line into a structure, read each header field into a hash table
+   by field name until the empty line, and then use the parsed data to
+   determine if a message body is expected.  If a message body has been
+   indicated, then it is read as a stream until an amount of octets
+   equal to the message body length is read or the connection is closed.
+    
+    A sender MUST NOT send whitespace between the start-line and the
+   first header field.  A recipient that receives whitespace between the
+   start-line and the first header field MUST either reject the message
+   as invalid or consume each whitespace-preceded line without further
+   processing of it (i.e., ignore the entire line, along with any
+   subsequent lines preceded by whitespace, until a properly formed
+   header field is received or the header section is terminated).
+
+   The presence of such whitespace in a request might be an attempt to
+   trick a server into ignoring that field or processing the line after
+   it as a new request, either of which might result in a security
+   vulnerability if other implementations within the request chain
+   interpret the same message differently.  Likewise, the presence of
+   such whitespace in a response might be ignored by some clients or
+   cause others to cease parsing.
+
+*/
+
+/*
+    chunked with exten and trailer
+    check if chunnk was sent in enconding but message body was not chunked
+
+*/
+
+/*
+    is void                Request::_check_str_us_ascii(std::string &str) required?
+    range is always false
+
+*/

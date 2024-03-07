@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/29 21:17:59 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/06 22:47:18 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	ServerOS::launch_webserver(void)
 	_setup_socket();
 	std::cout << "Socket Setup done" << std::endl;
 	_listen_socket();
-	std::cout << "Socket in listening mode" << std::endl;
+	std::cout << "Socket in listening mode port " << _server_port << std::endl;
 	_loop();
 }
 

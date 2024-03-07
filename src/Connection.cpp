@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/29 20:39:12 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/06 23:13:43 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,17 @@
 
 // }
 
-Connection::Connection(int server_index, ConfigParser &configParser, int connection_socket, struct sockaddr_in &client_addr, char *env[]): _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2), _env(env), _request(server_index, configParser), _response(server_index, configParser, _request), _is_read_complete(0)
+Connection::Connection(int server_index, ConfigParser &configParser, int connection_socket, struct sockaddr_in &client_addr, char *env[]): _server_index(server_index) , _configParser(configParser),  _env(env),  _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2),_request(server_index, configParser), _response(server_index, configParser, _request, env), _is_read_complete(0)
 {
+	// consume
+	if (_server_index < 0 || _configParser.getSize() == 0)
+		std::cout << "";
+
+
 	// to avoid arguments unused error
 	if (configParser.getSize() == -1)
 		std::cout << "" << std::endl;
 
-	// _env = env;	
 	_buffer_rcv = new char[_buffer_rcv_size];
 
 	clear_memory(_buffer_rcv, _buffer_rcv_size);
@@ -68,19 +72,17 @@ void	Connection::receive_request(void)
 	_size_data_recv = recv(_connection_socket, _buffer_rcv, _buffer_rcv_size, _flags_recv);
 	if (_size_data_recv == -1)
 	{
-		std::cout << "Error: to recv. Reason: " << strerror(errno) << " # fd = " << _connection_socket << std::endl;
+		// std::cout << "Error: to recv. Reason: " << strerror(errno) << " # fd = " << _connection_socket << std::endl;
 		std::cout << "Closing connection sockets " << _connection_socket << " and returning" << std::endl;
 		close(_connection_socket);
 		
 		// throw exception
 		return; // at the moment just return
 	}
-	// if (VERBOSE == 1)
-	// 	std::cout << "Received " << _size_data_recv << " bytes from fd " << _connection_socket << std::endl;
 	if (_size_data_recv > 0)
 	{
-		// create Request Object
-		_request.read_request(_buffer_rcv);
+		_request.parse_request(_buffer_rcv);
+
 		if (VERBOSE == 1)
 			_request.print_request();
 		_is_read_complete = 1;
@@ -131,6 +133,7 @@ std::string		Connection::get_connection(void) const
 {
 	return(_request.get_connection());
 }
+
 
 bool			Connection::is_response_empty(void) const
 {
