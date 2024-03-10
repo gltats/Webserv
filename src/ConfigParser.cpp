@@ -16,12 +16,6 @@ ConfigParser::ConfigParser() : _size(0), parameters(), servers(), serverParamete
 // Copy constructor
 ConfigParser::ConfigParser(const ConfigParser &copy)
 {
-	*this = copy;
-}
-
-// copy assignment overload
-ConfigParser &ConfigParser::operator=(const ConfigParser &copy)
-{
 	if (this != &copy)
 	{
 		
@@ -31,7 +25,6 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &copy)
 		this->serverParameters = copy.serverParameters;
 		this->listenValues = copy.listenValues;
 	}
-	return (*this);
 }
 
 // Destructor
@@ -39,14 +32,6 @@ ConfigParser::~ConfigParser()
 {
 }
 
-// constructor
-// ConfigParser::ConfigParser(std::string const file): _size(0)
-// {
-// 	std::vector<std::string> servers;
-// 	std::map<std::string, std::string> parameters;
-// 	std::vector<std::map<std::string, std::string> > serverParameters;
-// 	std::set<std::string> listenValues;
-// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // main function:
@@ -117,12 +102,17 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 			}
 			else if (key == "location")
 			{
-				size_t bracePos = value.find('{');
-				if (bracePos != std::string::npos)
-				{
-					std::string location = value.substr(0, bracePos);
-					parameters["location"] = location;
-				}
+                size_t bracePos = value.find('{');
+                if (bracePos != std::string::npos)
+                {
+                    std::string location = value.substr(0, bracePos);
+                    std::string locationParams = value.substr(bracePos + 1, value.length() - bracePos - 2); // Extract parameters within {}
+
+                    // Store location parameters in a map
+                    std::map<std::string, std::string> locationParameters = parseParameters(locationParams);
+                    // Store location and its parameters in parameters map
+                    parameters["location:" + location] = serializeParameters(locationParameters);
+                }
 			}
 			else if (key == "allow_methods")
 			{
@@ -155,6 +145,16 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 	return parameters;
 }
 
+std::string ConfigParser::serializeParameters(const std::map<std::string, std::string> &parameters)
+{
+    std::string serialized;
+    for (std::map<std::string, std::string>::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
+    {
+        serialized += it->first + "=" + it->second + "; ";
+    }
+    return serialized;
+}
+
 void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> parameters)
 {
 	std::string listenValue = parameters["listen"];
@@ -162,12 +162,7 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	std::string bodySize = parameters["body_size"];
 	std::string errorNumber = parameters["error_number"];
 
-	// Check if the "listen" parameter is repeated
-	// if (listenValues.find(listenValue) != listenValues.end())
-	// {
-	// 	throw std::runtime_error("Error: 'listen' parameter is repeated");
-	// }
-	if (listenValue.empty() || serverName.empty() || bodySize.empty()) // empty parameters
+	if (getListenValue(parameters).empty() || serverName.empty() || bodySize.empty()) // empty parameters
 		throw std::invalid_argument("Empty value on configuration file");
 	else if (!std::all_of(listenValue.begin(), listenValue.end(), ::isdigit) || !std::all_of(bodySize.begin(), bodySize.end(), ::isdigit)) // check if the value is a digit
 		throw std::invalid_argument("Value is not a digit");

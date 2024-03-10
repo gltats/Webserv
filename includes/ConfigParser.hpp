@@ -36,6 +36,7 @@ class ConfigParser {
 		// std::map<std::string, std::string> parameters;
 		// std::vector<std::map<std::string, std::string> > serverParameters;
 		// std::set<std::string> listenValues;
+
 	public:
 	std::map<std::string, std::string> parameters;
 	std::vector<std::string> servers;
@@ -48,6 +49,8 @@ class ConfigParser {
 		~ConfigParser();
 		void getConfig(const std::string &file);
 		std::map<std::string, std::string> parseParameters(const std::string& serverConfig);
+
+		
 		void checkCorrectParameters(std::map<std::string, std::string> parameters);
 		void splitServers(std::string &content);
 		void removeWhiteSpace(std::string& content);
