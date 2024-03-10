@@ -18,7 +18,7 @@ ConfigParser::ConfigParser(const ConfigParser &copy)
 {
 	if (this != &copy)
 	{
-		
+
 		this->_size = copy._size;
 		this->servers = copy.servers;
 		this->parameters = copy.parameters;
@@ -32,12 +32,11 @@ ConfigParser::~ConfigParser()
 {
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // main function:
 void ConfigParser::getConfig(const std::string &configtFile)
 {
-	ConfigFile file(configtFile); 
+	ConfigFile file(configtFile);
 	// Check if the file exists, has the correct path and is readable
 	file.checkPath(configtFile);
 	std::string content = file.content;
@@ -102,17 +101,12 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 			}
 			else if (key == "location")
 			{
-                size_t bracePos = value.find('{');
-                if (bracePos != std::string::npos)
-                {
-                    std::string location = value.substr(0, bracePos);
-                    std::string locationParams = value.substr(bracePos + 1, value.length() - bracePos - 2); // Extract parameters within {}
-
-                    // Store location parameters in a map
-                    std::map<std::string, std::string> locationParameters = parseParameters(locationParams);
-                    // Store location and its parameters in parameters map
-                    parameters["location:" + location] = serializeParameters(locationParameters);
-                }
+				size_t bracePos = value.find('{');
+				if (bracePos != std::string::npos)
+				{
+					std::string location = value.substr(0, bracePos);
+					parameters["location"] = location;
+				}
 			}
 			else if (key == "allow_methods")
 			{
@@ -145,15 +139,15 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 	return parameters;
 }
 
-std::string ConfigParser::serializeParameters(const std::map<std::string, std::string> &parameters)
-{
-    std::string serialized;
-    for (std::map<std::string, std::string>::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
-    {
-        serialized += it->first + "=" + it->second + "; ";
-    }
-    return serialized;
-}
+// std::string ConfigParser::serializeParameters(const std::map<std::string, std::string> &parameters)
+// {
+// 	std::string serialized;
+// 	for (std::map<std::string, std::string>::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
+// 	{
+// 		serialized += it->first + "=" + it->second + "; ";
+// 	}
+// 	return serialized;
+// }
 
 void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> parameters)
 {
@@ -162,9 +156,9 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	std::string bodySize = parameters["body_size"];
 	std::string errorNumber = parameters["error_number"];
 
-	if (getListenValue(parameters).empty() || serverName.empty() || bodySize.empty()) // empty parameters
+	if (getListenValue(parameters).empty() || serverName.empty() || bodySize.empty()) 
 		throw std::invalid_argument("Empty value on configuration file");
-	else if (!std::all_of(listenValue.begin(), listenValue.end(), ::isdigit) || !std::all_of(bodySize.begin(), bodySize.end(), ::isdigit)) // check if the value is a digit
+	else if (!isDigit(listenValue) || !isDigit(bodySize))
 		throw std::invalid_argument("Value is not a digit");
 	if (errorNumber != "400" && errorNumber != "401" && errorNumber != "403" && errorNumber != "404" && errorNumber != "405" && errorNumber != "408" && errorNumber != "413" && errorNumber != "414" && errorNumber != "415" && errorNumber != "418" && errorNumber != "500" && errorNumber != "501" && errorNumber != "504" && errorNumber != "505")
 	{
@@ -175,6 +169,15 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	listenValues.insert(serverName);
 	listenValues.insert(bodySize);
 	listenValues.insert(errorNumber);
+}
+
+bool ConfigParser::isDigit(const std::string& str) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        if (!::isdigit(*it)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void ConfigParser::removeWhiteSpace(std::string &content)
@@ -204,7 +207,7 @@ void ConfigParser::removeComments(std::string &content)
 // Test functions
 void ConfigParser::print()
 {
-	// want to print each part of the config file
+	//want to print each part of the config file
 	std::cout << "------------- Config File -------------" << std::endl;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
@@ -305,4 +308,3 @@ std::string ConfigParser::getCgi(const std::map<std::string, std::string> &param
 {
 	return parameters.at("cgi");
 }
-

@@ -49,8 +49,9 @@ class ConfigParser {
 		~ConfigParser();
 		void getConfig(const std::string &file);
 		std::map<std::string, std::string> parseParameters(const std::string& serverConfig);
+// std::string serializeParameters(const std::map<std::string, std::string> &parameters);
+bool isDigit(const std::string& str);
 
-		
 		void checkCorrectParameters(std::map<std::string, std::string> parameters);
 		void splitServers(std::string &content);
 		void removeWhiteSpace(std::string& content);
