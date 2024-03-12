@@ -6,43 +6,140 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 22:47:18 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/12 21:29:50 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
+
 #include "Server_OS__linux.hpp"
+
+bool	_is_port_already_set(int port, int *array_ports_set, int size_array)
+{
+	for (int i = 0; i < size_array; i++)
+	{
+		if (array_ports_set[i] == port)
+			return (true);
+	}
+	return (false);
+}
 
 ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env)
 {
+	std::string		key;
+	std::string		value;
+	std::string		ident;
+	int				*port_array;
+	int 			port;
+	int				nb_servers;			
+
+	// create an epoll instance in a file descriptor
+	_epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0
+	if (_epoll_fd == -1)
+	{
+		std::cerr << REDB << "Error to epoll_create: " << strerror(errno)<< RESET << std::endl;
+		throw ServerCriticalError();
+	}
+	
+	clear_memory((void *)&_ev_server, sizeof(_ev_server));
+	_ev_server.events =  EPOLLIN | EPOLLOUT;
+
+	nb_servers = configParser.get_nb_of_servers();
+
+	// to store the file descriptors of the servers socket per port
+	_servers_fd = new int[configParser.get_nb_of_servers()];
+
+
+	// loop through servers
+	// check if a port was already initialized otherwise intialize it
+	// map port_server_name to a file descriptor
+
+	// intialize port array 
+	port_array = new int[nb_servers];
+	for (int i = 0; i < nb_servers; i++)
+	{
+		port_array[i] = -1;
+	}
+
+	for (int i = 0; i < nb_servers; i++)
+	{
+		std::cout << std::endl;
+		port = str2int(configParser.get_listen(i));
+		// we can have doubled ports for different servers, but their socket must be set once per port
+		if (_is_port_already_set(port, port_array, nb_servers) == false)
+		{
+			// setup port
+			std::cout << "New Port : Setup Socket for port " << port  << std::endl; // remove
+			_servers_fd[i]= _setup_socket(port);
+			_listen_sockets(_servers_fd[i], port);
+			port_array[i] = port;
+		}
+		std::cout << "Already Set : Setup Socket port " << port << std::endl; // remove
+
+	}
+	delete [] port_array;
+}
+
+void	ServerOS::_listen_sockets(int fd_server, int port)
+{
+	if (listen(fd_server, _max_backlog_queue) == -1)
+	{
+		//ideally print the server socket and port that could not be listen
+		print_error_fd("to listen socket Port ", port);
+		close(fd_server);
+		//throw exception
+		exit (1); // at the moment just exit
+	}
+	std::cout << "Socket port " << port << " set sucessfully to listen" << std::endl; // remove
 	
 }
 
-void	ServerOS::launch_webserver(void)
-{
 
-	_setup_socket();
-	std::cout << "Socket Setup done" << std::endl;
-	_listen_socket();
-	std::cout << "Socket in listening mode port " << _server_port << std::endl;
-	_loop();
+void	ServerOS::close_server_socket(int fd)
+{
+	// can we just looop all of them or do i have the need to close only one?
+	int nb_servers = _configParser.get_nb_of_servers();
+	for (int i = 0; i < nb_servers; i++)
+	{
+		if (_servers_fd[i] != -1 && _servers_fd[i] == fd)
+		{
+			close(_servers_fd[i]);
+			_servers_fd[i] = -1;
+		}
+	}
 }
 
-void	ServerOS::_setup_socket(void)
+
+void	ServerOS::launch_webserver(void)
 {
-	struct sockaddr_in serverAddr;
+	// _setup_socket();
+	// std::cout << "Socket Setup done" << std::endl;
+	// _listen_socket();
+	// std::cout << "Socket in listening mode port " << _server_port << std::endl;
+	
+	// if (_epoll_fd == 0) // remove
+	// 	std::cout << "" << std::endl; // remove
+	// _loop(); // to be uncommented
+}
+
+int		ServerOS::_setup_socket(int port)
+{
+	int					server_socket;
+	struct sockaddr_in	serverAddr;
+
     
     // Socket will be created for AF_INET(IPv4), for SOCK_STREAM(TCP) and specific for the TCP protocol
-	_server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
-	if (_server_socket == -1)
+	server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
+	if (server_socket == -1)
 	{   
         print_error("to create Server Socket");
 		throw ServerCriticalError();
 	}
-	std::cout << "Socket created sucessfully. Socket fd = " << _server_socket << std::endl;
+	std::cout << "Socket created sucessfully. Socket fd = " << server_socket << std::endl;
 
     // set socket option to reuse addr otherwise a time must be waited after closing a file descriptor until it can be reused
 	int yes = 1;
-	if (setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
         print_error("setsockopt to SO_REUSEADDR");
 		throw ServerCriticalError();
@@ -59,16 +156,29 @@ void	ServerOS::_setup_socket(void)
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); 
 
     //set the server port as defined in the configuration file
-	serverAddr.sin_port = htons(str2int(_server_port));
+	serverAddr.sin_port = htons(port);
 
     // Bind socket to configuration defined in struct serverAddr
-	if (bind(_server_socket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
+	if (bind(server_socket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
 	{
         print_error("to Bind socket and server_sockaddr");
 		print_error(strerror(errno));
 		throw ServerCriticalError();
 	}
-	std::cout << "Binding sucessful" << std::endl;
+	std::cout << "Binding sucessful socket fd " << server_socket << std::endl;
+
+	// add file descriptor to be monitored
+	_ev_server.data.fd = server_socket;
+
+	std::cout << "before epoll_ctl " << _epoll_fd << std::endl; // remove
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, server_socket, &_ev_server) == -1)
+	{
+		std::cerr << REDB <<  "Error:\n epoll_ctl server socket could not be set to monitored file descriptor list. Port "<< port << RESET << std::endl;
+		std::cerr << "Reason: " << strerror(errno) << std::endl;
+		throw ServerCriticalError();
+	}
+	return (server_socket);
+	
 }
 
 ServerOS::~ServerOS(void)
@@ -95,8 +205,17 @@ ServerOS::~ServerOS(void)
 	// close _epoll_fd
 	close(_epoll_fd);
 	_epoll_fd = -1;
-	// close socket fd
-	close_server_socket();
+
+	// close all sockets fds
+	int nb_servers = _configParser.get_nb_of_servers();
+
+	for (int i = 0; i < nb_servers; i++)
+	{
+		close_server_socket(_servers_fd[i]);
+	}
+	
+	// free server sockets array
+	delete [] _servers_fd;
 }
 
 void	ServerOS::_close_connection(int _epoll_fd, int fd_to_remove, struct epoll_event &ev_ref)
@@ -152,6 +271,7 @@ void	ServerOS::_print_epoll_events(uint32_t event, int fd)
 	EPOLLHUP: Event file descriptor hang up
 	EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
 */
+/*
 void	ServerOS::_loop(void)
 {
 	// NON BLOCKING - FOR LINUX OS Only
@@ -170,25 +290,24 @@ void	ServerOS::_loop(void)
 
 	client_addr_size = sizeof(client_addr);
 
-	// create an epoll instance in a file descriptor
-	int _epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0
+	
 
 	// create an events structure for the events to be monitored
-	struct epoll_event ev_server, ep_event[MAX_EVENTS];
-	clear_memory((void *)&ev_server, sizeof(ev_server));
+	struct epoll_event ep_event[MAX_EVENTS];
+
 
 	// add file descriptor to be monitored
-	ev_server.data.fd = _server_socket;
+	// _ev_server.data.fd = _server_socket;
 	// set events to be monitored in the file descriptor
-	ev_server.events =  EPOLLIN | EPOLLOUT;
+	// _ev_server.events =  EPOLLIN | EPOLLOUT;
 
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_socket, &ev_server) == -1)
-	{
-		std::cerr << REDB <<  "Error:\n epoll_ctl server socket could not be set to monitored file descriptor list" << RESET << std::endl;
-		throw ServerCriticalError();
-	}
-	if (VERBOSE == 1)
-		std::cout << "Server socket fd " << _server_socket << std::endl;
+	// if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_socket, &_ev_server) == -1)
+	// {
+	// 	std::cerr << REDB <<  "Error:\n epoll_ctl server socket could not be set to monitored file descriptor list" << RESET << std::endl;
+	// 	throw ServerCriticalError();
+	// }
+	// if (VERBOSE == 1)
+	// 	std::cout << "Server socket fd " << _server_socket << std::endl;
 	
 	// main loop 
 	while (1)
@@ -207,14 +326,14 @@ void	ServerOS::_loop(void)
 		}	
 		for (int i = 0; i < nb_of_events; i++)
 		{
-			/* print event triggered and file descriptor*/
+			// print event triggered and file descriptor
 			if (VERBOSE == 2)
 				_print_epoll_events(ep_event[i].events, ep_event[i].data.fd);
 		
 			if (ep_event[i].events & EPOLLERR)
 			{
 				print_error_fd("Event Error received in fd ", ep_event[i].data.fd);
-				_close_connection(_epoll_fd, ep_event[i].data.fd, ev_server);
+				_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 				print_error("Connection closed. Please retry");
 			}
 
@@ -232,7 +351,7 @@ void	ServerOS::_loop(void)
 					if (client_addr.sin_family != AF_INET)
 					{
 						print_error_fd("Unsupport Connection socket Family. Only AF_INET (IPv4) is supported", client_fd);
-						_close_connection(_epoll_fd, client_fd, ev_server);
+						_close_connection(_epoll_fd, client_fd, _ev_server);
 						continue;
 					}
 
@@ -241,7 +360,7 @@ void	ServerOS::_loop(void)
 					if (setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 					{
 						print_error_fd("setsockopt to set fd to SO_REUSEADDR to reusable. fd", client_fd);
-						_close_connection(_epoll_fd, client_fd, ev_server);
+						_close_connection(_epoll_fd, client_fd, _ev_server);
 						print_error("Connection closed. Please retry");
 						continue;
 					}
@@ -250,13 +369,13 @@ void	ServerOS::_loop(void)
 					fcntl(client_fd, F_SETFL, flags | O_NONBLOCK); // remove - illegal function
 
 					// add file descriptor to be monitored
-					ev_server.data.fd = client_fd;
+					_ev_server.data.fd = client_fd;
 
 					// add new Connection file descriptor to the list of monitored file descriptors
-					if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &ev_server) == -1)
+					if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &_ev_server) == -1)
 					{
 						print_error_fd("epoll_ctl. Not possible to add client to monitored events lists. fd", client_fd);
-						_close_connection(_epoll_fd, client_fd, ev_server);
+						_close_connection(_epoll_fd, client_fd, _ev_server);
 						print_error("Connection closed. Please retry");
 						continue;
 					}
@@ -311,7 +430,7 @@ void	ServerOS::_loop(void)
 					// if keep alive or not: if not remove connection
 					// if (_fd2client_map[ep_event[i].data.fd]->get_connection().compare("keep-alive") != 0)
 					// {
-						_close_connection(_epoll_fd, ep_event[i].data.fd, ev_server);
+						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 					// }
 				}
 				else
@@ -323,16 +442,16 @@ void	ServerOS::_loop(void)
 			else if (ep_event[i].events & EPOLLRDHUP)
 			{
 				//	EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
-				_close_connection(_epoll_fd, ep_event[i].data.fd, ev_server);
+				_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 			}
 			
 			else if (ep_event[i].events & EPOLLHUP)
 			{
 				// EPOLLHUP: Event file descriptor hang up
-				_close_connection(_epoll_fd, ep_event[i].data.fd, ev_server);
+				_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 			}
 		}
 
 	}
 }
-
+*/

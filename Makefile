@@ -42,12 +42,16 @@ CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
 # FILES = main ConfigParser # Tatiana's original
 
 ifeq ($(shell uname), Darwin) # Mac OS
-	FILES = main map signal_handler library ConfigParser ConfigFile Server Server_OS__singleClient Request Response Connection Webserv_Exceptions
+	FILES = main map signal_handler library ConfigParser Server Server_OS__singleClient Request Response Connection Webserv_Exceptions
+
+# FILES = main map signal_handler library ConfigParser ConfigFile Server Server_OS__singleClient Request Response Connection Webserv_Exceptions
 	OS_NAME = "MAC OS Darwin"
 	CFLAGS += -D__mac__
 
 else ifeq ($(shell uname), Linux) # Linux
-	FILES = main map signal_handler library ConfigParser ConfigFile Server Server_OS__linux Request Response Connection Webserv_Exceptions
+	FILES = main map signal_handler library ConfigParser Server Server_OS__linux Request Response Connection Webserv_Exceptions
+
+# FILES = main map signal_handler library ConfigParser ConfigFile Server Server_OS__linux Request Response Connection Webserv_Exceptions
 	OS_NAME = "Linux OS"
 # add a extra linux identifier for docker if missing
 	CFLAGS += -D__linux__

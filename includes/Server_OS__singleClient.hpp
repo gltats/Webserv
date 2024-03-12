@@ -24,7 +24,7 @@
 class ServerOS : public Server
 {
     private:
-        virtual void	_setup_socket(void);
+        virtual int	_setup_socket(void);
         virtual void	_loop(void);
 
     public:

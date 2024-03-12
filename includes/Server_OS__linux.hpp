@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 18:07:41 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/29 21:15:14 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/12 20:41:59 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,16 @@
 class ServerOS : public Server
 {
     private:
-        void	        _print_epoll_events(uint32_t event, int fd);
-        void            _close_connection(int epoll_fd, int fd_to_remove, struct epoll_event &ev_ref);
-        virtual void	_setup_socket(void);
-        virtual void	_loop(void);
-    
+		int 			    _epoll_fd;
+        struct epoll_event _ev_server;
+        int                *_servers_fd;
+
+        void	           _print_epoll_events(uint32_t event, int fd);
+        void               _close_connection(int epoll_fd, int fd_to_remove, struct epoll_event &ev_ref);
+        virtual int 	   _setup_socket(int port);
+        // virtual void	   _loop(void);
+        virtual void	    _listen_sockets(int fd_server, int port);
+        virtual void	    close_server_socket(int fd);
     public:
         ServerOS(int server_index, ConfigParser &configParser, char *env[]);
         ~ServerOS(void);

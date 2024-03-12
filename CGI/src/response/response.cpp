@@ -1,5 +1,11 @@
 #include "../../../includes/response_arafa.hpp"
 
+void Response::create_response(void)
+{
+
+
+}
+
 
 Response::Response(Request &_request,  fds_info &_fd) : request(_request), fd(_fd), server(fd.my_servers[0])
 {

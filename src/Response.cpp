@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/07 21:28:47 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/11 21:26:40 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ general-header = Cache-Control            ; Section 14.9
 Response::Response(int server_index, ConfigParser &configParser, Request &_request, char *env[]): _configParser(configParser)
 {
 	// to avoid error of unused argumentss
-	if (_configParser.getSize() != 0 || server_index == -1 || _request.get_method().compare("Hi") == 0 || env == 0)
+	if (_configParser.get_listen(server_index).length() != 0 || server_index == -1 || _request.get_method().compare("Hi") == 0 || env == 0)
 		std::cout << "";
 
 

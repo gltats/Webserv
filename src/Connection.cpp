@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:13:43 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/11 21:27:12 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,9 @@
 Connection::Connection(int server_index, ConfigParser &configParser, int connection_socket, struct sockaddr_in &client_addr, char *env[]): _server_index(server_index) , _configParser(configParser),  _env(env),  _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2),_request(server_index, configParser), _response(server_index, configParser, _request, env), _is_read_complete(0)
 {
 	// consume
-	if (_server_index < 0 || _configParser.getSize() == 0)
+	if (_server_index < 0 || _configParser.get_listen(server_index).length() == 0)
 		std::cout << "";
 
-
-	// to avoid arguments unused error
-	if (configParser.getSize() == -1)
-		std::cout << "" << std::endl;
 
 	_buffer_rcv = new char[_buffer_rcv_size];
 

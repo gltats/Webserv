@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:07:14 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/11 21:38:44 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 Request::Request(int server_index, ConfigParser &configParser)
 {
     // consume
-    if (server_index == -1 || configParser.getSize() < 0)
+    if (server_index == -1 || configParser.get_listen(server_index).length() == 0)
         std::cout << "" ;
     
     _cleanMemory();
