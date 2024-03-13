@@ -46,6 +46,18 @@ ConfigParser::ConfigParser(void)
     _server_map[2]["index"] = "basic_server3.html";
     _server_map[2]["cgi"] = "";
 
+   // server 3:
+    _server_map[2]["listen"] = "4431";
+    _server_map[2]["server_name"] = "nginx_fake";
+    _server_map[2]["body_size"] = "100";
+    _server_map[2]["error_page404"] = "/error/error404.html";
+    _server_map[2]["location"] = "/";
+    _server_map[2]["allow_GET"] = "y";
+    _server_map[2]["allow_POST"] = "y";
+    _server_map[2]["allow_DELETE"] = "n";
+    _server_map[2]["autoindex"] = "on";
+    _server_map[2]["index"] = "basic_server3.html";
+    _server_map[2]["cgi"] = "";
 
     _nb_servers = 3;
 }

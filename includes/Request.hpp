@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:07:57 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/13 21:55:26 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,7 @@ class Request
         // received, it will return a string, otherwise ""
         std::string         get_header_per_key(std::string const &header_key) const;
 
-        int                 get_error(void);
+        int                 get_error(void) const;
 };
 
 /* move to the webserv exceptions file */

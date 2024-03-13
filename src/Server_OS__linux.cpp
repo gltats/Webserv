@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/12 21:29:50 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/13 21:53:59 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,24 @@
 
 #include "Server_OS__linux.hpp"
 
-bool	_is_port_already_set(int port, int *array_ports_set, int size_array)
+int	_is_port_already_set(int port, int *array_ports_set, int size_array)
 {
 	for (int i = 0; i < size_array; i++)
 	{
 		if (array_ports_set[i] == port)
-			return (true);
+			return (i);
 	}
-	return (false);
+	return (-1);
 }
 
-ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env)
+ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env), _nb_of_servers(configParser.get_nb_of_servers())
 {
 	std::string		key;
 	std::string		value;
 	std::string		ident;
 	int				*port_array;
 	int 			port;
-	int				nb_servers;			
+	std::string 	identity; 
 
 	// create an epoll instance in a file descriptor
 	_epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0
@@ -44,10 +44,9 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 	clear_memory((void *)&_ev_server, sizeof(_ev_server));
 	_ev_server.events =  EPOLLIN | EPOLLOUT;
 
-	nb_servers = configParser.get_nb_of_servers();
 
 	// to store the file descriptors of the servers socket per port
-	_servers_fd = new int[configParser.get_nb_of_servers()];
+	_servers_fd = new int[_nb_of_servers];
 
 
 	// loop through servers
@@ -55,18 +54,19 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 	// map port_server_name to a file descriptor
 
 	// intialize port array 
-	port_array = new int[nb_servers];
-	for (int i = 0; i < nb_servers; i++)
+	port_array = new int[_nb_of_servers];
+	for (int i = 0; i < _nb_of_servers; i++)
 	{
 		port_array[i] = -1;
 	}
 
-	for (int i = 0; i < nb_servers; i++)
+	for (int i = 0; i < _nb_of_servers; i++)
 	{
 		std::cout << std::endl;
 		port = str2int(configParser.get_listen(i));
 		// we can have doubled ports for different servers, but their socket must be set once per port
-		if (_is_port_already_set(port, port_array, nb_servers) == false)
+		int index = _is_port_already_set(port, port_array, _nb_of_servers);
+		if (index == -1) // if new port create a new socket and set _server_fd_port_name
 		{
 			// setup port
 			std::cout << "New Port : Setup Socket for port " << port  << std::endl; // remove
@@ -74,10 +74,14 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 			_listen_sockets(_servers_fd[i], port);
 			port_array[i] = port;
 		}
-		std::cout << "Already Set : Setup Socket port " << port << std::endl; // remove
-
+		else
+		{
+			std::cout << "Already Set : Setup Socket port " << port << std::endl; // remove
+			_servers_fd[i]= _servers_fd[index];
+		}
 	}
 	delete [] port_array;
+
 }
 
 void	ServerOS::_listen_sockets(int fd_server, int port)
@@ -98,8 +102,7 @@ void	ServerOS::_listen_sockets(int fd_server, int port)
 void	ServerOS::close_server_socket(int fd)
 {
 	// can we just looop all of them or do i have the need to close only one?
-	int nb_servers = _configParser.get_nb_of_servers();
-	for (int i = 0; i < nb_servers; i++)
+	for (int i = 0; i < _nb_of_servers; i++)
 	{
 		if (_servers_fd[i] != -1 && _servers_fd[i] == fd)
 		{
@@ -119,7 +122,7 @@ void	ServerOS::launch_webserver(void)
 	
 	// if (_epoll_fd == 0) // remove
 	// 	std::cout << "" << std::endl; // remove
-	// _loop(); // to be uncommented
+	_loop(); // to be uncommented
 }
 
 int		ServerOS::_setup_socket(int port)
@@ -207,9 +210,8 @@ ServerOS::~ServerOS(void)
 	_epoll_fd = -1;
 
 	// close all sockets fds
-	int nb_servers = _configParser.get_nb_of_servers();
 
-	for (int i = 0; i < nb_servers; i++)
+	for (int i = 0; i < _nb_of_servers; i++)
 	{
 		close_server_socket(_servers_fd[i]);
 	}
@@ -231,7 +233,6 @@ void	ServerOS::_close_connection(int _epoll_fd, int fd_to_remove, struct epoll_e
 	// delete allocated Connection
 	if (VERBOSE == 1)
 		std::cout << "file descriptor Connection object free  " << fd_to_remove << std::endl;
-
 	delete  _fd2client_map[fd_to_remove];
 
 	// close file descriptor
@@ -264,6 +265,23 @@ void	ServerOS::_print_epoll_events(uint32_t event, int fd)
 		std::cout << "EPOLLHUP: " << fd << std::endl;
 }
 
+
+bool	ServerOS::_is_a_server_socket(int fd) const
+{
+	if (fd <= 2)
+		return (false);
+
+	for (int i = 0; i < _nb_of_servers; i++)
+	{
+		if (fd == _servers_fd[i])
+		{
+			return (true);
+		}
+	}
+	return (false);
+}
+
+
 /*
 	EPOLLIN: Event file descriptor is available to read
 	EPOLLOUT: Event file descriptor is available to write
@@ -271,7 +289,7 @@ void	ServerOS::_print_epoll_events(uint32_t event, int fd)
 	EPOLLHUP: Event file descriptor hang up
 	EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
 */
-/*
+
 void	ServerOS::_loop(void)
 {
 	// NON BLOCKING - FOR LINUX OS Only
@@ -284,31 +302,16 @@ void	ServerOS::_loop(void)
 	int	client_fd = 0;
 	int	error_counter = 0;
 
+
 	// create address sizes structures
 	socklen_t				client_addr_size;
 	struct	sockaddr_in		client_addr;
 
 	client_addr_size = sizeof(client_addr);
 
-	
-
 	// create an events structure for the events to be monitored
 	struct epoll_event ep_event[MAX_EVENTS];
 
-
-	// add file descriptor to be monitored
-	// _ev_server.data.fd = _server_socket;
-	// set events to be monitored in the file descriptor
-	// _ev_server.events =  EPOLLIN | EPOLLOUT;
-
-	// if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_socket, &_ev_server) == -1)
-	// {
-	// 	std::cerr << REDB <<  "Error:\n epoll_ctl server socket could not be set to monitored file descriptor list" << RESET << std::endl;
-	// 	throw ServerCriticalError();
-	// }
-	// if (VERBOSE == 1)
-	// 	std::cout << "Server socket fd " << _server_socket << std::endl;
-	
 	// main loop 
 	while (1)
 	{
@@ -339,9 +342,9 @@ void	ServerOS::_loop(void)
 
 			else if (ep_event[i].events & EPOLLIN)
 			{	
-				if (ep_event[i].data.fd == _server_socket) // Request for a new connection
+				if (_is_a_server_socket(ep_event[i].data.fd) == true) // Request for a new connection
 				{
-					client_fd = accept(_server_socket, (struct sockaddr*)&client_addr, &client_addr_size);
+					client_fd = accept(ep_event[i].data.fd, (struct sockaddr*)&client_addr, &client_addr_size);
 					if (client_fd == -1)
 					{
 						print_error("accept. Connection refused");
@@ -381,6 +384,7 @@ void	ServerOS::_loop(void)
 					}
 					
 					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
+			
 					_fd2client_map[client_fd] = new Connection(_server_index, _configParser ,client_fd, client_addr, _env); 
 					std::cout << "New client connected in fd " << client_fd << std::endl;
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
@@ -391,6 +395,12 @@ void	ServerOS::_loop(void)
 					try
 					{
 						_fd2client_map[ep_event[i].data.fd]->receive_request();
+						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 0)
+						{
+							// temporary until request can handle this errors it self
+							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
+							print_error("Connection closed. Please retry");
+						}
 					}				
 					catch(const InvalidRequest& e)
 					{
@@ -408,9 +418,11 @@ void	ServerOS::_loop(void)
 				}
 			}
 			// send message from client if read ready
-			else if (ep_event[i].events & EPOLLOUT && ep_event[i].data.fd != _server_socket && _fd2client_map[ep_event[i].data.fd]->get_is_read_complete())
+			
+			else if (ep_event[i].events & EPOLLOUT && _is_a_server_socket(ep_event[i].data.fd) == false && _fd2client_map[ep_event[i].data.fd]->get_is_read_complete())
 			{
-				if (_fd2client_map[ep_event[i].data.fd])
+				if(_fd2client_map.find(ep_event[i].data.fd) != _fd2client_map.end())
+				// if (_fd2client_map[ep_event[i].data.fd])
 				{
 					try
 					{
@@ -454,4 +466,4 @@ void	ServerOS::_loop(void)
 
 	}
 }
-*/
+

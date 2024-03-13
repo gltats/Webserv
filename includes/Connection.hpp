@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:12:29 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/13 21:50:14 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,11 @@ class Connection
 		bool								is_response_empty(void) const;
 		bool 								get_is_read_complete(void) const;
 		void								set_is_read_complete(bool status); // is it required?
+
 		std::string							get_client_ip(void) const;
 		std::string							get_client_port(void) const;
+
+		int									get_error(void) const;
 	
 };
 

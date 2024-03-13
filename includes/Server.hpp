@@ -54,7 +54,7 @@ class Server
 		Server								&operator=(Server const &rhs);
 		// void								_setup_server(void);
 		virtual int							_setup_socket(int port) = 0;
-		// virtual void						_loop(void) = 0;
+		virtual void						_loop(void) = 0;
 		virtual void	    				_listen_sockets(int fd_server, int port) = 0;
 
 

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/11 21:38:44 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/13 21:58:23 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -934,7 +934,7 @@ void                Request::set_content_length(size_t len)
     _headers_map["Content-Length"] = size_t2str(_content_len);
 }
 
-int                 Request::get_error(void)
+int                 Request::get_error(void) const
 {
     return (_error);
 }
@@ -1258,4 +1258,13 @@ RFC 7230           HTTP/1.1 Message Syntax and Routing         June 2014
     is void                Request::_check_str_us_ascii(std::string &str) required?
     range is always false
 
+*/
+
+
+/*
+A sender MUST NOT generate an "http" URI with an empty host identifier. A recipient that processes such a URI reference MUST reject it as invalid.
+
+If the host identifier is provided as an IP address, the origin server is the listener (if any) on the indicated TCP port at that IP address. 
+If host is a registered name, the registered name is an indirect identifier for use with a name resolution service, such as DNS, to find an address
+for that origin server. If the port subcomponent is empty or not given, TCP port 80 (the reserved port for WWW services) is the default.
 */
