@@ -101,10 +101,13 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 			}
 			else if (key == "location")
 			{
-				size_t bracePos = value.find('{');
-				if (bracePos != std::string::npos)
+
+				size_t braceStartPos = value.find('{');
+				size_t braceEndPos = value.find('}');
+
+				if (braceStartPos != braceEndPos)
 				{
-					std::string location = value.substr(0, bracePos);
+					std::string location = value.substr(0, braceStartPos);
 					parameters["location"] = location;
 				}
 			}
@@ -139,16 +142,6 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 	return parameters;
 }
 
-// std::string ConfigParser::serializeParameters(const std::map<std::string, std::string> &parameters)
-// {
-// 	std::string serialized;
-// 	for (std::map<std::string, std::string>::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
-// 	{
-// 		serialized += it->first + "=" + it->second + "; ";
-// 	}
-// 	return serialized;
-// }
-
 void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> parameters)
 {
 	std::string listenValue = parameters["listen"];
@@ -156,7 +149,7 @@ void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> par
 	std::string bodySize = parameters["body_size"];
 	std::string errorNumber = parameters["error_number"];
 
-	if (getListenValue(parameters).empty() || serverName.empty() || bodySize.empty()) 
+	if (listenValue.empty() || serverName.empty() || bodySize.empty()) 
 		throw std::invalid_argument("Empty value on configuration file");
 	else if (!isDigit(listenValue) || !isDigit(bodySize))
 		throw std::invalid_argument("Value is not a digit");
@@ -204,6 +197,30 @@ void ConfigParser::removeComments(std::string &content)
 	}
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+//the fucking map
+
+std::map<std::string, std::string>& ConfigParser::getServerParameters(size_t index)
+{
+	if (index >= serverParameters.size())
+		throw std::out_of_range("Invalid server index");
+
+	return serverParameters[index];
+}
+
+std::string ConfigParser::getParameterValue(size_t serverIndex, const std::string& parameterKey)
+{
+	if (serverIndex >= serverParameters.size())
+		throw std::out_of_range("Invalid server index");
+
+	const std::map<std::string, std::string>& parameters = serverParameters[serverIndex];
+	if (parameters.find(parameterKey) == parameters.end())
+		throw std::invalid_argument("Invalid parameter key");
+
+	return parameters.at(parameterKey);
+}
+
 // Test functions
 void ConfigParser::print()
 {
@@ -211,33 +228,44 @@ void ConfigParser::print()
 	std::cout << "------------- Config File -------------" << std::endl;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
-		std::cout << "Server " << i << std::endl;
-		std::cout << servers[i] << std::endl;
-		// print each parameter
-		std::cout << "------------- Parameters -------------" << std::endl;
-		std::map<std::string, std::string> parameters = serverParameters[i];
-		std::cout << "listen: " << getListenValue(serverParameters[i]) << std::endl;
-		std::cout << "server_name: " << getServerName(serverParameters[i]) << std::endl;
-		std::cout << "body_size: " << getBodySize(serverParameters[i]) << std::endl;
-		std::cout << "error_page_number: " << getErrorNumber(serverParameters[i]) << parameters["error_number"] << std::endl;
-		std::cout << "error_location: " << getErrorLocation(serverParameters[i]) << parameters["error_location"] << std::endl;
-		std::cout << "location:" << getLocation(serverParameters[i]) << std::endl;
+		std::map<std::string, std::string> parameters = getServerParameters(i);
+		std::cout << "listen: " << i << " " << getParameterValue(i, "listen") << std::endl;
+		std::cout << "server_name: " << i <<  " " << getParameterValue(i, "server_name") << std::endl;
+		std::cout << "body_size: " << i <<  " " << getParameterValue(i, "body_size") << std::endl;
+		std::cout << "error_page_number: " << i << " " << getParameterValue(i, "error_page") << std::endl;
+		std::cout << "location:" << i <<  " " << getParameterValue(i, "location") << std::endl;
+		std::cout << "allowed methods:" << i << " " << getParameterValue(i, "allow_methods") << std::endl;
+		std::cout << "autoindex:" << i << " " << getParameterValue(i, "autoindex") << std::endl;
+		std::cout << "index:" << i << " " << getParameterValue(i, "indexing") << std::endl;
+		std::cout << "scripts:" << i << " " << getParameterValue(i, "cgi") << std::endl;
 
-		std::cout << "allowed methods:" << parameters["allow_methods"] << std::endl;
-		std::cout << "autoindex:" << parameters["autoindex"] << std::endl;
-		std::cout << "index:" << parameters["indexing"] << std::endl;
-		std::cout << "scripts:" << parameters["cgi"] << std::endl;
-		std::cout << "--------------------------------------" << std::endl;
-		// PRINT METHODS:
-		std::cout << "------------- Methods -------------" << std::endl;
-		std::cout << "GET: " << parameters["GET"] << std::endl;
-		std::cout << "POST: " << parameters["POST"] << std::endl;
-		std::cout << "DELETE: " << parameters["DELETE"] << std::endl;
-		if (!parameters["NoAllowedMethods"].empty())
-		{
-			std::cout << "NoAllowedMethods: " << parameters["NoAllowedMethods"] << std::endl;
-		}
-		std::cout << "--------------------------------------" << std::endl;
+		// std::cout << "Server " << i << std::endl;
+		// std::cout << servers[i] << std::endl;
+		// // print each parameter
+		// std::cout << "------------- Parameters -------------" << std::endl;
+		// std::map<std::string, std::string> parameters = serverParameters[i];
+		// std::cout << "listen: " << getListenValue(serverParameters[i]) << std::endl;
+		// std::cout << "server_name: " << getServerName(serverParameters[i]) << std::endl;
+		// std::cout << "body_size: " << getBodySize(serverParameters[i]) << std::endl;
+		// std::cout << "error_page_number: " << getErrorNumber(serverParameters[i]) << std::endl;
+		// std::cout << "error_location: " << getErrorLocation(serverParameters[i]) << std::endl;
+		// std::cout << "location:" << getLocation(serverParameters[i]) << std::endl;
+
+		// std::cout << "allowed methods:" << parameters["allow_methods"] << std::endl;
+		// std::cout << "autoindex:" << parameters["autoindex"] << std::endl;
+		// std::cout << "index:" << parameters["indexing"] << std::endl;
+		// std::cout << "scripts:" << parameters["cgi"] << std::endl;
+		// std::cout << "--------------------------------------" << std::endl;
+		// // PRINT METHODS:
+		// std::cout << "------------- Methods -------------" << std::endl;
+		// std::cout << "GET: " << parameters["GET"] << std::endl;
+		// std::cout << "POST: " << parameters["POST"] << std::endl;
+		// std::cout << "DELETE: " << parameters["DELETE"] << std::endl;
+		// if (!parameters["NoAllowedMethods"].empty())
+		// {
+		// 	std::cout << "NoAllowedMethods: " << parameters["NoAllowedMethods"] << std::endl;
+		// }
+		// std::cout << "--------------------------------------" << std::endl;
 	}
 	std::cout << "--------------------------------------" << std::endl;
 }
@@ -249,62 +277,62 @@ int ConfigParser::getSize()
 	return (this->_size);
 }
 
-std::string ConfigParser::getListenValue(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("listen");
-}
+// std::string ConfigParser::getListenValue(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("listen");
+// }
 
-std::string ConfigParser::getServerName(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("server_name");
-}
+// std::string ConfigParser::getServerName(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("server_name");
+// }
 
-std::string ConfigParser::getBodySize(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("body_size");
-}
+// std::string ConfigParser::getBodySize(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("body_size");
+// }
 
-std::string ConfigParser::getErrorNumber(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("error_number");
-}
+// std::string ConfigParser::getErrorNumber(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("error_number");
+// }
 
-std::string ConfigParser::getErrorLocation(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("error_location");
-}
+// std::string ConfigParser::getErrorLocation(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("error_location");
+// }
 
-std::string ConfigParser::getLocation(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("location");
-}
+// std::string ConfigParser::getLocation(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("location");
+// }
 
-std::string ConfigParser::getPost(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("POST");
-}
+// std::string ConfigParser::getPost(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("POST");
+// }
 
-std::string ConfigParser::getGet(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("GET");
-}
+// std::string ConfigParser::getGet(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("GET");
+// }
 
-std::string ConfigParser::getDelete(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("DELETE");
-}
+// std::string ConfigParser::getDelete(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("DELETE");
+// }
 
-std::string ConfigParser::getAutoindex(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("autoindex");
-}
+// std::string ConfigParser::getAutoindex(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("autoindex");
+// }
 
-std::string ConfigParser::getIndexing(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("indexing");
-}
+// std::string ConfigParser::getIndexing(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("indexing");
+// }
 
-std::string ConfigParser::getCgi(const std::map<std::string, std::string> &parameters)
-{
-	return parameters.at("cgi");
-}
+// std::string ConfigParser::getCgi(const std::map<std::string, std::string> &parameters)
+// {
+// 	return parameters.at("cgi");
+// }

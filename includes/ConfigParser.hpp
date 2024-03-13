@@ -65,20 +65,23 @@ bool isDigit(const std::string& str);
 		void print();
 		std::string getPath();
 		int getSize();
+		std::map<std::string, std::string>& getServerParameters(size_t index);
+std::string getParameterValue(size_t serverIndex, const std::string& parameterKey);
+
 		///getters for sockets
-		std::string getListenValue(const std::map<std::string, std::string>& parameters);
-		std::string getServerName(const std::map<std::string, std::string>& parameters);
-		std::string getBodySize(const std::map<std::string, std::string>& parameters);
-		std::string getErrorNumber(const std::map<std::string, std::string> &parameters);
-		std::string getErrorPage(const std::map<std::string, std::string> &parameters);
-		std::string getErrorLocation(const std::map<std::string, std::string> &parameters);
-		std::string getLocation(const std::map<std::string, std::string> &parameters); //NEED TO BE CHANGED
-		std::string getPost(const std::map<std::string, std::string> &parameters);
-		std::string getGet(const std::map<std::string, std::string> &parameters);
-		std::string getDelete(const std::map<std::string, std::string> &parameters);
-		std::string getAutoindex(const std::map<std::string, std::string> &parameters);
-		std::string getIndexing(const std::map<std::string, std::string> &parameters);
-		std::string getCgi(const std::map<std::string, std::string> &parameters);
+		// std::string getListenValue(const std::map<std::string, std::string>& parameters);
+		// std::string getServerName(const std::map<std::string, std::string>& parameters);
+		// std::string getBodySize(const std::map<std::string, std::string>& parameters);
+		// std::string getErrorNumber(const std::map<std::string, std::string> &parameters);
+		// std::string getErrorPage(const std::map<std::string, std::string> &parameters);
+		// std::string getErrorLocation(const std::map<std::string, std::string> &parameters);
+		// std::string getLocation(const std::map<std::string, std::string> &parameters); //NEED TO BE CHANGED
+		// std::string getPost(const std::map<std::string, std::string> &parameters);
+		// std::string getGet(const std::map<std::string, std::string> &parameters);
+		// std::string getDelete(const std::map<std::string, std::string> &parameters);
+		// std::string getAutoindex(const std::map<std::string, std::string> &parameters);
+		// std::string getIndexing(const std::map<std::string, std::string> &parameters);
+		// std::string getCgi(const std::map<std::string, std::string> &parameters);
 
 
 
