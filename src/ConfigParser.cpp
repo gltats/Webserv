@@ -10,6 +10,8 @@ ConfigParser::ConfigParser(void)
     // server 1:
     _server_map[0]["listen"] = "4432";
     _server_map[0]["server_name"] = "webserv42.com";
+    // _server_map[0]["server_name"] = "";
+
     _server_map[0]["body_size"] = "10000000";
     _server_map[0]["error_page404"] = "/error/error404.html";
     _server_map[0]["location"] = "/";
@@ -19,6 +21,7 @@ ConfigParser::ConfigParser(void)
     _server_map[0]["autoindex"] = "on";
     _server_map[0]["index"] = "index.html";
     _server_map[0]["cgi"] = "";
+    _server_map[0]["default_server"] = "n";
 
     // server 2:
     _server_map[1]["listen"] = "4433";
@@ -32,10 +35,12 @@ ConfigParser::ConfigParser(void)
     _server_map[1]["autoindex"] = "off";
     _server_map[1]["index"] = "basic_server2.html";
     _server_map[1]["cgi"] = "";
+	_server_map[1]["default_server"] = "n";
 
     // server 3:
     _server_map[2]["listen"] = "4432";
-    _server_map[2]["server_name"] = "";
+    // _server_map[2]["server_name"] = "42warriors.br";
+    _server_map[2]["server_name"] = "/";
     _server_map[2]["body_size"] = "100";
     _server_map[2]["error_page404"] = "/error/error404.html";
     _server_map[2]["location"] = "/";
@@ -45,21 +50,37 @@ ConfigParser::ConfigParser(void)
     _server_map[2]["autoindex"] = "on";
     _server_map[2]["index"] = "basic_server3.html";
     _server_map[2]["cgi"] = "";
+	_server_map[2]["default_server"] = "n";
 
    // server 3:
-    _server_map[2]["listen"] = "4431";
-    _server_map[2]["server_name"] = "nginx_fake";
-    _server_map[2]["body_size"] = "100";
-    _server_map[2]["error_page404"] = "/error/error404.html";
-    _server_map[2]["location"] = "/";
-    _server_map[2]["allow_GET"] = "y";
-    _server_map[2]["allow_POST"] = "y";
-    _server_map[2]["allow_DELETE"] = "n";
-    _server_map[2]["autoindex"] = "on";
-    _server_map[2]["index"] = "basic_server3.html";
-    _server_map[2]["cgi"] = "";
+    _server_map[3]["listen"] = "4431";
+    _server_map[3]["server_name"] = "";
+    _server_map[3]["body_size"] = "100";
+    _server_map[3]["error_page404"] = "/error/error404.html";
+    _server_map[3]["location"] = "/";
+    _server_map[3]["allow_GET"] = "y";
+    _server_map[3]["allow_POST"] = "y";
+    _server_map[3]["allow_DELETE"] = "n";
+    _server_map[3]["autoindex"] = "on";
+    _server_map[3]["index"] = "basic_server3.html";
+    _server_map[3]["cgi"] = "";
+	_server_map[3]["default_server"] = "n";
 
-    _nb_servers = 3;
+   // server 4:
+    _server_map[4]["listen"] = "4433";
+    _server_map[4]["server_name"] = "tired_dev.me";
+    _server_map[4]["body_size"] = "500";
+    _server_map[4]["error_page404"] = "/error/error404.html";
+    _server_map[4]["location"] = "/";
+    _server_map[4]["allow_GET"] = "y";
+    _server_map[4]["allow_POST"] = "n";
+    _server_map[4]["allow_DELETE"] = "y";
+    _server_map[4]["autoindex"] = "off";
+    _server_map[4]["index"] = "basic_server2.html";
+    _server_map[4]["cgi"] = "";
+	_server_map[4]["default_server"] = "n";
+
+    _nb_servers = 5;
 }
 
 ConfigParser::~ConfigParser(void)
@@ -111,7 +132,7 @@ std::string ConfigParser::get_allow_autoindex(int server_id) const
 {
     return _server_map.at(server_id).at("autoindex");
 }
- 
+
 std::string ConfigParser::get_allow_index(int server_id) const
 {
     return _server_map.at(server_id).at("index");
@@ -120,4 +141,9 @@ std::string ConfigParser::get_allow_index(int server_id) const
 std::string ConfigParser::get_allow_cgi(int server_id) const
 {
     return _server_map.at(server_id).at("cgi");
+}
+
+std::string ConfigParser::get_default_server(int server_id) const
+{
+    return _server_map.at(server_id).at("default_server");
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/13 21:53:59 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/14 15:34:42 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 	std::string		ident;
 	int				*port_array;
 	int 			port;
-	std::string 	identity; 
+	std::string 	identity;
 
 	// create an epoll instance in a file descriptor
 	_epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0
@@ -40,7 +40,7 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 		std::cerr << REDB << "Error to epoll_create: " << strerror(errno)<< RESET << std::endl;
 		throw ServerCriticalError();
 	}
-	
+
 	clear_memory((void *)&_ev_server, sizeof(_ev_server));
 	_ev_server.events =  EPOLLIN | EPOLLOUT;
 
@@ -53,7 +53,7 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 	// check if a port was already initialized otherwise intialize it
 	// map port_server_name to a file descriptor
 
-	// intialize port array 
+	// intialize port array
 	port_array = new int[_nb_of_servers];
 	for (int i = 0; i < _nb_of_servers; i++)
 	{
@@ -95,7 +95,7 @@ void	ServerOS::_listen_sockets(int fd_server, int port)
 		exit (1); // at the moment just exit
 	}
 	std::cout << "Socket port " << port << " set sucessfully to listen" << std::endl; // remove
-	
+
 }
 
 
@@ -119,7 +119,7 @@ void	ServerOS::launch_webserver(void)
 	// std::cout << "Socket Setup done" << std::endl;
 	// _listen_socket();
 	// std::cout << "Socket in listening mode port " << _server_port << std::endl;
-	
+
 	// if (_epoll_fd == 0) // remove
 	// 	std::cout << "" << std::endl; // remove
 	_loop(); // to be uncommented
@@ -130,11 +130,11 @@ int		ServerOS::_setup_socket(int port)
 	int					server_socket;
 	struct sockaddr_in	serverAddr;
 
-    
+
     // Socket will be created for AF_INET(IPv4), for SOCK_STREAM(TCP) and specific for the TCP protocol
 	server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
 	if (server_socket == -1)
-	{   
+	{
         print_error("to create Server Socket");
 		throw ServerCriticalError();
 	}
@@ -148,15 +148,15 @@ int		ServerOS::_setup_socket(int port)
 		throw ServerCriticalError();
 	}
 	std::cout << "Socket option set to SO_REUSEADDR sucessfully" << std::endl;
-	
+
     // clear struct memory
 	clear_memory(&serverAddr, sizeof(serverAddr));
-	
+
     // Socket will be binded for IPv4
     serverAddr.sin_family = AF_INET;
-    
+
     // Socket will not be binded to a specific address (IP). Set as any
-	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); 
+	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     //set the server port as defined in the configuration file
 	serverAddr.sin_port = htons(port);
@@ -181,7 +181,7 @@ int		ServerOS::_setup_socket(int port)
 		throw ServerCriticalError();
 	}
 	return (server_socket);
-	
+
 }
 
 ServerOS::~ServerOS(void)
@@ -200,8 +200,9 @@ ServerOS::~ServerOS(void)
 		// // free allocated Connection
 		delete conn;
 		// remove entry from map
-		_fd2client_map.erase(fd);
-		fd = -1;
+		// _fd2client_map.erase(fd);
+		// it++; // testing
+		// fd = -1;
 	}
 	_fd2client_map.clear();
 
@@ -215,7 +216,7 @@ ServerOS::~ServerOS(void)
 	{
 		close_server_socket(_servers_fd[i]);
 	}
-	
+
 	// free server sockets array
 	delete [] _servers_fd;
 }
@@ -244,7 +245,7 @@ void	ServerOS::_close_connection(int _epoll_fd, int fd_to_remove, struct epoll_e
 	if (VERBOSE == 1)
 		std::cout << "file descriptor removed from map " << fd_to_remove << std::endl;
 
-	_fd2client_map.erase(fd_to_remove); 
+	_fd2client_map.erase(fd_to_remove);
 }
 
 void	ServerOS::_print_epoll_events(uint32_t event, int fd)
@@ -265,7 +266,7 @@ void	ServerOS::_print_epoll_events(uint32_t event, int fd)
 		std::cout << "EPOLLHUP: " << fd << std::endl;
 }
 
-
+// check if the passed file descriptor belongs to a server socket
 bool	ServerOS::_is_a_server_socket(int fd) const
 {
 	if (fd <= 2)
@@ -312,7 +313,7 @@ void	ServerOS::_loop(void)
 	// create an events structure for the events to be monitored
 	struct epoll_event ep_event[MAX_EVENTS];
 
-	// main loop 
+	// main loop
 	while (1)
 	{
 		//epoll_wait with timeout equal -1 is infinite
@@ -326,13 +327,13 @@ void	ServerOS::_loop(void)
 				print_error("Max amount of epoll_wait errors (100) reached. Application will be terminated");
 				throw ServerCriticalError();
 			}
-		}	
+		}
 		for (int i = 0; i < nb_of_events; i++)
 		{
 			// print event triggered and file descriptor
 			if (VERBOSE == 2)
 				_print_epoll_events(ep_event[i].events, ep_event[i].data.fd);
-		
+
 			if (ep_event[i].events & EPOLLERR)
 			{
 				print_error_fd("Event Error received in fd ", ep_event[i].data.fd);
@@ -341,7 +342,7 @@ void	ServerOS::_loop(void)
 			}
 
 			else if (ep_event[i].events & EPOLLIN)
-			{	
+			{
 				if (_is_a_server_socket(ep_event[i].data.fd) == true) // Request for a new connection
 				{
 					client_fd = accept(ep_event[i].data.fd, (struct sockaddr*)&client_addr, &client_addr_size);
@@ -382,10 +383,10 @@ void	ServerOS::_loop(void)
 						print_error("Connection closed. Please retry");
 						continue;
 					}
-					
+
 					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
-			
-					_fd2client_map[client_fd] = new Connection(_server_index, _configParser ,client_fd, client_addr, _env); 
+
+					_fd2client_map[client_fd] = new Connection(_configParser ,client_fd, client_addr, ep_event[i].data.fd,  _servers_fd, _env);
 					std::cout << "New client connected in fd " << client_fd << std::endl;
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
 					std::cout << "Client PORT: " << _fd2client_map[client_fd]->get_client_port() << std::endl;
@@ -401,7 +402,7 @@ void	ServerOS::_loop(void)
 							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 							print_error("Connection closed. Please retry");
 						}
-					}				
+					}
 					catch(const InvalidRequest& e)
 					{
 						std::cout << e.what() << std::endl;
@@ -418,7 +419,7 @@ void	ServerOS::_loop(void)
 				}
 			}
 			// send message from client if read ready
-			
+
 			else if (ep_event[i].events & EPOLLOUT && _is_a_server_socket(ep_event[i].data.fd) == false && _fd2client_map[ep_event[i].data.fd]->get_is_read_complete())
 			{
 				if(_fd2client_map.find(ep_event[i].data.fd) != _fd2client_map.end())
@@ -432,7 +433,7 @@ void	ServerOS::_loop(void)
 					{
 						std::cout << e.what() << std::endl;
 					}
-					
+
 					catch(const std::exception& e)
 					{
 						std::cerr << "Generic Exception during send_response" << '\n';
@@ -449,14 +450,14 @@ void	ServerOS::_loop(void)
 				{
 					print_error_fd("Fd does not exist in _fd2client_map. fd", ep_event[i].data.fd);
 					continue; // can we continue after this?
-				}					
+				}
 			}
 			else if (ep_event[i].events & EPOLLRDHUP)
 			{
 				//	EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
 				_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 			}
-			
+
 			else if (ep_event[i].events & EPOLLHUP)
 			{
 				// EPOLLHUP: Event file descriptor hang up

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/13 21:50:14 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/14 15:32:29 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,11 @@
 class Connection
 {
 	private:
-		int 								_server_index;
 		ConfigParser 						&_configParser;
 		char								**_env;
 		int									_connection_socket;
+		int									_server_socket;
+		int									*_servers_fd;
 		ssize_t								_size_data_recv;
 		int									_flags_recv;
 		const size_t						_buffer_rcv_size;
@@ -53,7 +54,7 @@ class Connection
 		// Connection		&operator=(Connection const &rhs);
 		// Connection(void);
 	public:
-		Connection(int server_index, ConfigParser &configParser, int connection_socket, struct sockaddr_in &_client_addr, char *env[]);
+		Connection(ConfigParser &configParser, int connection_socket, struct sockaddr_in &_client_addr, int server_socket, int *servers_fd, char *env[]);
 		~Connection(void);
 
 		void								receive_request(void);
@@ -68,7 +69,11 @@ class Connection
 		std::string							get_client_port(void) const;
 
 		int									get_error(void) const;
-	
+		int									*get_servers_fd(void) const;
+		ConfigParser						&get_configParser(void) const;
+		int									get_connection_socket(void) const;
+		int									get_server_socket(void) const;
+
 };
 
 #endif

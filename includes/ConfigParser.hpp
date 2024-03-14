@@ -32,10 +32,13 @@ class ConfigParser
         std::string get_allow_DELETE(int server_id) const;
 
         std::string get_allow_autoindex(int server_id) const;
- 
+
         std::string get_allow_index(int server_id) const;
 
         std::string get_allow_cgi(int server_id) const;
+
+        std::string get_default_server(int server_id) const; // new! y or n
+
 
 };
 

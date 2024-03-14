@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/11 21:26:40 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/14 21:49:37 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,10 +136,10 @@ general-header = Cache-Control            ; Section 14.9
 // 	std::cout << "Response default constructor" << std::endl;
 // }
 
-Response::Response(int server_index, ConfigParser &configParser, Request &_request, char *env[]): _configParser(configParser)
+Response::Response(ConfigParser &configParser, Request &_request, char *env[]): _configParser(configParser)
 {
 	// to avoid error of unused argumentss
-	if (_configParser.get_listen(server_index).length() != 0 || server_index == -1 || _request.get_method().compare("Hi") == 0 || env == 0)
+	if (_configParser.get_listen(0).length() != 0 || _request.get_method().compare("Hi") == 0 || env == 0)
 		std::cout << "";
 
 
@@ -154,7 +154,7 @@ Response::Response(int server_index, ConfigParser &configParser, Request &_reque
 
 	// if (_config_map["autoindex"].compare("on") == 0)
 	// 	std::cout << "used config_map to avoid unused variable error" << std::endl;
-	
+
 	std::cout << "Response default constructor" << std::endl;
 
 
@@ -255,8 +255,8 @@ void	Response::_parse_response(Request const &req)
 			python_path = python_path_mac;
 			if (OS_PATH == LINUX)
 				python_path = python_path_linux;
-			
 
+			uri.erase(0, 1);
 			char *exe[3] = {python_path, (char *)uri.c_str(), 0};
 
 			dup2(fd_pipe[1], STDOUT_FILENO);
@@ -275,6 +275,8 @@ void	Response::_parse_response(Request const &req)
 			dup2(fd_pipe[0], STDIN_FILENO);
 			close(fd_pipe[0]);
 			close(fd_pipe[1]);
+			close (fd_stdin);
+			close(fd_stdout);
 
 			//parent = webserver
 			int MSGSIZE = 8192*2;
@@ -296,7 +298,7 @@ void	Response::_parse_response(Request const &req)
 			_response.append(_status_line);
 			_response.append("Server: Webserv\r\n");
 			// cgi has also a type of data line which means nb_characters is not the size of content but bigger
-			// _response.append("Content-Length: "); 
+			// _response.append("Content-Length: ");
 			// _response.append(int2str(nb_characters));
 			// _response.append("\r\n");
 			_response.append(inbuf);
@@ -329,7 +331,7 @@ void	Response::_parse_response(Request const &req)
 
 	ss_len << "Content-Length: " << _html_content_size +1  << "\r\n";
 	ss_len << "Content-Type: " << "text/html"  << "\r\n";
-	
+
 	_response.append(ss_len.str()); // convert string stream to a string
 
 	_response.append("\r\n"); // empty line
@@ -356,7 +358,7 @@ int	Response::_read_file_data(Request const &req)
 	// std::string			fcontent;
 
 	// std::cout << "...trying to open <" <<req.get_uri() << ">" << std::endl;
-	
+
 	html_file.open(file.c_str(), std::ifstream::in);
 	if (html_file.is_open() == 0)
 	{

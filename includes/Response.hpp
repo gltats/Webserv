@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:08:39 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/14 14:46:37 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,9 +95,9 @@ class Response
 
 
 	public:
-		Response(int server_index, ConfigParser &configParser, Request &_request, char *env[]);
+		Response(ConfigParser &configParser, Request &_request, char *env[]);
 
-		
+
 
 		~Response(void);
 		void								create_response(Request const &req, char *env[]);

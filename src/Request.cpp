@@ -3,21 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/13 21:58:23 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/14 16:51:16 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
+#include "Connection.hpp"
 
-Request::Request(int server_index, ConfigParser &configParser)
+Request::Request(Connection &connection): _connection(connection)
 {
-    // consume
-    if (server_index == -1 || configParser.get_listen(server_index).length() == 0)
-        std::cout << "" ;
-    
     _cleanMemory();
 
     // for testing: must come from configParser
@@ -32,6 +29,7 @@ Request::~Request(void)
 
 }
 
+
 void    Request::_cleanMemory(void)
 {
     _body.clear();
@@ -41,7 +39,7 @@ void    Request::_cleanMemory(void)
     _uri.clear();
     _protocol.clear();
     _version.clear();
-    
+
     _content_len = 0;
     _error = 0;
 
@@ -68,9 +66,25 @@ void                Request::parse_request(char const *buffer)
             line.clear();
             line = _extract_until_delimiter(&_headers, "\r\n");
             if (line.length() == 0)
-                break; 
+                break;
             _process_header_line(line);
         }
+
+		// check if mandatory fields where sent in the request
+		_check_mandatory_header_fields();
+
+		// identify server and set the server_id which matches the configParser server blocks
+		_identify_server();
+
+		// check if port and hostname in request matches written socket
+		_check_valid_port();
+		// _check_valid_hostname(); // not possible as input is always localhost
+
+		// std::cout << CYAN << "_server_id " << _server_id << ", idenfied server is fd = " <<  _connection.get_server_socket() << ", port =  " << _connection.get_configParser().get_listen(_server_id) << std::endl;
+		std::cout << CYAN << "_server_id " << _server_id << ", idenfied server is fd = " <<  _connection.get_server_socket() << ", port =  " << get_port() << ", server_name = " << get_hostname() << RESET << std::endl; // remove
+
+		// based on server id, check allowed methods
+		_check_allowed_method();
 
         _process_body(_body);
     }
@@ -109,8 +123,145 @@ void                Request::parse_request(char const *buffer)
     {
         _error = 501;
         std::cerr << REDB << e.what() << RESET << std::endl;
-    }   
+    }
 }
+
+void	Request::_split_host_in_hostname_port(void)
+{
+	std::string	host = get_host();
+	std::string	hostname;
+	std::string	port;
+	size_t		index;
+
+	if (host.length() > 0)
+	{
+		index = host.find(":");
+		if (index != std::string::npos)
+		{
+			hostname = host.substr(0, index);
+			if (index + 1 < host.length())
+			{
+				port = host.substr(index + 1);
+				_headers_map["Hostname"] = hostname;
+				_headers_map["Port"] = port;
+			}
+			else
+			{
+				print_error("Port not found in Host");
+				throw BadRequestException();
+			}
+		}
+		else
+		{
+			print_error("Error in Host  <:> not found in Host");
+			throw BadRequestException();
+		}
+		// otherwise a port was not sent
+	}
+}
+
+
+/*
+in an Nginx configuration with multiple server blocks listening on the same port,
+Nginx adopts a fallback mechanism to determine which server block to use for requests
+that do not match any of the specified server_name directives.
+Here's how Nginx decides on the fallback:
+
+First Server Block Selection: In the absence of a defined default_server flag,
+Nginx automatically uses the first server block (in the order they
+appear in the configuration file) that listens on the matching port as
+the default server for that port. This means that if a request comes in with a
+Host header that doesn't match any of the server_name values across all
+server blocks listening on the same port, Nginx will send the request to the
+first server block encountered in the configuration that is listening on the requested port.
+*/
+void    Request::_identify_server(void)
+{
+    int             nb_of_servers = _connection.get_configParser().get_nb_of_servers();
+    int             socket = _connection.get_server_socket();
+    int             *servers_fd = _connection.get_servers_fd();
+
+    int             first_match = -1; // first match to file descriptor
+	int				default_flag = -1;
+    bool            once = false;
+
+
+	_split_host_in_hostname_port();
+
+    // count amount of servers using the same port/socket file descriptor
+    for (int i = 0; i < nb_of_servers; i++)
+    {
+        if (socket == servers_fd[i]) // should not look for server_fd ERRADO
+        {
+			if (_connection.get_configParser().get_server_name(i).compare(get_hostname()) == 0)
+            {
+                _server_id = i;
+                return ;
+            }
+
+			// save the server_id with a default flag, if any
+			if (_connection.get_configParser().get_default_server(i).compare("y") == 0)
+			{
+				default_flag = i; // save server id which has a default_server flag
+				once = true; // fallback not necessary as a server is defined as default
+			}
+
+			// get first server with the port in case of fallback necessary
+            if (once == false)
+            {
+                first_match = i;
+                once = true;
+            }
+        }
+    }
+
+	// search for default_server flag
+
+    if (default_flag > 0)
+    {
+        // a default server was desfined
+        _server_id = default_flag;
+		return ;
+
+    }
+    else if (once == true)
+    {
+		// Fallback
+        // no server name from server block(configuration file) match received Host
+        // use default server
+        _server_id = first_match;
+		return ;
+    }
+	std::cout << REDB << "No server identified" << std::endl;
+	throw BadRequestException();  // is this the best exception for that? should it be server error?
+
+}
+
+void	Request::_check_valid_port(void)
+{
+	// check port matches the socket port
+	if (_connection.get_configParser().get_listen(_server_id).compare(get_port()) != 0)
+	{
+		print_error("Error in Port in request does not match socket port");
+		std::cout << REDB << "Socket port '" << _connection.get_configParser().get_listen(_server_id) << "', server_id" << _server_id << std::endl;
+		std::cout << REDB << "Request Host port '" << get_port() <<  "'" << std::endl;
+		throw BadRequestException();
+	}
+}
+
+void	Request::_check_valid_hostname(void)
+{
+	// check port matches the socket hostname
+	if (_connection.get_configParser().get_server_name(_server_id).compare(get_hostname()) != 0)
+	{
+		print_error("Error in Hostname in request does not match server name");
+		std::cout << REDB << "Server hostname'" << _connection.get_configParser().get_server_name(_server_id) << "', server_id" << _server_id << std::endl;
+		std::cout << REDB << "Request hostname '" << get_hostname() <<  "'" << std::endl;
+		throw BadRequestException();
+	}
+}
+
+
 
 // General Functions
 
@@ -125,7 +276,7 @@ void                Request::parse_request(char const *buffer)
                     ; required whitespace
         BWS            = OWS
                     ; "bad" whitespace
-    
+
     HTAB (horizontal tab)
     SP (space)
 */
@@ -140,7 +291,7 @@ void                Request::_remove_leading_whitespace(std::string &str)
         if (idx == std::string::npos || idx != 0)
         {
             // if there is none, return or is not at the index 0
-            return ; 
+            return ;
         }
         // remove leading whitespace
         str.erase(0, 1);
@@ -319,21 +470,21 @@ void                Request::_check_request_line_size(std::string str)
 {
     size_t len = str.length();
     if (len == 0)
-    {  
+    {
         std::cerr << REDB << "No request line found" << RESET << std::endl;
         throw BadRequestException();
     }
-    else if (len > MAX_REQUEST_LINE_LEN)  
+    else if (len > MAX_REQUEST_LINE_LEN)
     {
         std::cerr << REDB << "Uri too long" << RESET << std::endl;
         throw RequestURITooLongException();
-    }   
+    }
 }
 void                Request::_parse_request_line(std::string request_line)
 {
     _method = _extract_until_delimiter(&request_line, " ");
-    _uri = _extract_until_delimiter(&request_line, " ");   
-    _protocol = _extract_until_delimiter(&request_line, "/");  
+    _uri = _extract_until_delimiter(&request_line, " ");
+    _protocol = _extract_until_delimiter(&request_line, "/");
     _version = request_line;
     request_line.clear();
 }
@@ -366,14 +517,14 @@ void                Request::_parse_request_line(std::string request_line)
     PATCH: Applies partial modifications to a resource.
 
 */
-void               Request::_check_method(void)
+void               Request::_check_method_syntax(void)
 {
- if (_method.length() == 0)
+ 	if (_method.length() == 0)
     {
         std::cerr << REDB << "Method is empty" << RESET << std::endl;
-        throw BadRequestException();  
+        throw BadRequestException();
     }
-    else if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)    
+    else if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)
     {
         if (_method.compare("HEAD") == 0 || _method.compare("PUT") == 0 || _method.compare("OPTIONS") == 0
         || _method.compare("TRACE") == 0 || _method.compare("CONNECT") == 0  || _method.compare("PATCH") == 0 )
@@ -384,18 +535,23 @@ void               Request::_check_method(void)
         else
         {
             std::cerr << REDB << "Method <" << _method << ">" << RESET << std::endl;
-            throw BadRequestException();   
-        }        
+            throw BadRequestException();
+        }
     }
-    else if ((_method.compare("GET") == 0 && _allow_GET == false)
+    // Valid Method
+}
+
+void			Request::_check_allowed_method(void)
+{
+	if ((_method.compare("GET") == 0 && _allow_GET == false)
         || (_method.compare("POST") == 0 && _allow_POST == false)
         || (_method.compare("DELETE") == 0 && _allow_DELETE == false))
     {
         std::cerr << REDB << "Method <" << _method << ">" << RESET << std::endl;
         throw MethodNotAllowedException();
     }
-    // Valid Method
 }
+
 void                Request::_check_protocol(void)
 {
     if (_protocol.length() == 4 && _protocol.compare("HTTP") == 0)
@@ -433,11 +589,11 @@ void                Request::_check_version(void)
    HTTP does not place a predefined limit on the length of a
    request-line, as described in Section 2.5.  A server that receives a
    method longer than any that it implements SHOULD respond with a 501
-   (Not Implemented) status code.  
+   (Not Implemented) status code.
 */
 
 /*
-    RFC 7230   
+    RFC 7230
     request-target longer than any URI it wishes to parse MUST respond
     with a 414 (URI Too Long) status code (see Section 6.5.12 of
     [RFC7231]).
@@ -459,7 +615,7 @@ void                Request::_process_request_line(std::string request_line)
 {
     _check_request_line_size(request_line);
     _parse_request_line(request_line);
-    _check_method();
+    _check_method_syntax();
     _check_uri();
     _check_protocol();
     _check_version();
@@ -485,7 +641,7 @@ void                Request::_check_str_us_ascii(std::string &str)
     //     {
     //         str.erase(i, 1);
     //         i--;
-    //     }    
+    //     }
     // }
 }
 
@@ -563,7 +719,7 @@ void                Request::_check_token(std::string &str)
 void                Request::_check_field_name_len(std::string str)
 {
     size_t  len = str.length();
-      
+
     // check for empty key
     if (len == 0)
     {
@@ -576,10 +732,10 @@ void                Request::_check_field_name_len(std::string str)
         throw BadRequestException();
     }
 }
-void                Request::_check_field_value_len(std::string str)
+void				Request::_check_field_value_len(std::string str)
 {
     size_t  len = str.length();
-      
+
     // a value can be empty check for empty key
     if (len > MAX_FIELD_VALUE_LEN)
     {
@@ -587,6 +743,29 @@ void                Request::_check_field_value_len(std::string str)
         throw BadRequestException();
     }
 }
+
+void				Request::_check_mandatory_header_fields(void)
+{
+	// Host is mandatory otherwise -> 404 Bad Request
+	if (get_host().length() == 0)
+	{
+		std::cout << REDB << "Host field not in request" << RESET << std::endl;
+		throw BadRequestException();
+	}
+
+	// if there is body, Content-Lenght is mandatory unless it is a chunked message
+	if (_body.length() > 0 &&
+		(get_header_per_key("Content-Length").length() == 0 || str2int(get_header_per_key("Content-Length")) < 0))
+	{
+		// is chunked?
+		if (get_transfer_encoding().length() == 0 || get_transfer_encoding().compare("chunked") != 0)
+		{
+			std::cout << REDB << "Content-Length field not in request or invalid number and transfer enconding is not chunked" << RESET << std::endl;
+			throw BadRequestException();
+		}
+	}
+}
+
 
 /*
     RFC 7230
@@ -621,7 +800,7 @@ void                Request::_parser_header_line(std::string line)
 
     // check field value size
     _check_field_value_len(value);
-          
+
     // check for vchar and invalid characters for token = field name
     _check_token(key);
 
@@ -645,7 +824,7 @@ void                Request::_parser_header_line(std::string line)
     // key already exist in map
     else
     {
-        // check if the repeated field name is   "field-name: field-value" for "field-value, field-value" 
+        // check if the repeated field name is   "field-name: field-value" for "field-value, field-value"
         size_t idx_dp = _headers_map[key].find_first_of(":");
         size_t exist_len = _headers_map[key].length();
         if (exist_len > 0 && idx_dp != std::string::npos && idx_dp < exist_len)
@@ -668,7 +847,7 @@ void                Request::_parser_header_line(std::string line)
         {
             std::cerr << REDB << "Invalid duplicated header field-name" << RESET << std::endl;
             throw BadRequestException();
-        } 
+        }
     }
 }
 void                Request::_process_header_line(std::string header_line)
@@ -685,7 +864,7 @@ void                Request::print_headers_map(void)
 	for (it = _headers_map.begin(); it != _headers_map.end(); it++)
 	{
         std::cout << "\tKey:<" << it->first << "> | Value:<" << it->second << ">" << std::endl;
-    } 
+    }
 }
 
 void                Request::print_request(void)
@@ -703,9 +882,9 @@ void                Request::print_request(void)
     std::cout << std::endl;
 
     std::cout << "---------  BODY  -------" << std::endl;
-    std::cout << "\tBody " << std::endl << "<" << get_body() << ">" << std::endl; 
+    std::cout << "\tBody " << std::endl << "<" << get_body() << ">" << std::endl;
     std::cout << std::endl;
-    
+
 	std::cout << RESET;
 }
 
@@ -715,7 +894,7 @@ void                Request::print_request(void)
 void                Request::_process_body(std::string body)
 {
   std::string transfer_enconding = get_header_per_key("Transfer-Encoding");
-    
+
     // consume body
     if (body.length() == 0)
         std::cout << "";
@@ -735,7 +914,7 @@ void                Request::_process_body(std::string body)
             std::cerr << REDB << "body is bigger than define max body size in ConfigFile" << RESET << std::endl;
             throw RequestEntityTooLargeException();
         }
-    }   
+    }
     else if (transfer_enconding.length() > 0)
     {
         if (transfer_enconding.compare("chunked") == 0)
@@ -745,7 +924,7 @@ void                Request::_process_body(std::string body)
             std::cerr << REDB << "Transfer-Encoding: " << transfer_enconding << ", is not supported" << RESET << std::endl;
             throw BadRequestException();
         }
-    }    
+    }
 
      // handle file transfer?
 
@@ -770,7 +949,7 @@ void                Request::_process_body(std::string body)
 
    A recipient MUST be able to parse the chunked transfer coding
    (Section 4.1) because it plays a crucial role in framing messages
-   when the payload body size is not known in advance. 
+   when the payload body size is not known in advance.
 
 
 If any transfer coding
@@ -893,7 +1072,7 @@ void                Request::_process_chunk(std::string str)
             // chunk has reached its end
             // new body and new content length
             _body = accum_body;
-            set_content_length(accum_length); 
+            set_content_length(accum_length);
             return ;
         }
         accum_length += chunk_size;
@@ -938,7 +1117,7 @@ int                 Request::get_error(void) const
 {
     return (_error);
 }
-        
+
 std::string         Request::get_method(void) const
 {
     return (_method);
@@ -967,6 +1146,16 @@ std::string         Request::get_user_agent(void) const
 std::string         Request::get_host(void) const
 {
     return (get_header_per_key("Host"));
+}
+
+std::string         Request::get_hostname(void) const
+{
+    return (get_header_per_key("Hostname"));
+}
+
+std::string         Request::get_port(void) const
+{
+    return (get_header_per_key("Port"));
 }
 
 std::string        Request::get_accept_encoding(void) const
@@ -1106,10 +1295,10 @@ std::string		    Request::get_body(void) const
    inclusion of a Content-Length or Transfer-Encoding header field in
    the request's message-headers. A message-body MUST NOT be included in
    a request if the specification of the request method (section 5.1.1)
-   does not allow sending an entity-body in requests. 
+   does not allow sending an entity-body in requests.
 */
 // check body
-//implement 
+//implement
 
 // BODY
 
@@ -1160,7 +1349,7 @@ A user agent SHOULD send a Content-Length in a request message when
    no Transfer-Encoding is sent and the request method defines a meaning
    for an enclosed payload body.  For example, a Content-Length header
    field is normally sent in a POST request even when the value is 0
-   (indicating an empty payload body). 
+   (indicating an empty payload body).
     (e.g., "Content-Length: 42, 42"),
    indicating that duplicate Content-Length header fields have been
    generated or combined by an upstream message processor, then the
@@ -1229,7 +1418,7 @@ RFC 7230           HTTP/1.1 Message Syntax and Routing         June 2014
    determine if a message body is expected.  If a message body has been
    indicated, then it is read as a stream until an amount of octets
    equal to the message body length is read or the connection is closed.
-    
+
     A sender MUST NOT send whitespace between the start-line and the
    first header field.  A recipient that receives whitespace between the
    start-line and the first header field MUST either reject the message
@@ -1264,7 +1453,7 @@ RFC 7230           HTTP/1.1 Message Syntax and Routing         June 2014
 /*
 A sender MUST NOT generate an "http" URI with an empty host identifier. A recipient that processes such a URI reference MUST reject it as invalid.
 
-If the host identifier is provided as an IP address, the origin server is the listener (if any) on the indicated TCP port at that IP address. 
+If the host identifier is provided as an IP address, the origin server is the listener (if any) on the indicated TCP port at that IP address.
 If host is a registered name, the registered name is an indirect identifier for use with a name resolution service, such as DNS, to find an address
 for that origin server. If the port subcomponent is empty or not given, TCP port 80 (the reserved port for WWW services) is the default.
 */

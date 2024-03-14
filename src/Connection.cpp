@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/13 21:52:13 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/14 15:33:00 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,8 @@
 
 // }
 
-Connection::Connection(int server_index, ConfigParser &configParser, int connection_socket, struct sockaddr_in &client_addr, char *env[]): _server_index(server_index) , _configParser(configParser),  _env(env),  _connection_socket(connection_socket), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2),_request(server_index, configParser), _response(server_index, configParser, _request, env), _is_read_complete(0)
+Connection::Connection(ConfigParser &configParser, int connection_socket, struct sockaddr_in &client_addr, int server_socket, int *servers_fd, char *env[]):  _configParser(configParser),  _env(env),  _connection_socket(connection_socket), _server_socket(server_socket), _servers_fd(servers_fd), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*2),_request(*this), _response(configParser, _request, env), _is_read_complete(0)
 {
-	// consume
-	if (_server_index < 0 || _configParser.get_listen(server_index).length() == 0)
-		std::cout << "";
-
 
 	_buffer_rcv = new char[_buffer_rcv_size];
 
@@ -61,7 +57,7 @@ Connection::~Connection(void)
 	}
 }
 
-void	Connection::receive_request(void)
+void				Connection::receive_request(void)
 {
 	clear_memory(_buffer_rcv, _buffer_rcv_size);
 
@@ -71,7 +67,7 @@ void	Connection::receive_request(void)
 		// std::cout << "Error: to recv. Reason: " << strerror(errno) << " # fd = " << _connection_socket << std::endl;
 		std::cout << "Closing connection sockets " << _connection_socket << " and returning" << std::endl;
 		close(_connection_socket);
-		
+
 		// throw exception
 		return; // at the moment just return
 	}
@@ -87,7 +83,7 @@ void	Connection::receive_request(void)
 	// 	print_error_fd("No request received from connection fd ", _connection_socket);
 }
 
-std::string	Connection::get_response(void)
+std::string				Connection::get_response(void)
 {
 	return (_response.get_response());
 }
@@ -104,7 +100,7 @@ void		Connection::send_response(void)
 		size_t buffer_send_size = _response.get_response().length() + 1;
 		if (VERBOSE == 1)
 			std::cout <<"\tTrying to send to socket " << _connection_socket << ", message size is "<< buffer_send_size << RESET << std::endl;
-		
+
 		send_size = send(_connection_socket, _response.get_response().c_str() , buffer_send_size, 0); // this works
 
 		if (send_size != buffer_send_size)
@@ -125,26 +121,26 @@ void		Connection::send_response(void)
 		close(_connection_socket);
 }
 
-std::string		Connection::get_connection(void) const
+std::string				Connection::get_connection(void) const
 {
 	return(_request.get_connection());
 }
 
 
-bool			Connection::is_response_empty(void) const
+bool					Connection::is_response_empty(void) const
 {
 	if (_response.get_response().length() == 0)
 		return(true);
-	else 
+	else
 		return(false);
 }
 
-bool			Connection::get_is_read_complete(void) const
+bool					Connection::get_is_read_complete(void) const
 {
 	return(_is_read_complete);
 }
 
-void			Connection::set_is_read_complete(bool status)
+void					Connection::set_is_read_complete(bool status)
 {
 	_is_read_complete = status;
 }
@@ -189,5 +185,25 @@ void					Connection::_obtain_client_port(struct sockaddr_in &client_addr)
 int						Connection::get_error(void) const
 {
 	return (_request.get_error());
-	
+
+}
+
+int						*Connection::get_servers_fd(void) const
+{
+	return (_servers_fd);
+}
+
+ConfigParser			&Connection::get_configParser(void) const
+{
+	return (_configParser);
+}
+
+int						Connection::get_connection_socket(void) const
+{
+	return(_connection_socket);
+}
+
+int						Connection::get_server_socket(void) const
+{
+	return (_server_socket);
 }
