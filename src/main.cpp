@@ -6,11 +6,43 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/14 15:43:46 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/15 16:07:43 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserver.hpp"
+
+// TODO Chunk extensions and passing key,values within
+// TODO File Transfer with multipart/form-data
+// TODO check Response code from Arafa and help
+// TODO Ask tatiana to keep the interfaces as passed her
+// TODO Ask tatiana to add this values
+/*
+	'# Set the number of worker processes to spawn
+	Nginx_spawn 10;
+	# Set the maximum number of connections each worker process can handle
+	worker_connections 11;
+	# Set the maximum script execution time
+	script_timeout 2;
+	# Set the maximum time the server will wait for a client request
+	client_timeout 10;
+	# Set the TCP backlog queue size to 10
+	backlog 10;
+	# Set the buffer size for reading client requests on bytes
+	buff_size 40000;'''
+*/
+// TODO Ask Tatiana to add the server_default flag recognition as y or n
+// TODO read body size from server block and use it in the server
+// TODO check for no errno read in after a read/write
+// TODO Server with no server name defined as default for servers with the same port
+// TODO check the requirement in subject for : all read and write inside the loop
+// TODO check with content lenght mandatory
+// TODO check other mandatory checks for request
+// TODO tatiana file upload front end
+// TODO setup nginx in a docker to compare behavior -> push it so others can also use it
+// TODO what should happen if there is more than one server with default_server flag for the same port in the config file
+// TODO risk: if python does not find the file it hangs (with Maira MVP for response)
+// TODO check if key and values are case sensitive and if so, apply lower case to all before comparing to anythign. (always compare with lower case)
 
 
 // Interface to Parser -> Server

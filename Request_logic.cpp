@@ -9,6 +9,7 @@
 */
 
 /*
+
     RFC 7230
     The normal procedure for parsing an HTTP message is to read the
    start-line into a structure, read each header field into a hash table
@@ -16,7 +17,7 @@
    determine if a message body is expected.  If a message body has been
    indicated, then it is read as a stream until an amount of octets
    equal to the message body length is read or the connection is closed.
-    
+
     A sender MUST NOT send whitespace between the start-line and the
    first header field.  A recipient that receives whitespace between the
    start-line and the first header field MUST either reject the message
@@ -75,7 +76,7 @@ class MethodNotAllowedException: public std::exception
 	public:
 		virtual const char* what() const throw()
         {
-            return ("Exception: Status 405, Method not allowed in Config File."); 
+            return ("Exception: Status 405, Method not allowed in Config File.");
         }
 };
 
@@ -85,7 +86,7 @@ class UnsupportedMediaTypeException: public std::exception
 	public:
 		virtual const char* what() const throw()
         {
-            return ("Exception: Status 415, Unsupported Media Type."); 
+            return ("Exception: Status 415, Unsupported Media Type.");
         }
 };
 
@@ -94,7 +95,7 @@ class RequestEntityTooLargeException: public std::exception
 	public:
 		virtual const char* what() const throw()
         {
-            return ("Exception: Status 413, Request Entity Too Large."); 
+            return ("Exception: Status 413, Request Entity Too Large.");
         }
 };
 
@@ -104,7 +105,7 @@ class NotImplemented: public std::exception
 	public:
 		virtual const char* what() const throw()
         {
-            return ("Exception: Status 501, Not Implemented. Webserv supports GET, POST and DELETE."); 
+            return ("Exception: Status 501, Not Implemented. Webserv supports GET, POST and DELETE.");
         }
 };
 
@@ -113,7 +114,7 @@ class BadRequestException: public std::exception
 	public:
 		virtual const char* what() const throw()
         {
-           return ("Exception: Status 400, Bad Request"); 
+           return ("Exception: Status 400, Bad Request");
         }
 };
 
@@ -122,7 +123,7 @@ class HTTPVersionNotSupportedException: public std::exception
 	public:
 		virtual const char* what() const throw()
         {
-            return ("Exception: Status 505, Version not supported. Webserv supports HTTP/1.1"); 
+            return ("Exception: Status 505, Version not supported. Webserv supports HTTP/1.1");
         }
 };
 
@@ -131,7 +132,7 @@ class RequestURITooLongException: public std::exception
 	public:
 		virtual const char* what() const throw()
         {
-            return ("Exception: Status 414, Request-URI Too Long"); 
+            return ("Exception: Status 414, Request-URI Too Long");
         }
 };
 
@@ -146,7 +147,7 @@ class RequestURITooLongException: public std::exception
                     ; required whitespace
         BWS            = OWS
                     ; "bad" whitespace
-    
+
     HTAB (horizontal tab)
     SP (space)
 */
@@ -161,7 +162,7 @@ void _remove_leading_whitespace(std::string &str)
         if (idx == std::string::npos || idx != 0)
         {
             // if there is none, return or is not at the index 0
-            return ; 
+            return ;
         }
         // remove leading whitespace
         str.erase(0, 1);
@@ -207,11 +208,11 @@ void _replace_middle_LWS(std::string &str)
             {
                 // no LWS found -> nothing to remove
                 return ;
-            }  
+            }
         }
         std::cout << "idx is " << idx << std::endl;
-        
-        // replace LWS per Space unless there multiple LWS after each other, 
+
+        // replace LWS per Space unless there multiple LWS after each other,
         // than replace all for one LWS and just delete other LWS
 
         idx_next_match = str.find("\r\n ", idx + 3, 3);
@@ -318,22 +319,22 @@ void    check_request_line_size(std::string str)
 {
     size_t len = str.length();
     if (len == 0)
-    {  
+    {
         std::cerr << REDB << "No request line found" << RESET << std::endl;
         throw BadRequestException();
     }
-    else if (len > MAX_REQUEST_LINE_LEN)  
+    else if (len > MAX_REQUEST_LINE_LEN)
     {
         std::cerr << REDB << "Uri too long" << RESET << std::endl;
         throw RequestURITooLongException();
-    }   
+    }
 }
 
 void    parse_request_line(std::string request_line)
 {
     _method = extract_until_delimiter(&request_line, " ");
-    _uri = extract_until_delimiter(&request_line, " ");   
-    _protocol = extract_until_delimiter(&request_line, "/");  
+    _uri = extract_until_delimiter(&request_line, " ");
+    _protocol = extract_until_delimiter(&request_line, "/");
     _version = request_line;
     request_line.clear();
 }
@@ -370,9 +371,9 @@ void    check_method(void)
     if (_method.length() == 0)
     {
         std::cerr << REDB << "Method is empty" << RESET << std::endl;
-        throw BadRequestException();  
+        throw BadRequestException();
     }
-    else if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)    
+    else if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)
     {
         if (_method.compare("HEAD") == 0 || _method.compare("PUT") == 0 || _method.compare("OPTIONS") == 0
         || _method.compare("TRACE") == 0 || _method.compare("CONNECT") == 0  || _method.compare("PATCH") == 0 )
@@ -383,8 +384,8 @@ void    check_method(void)
         else
         {
             std::cerr << REDB << "Method <" << _method << ">" << RESET << std::endl;
-            throw BadRequestException();   
-        }        
+            throw BadRequestException();
+        }
     }
     else if ((_method.compare("GET") == 0 && _allow_GET == false)
         || (_method.compare("POST") == 0 && _allow_POST == false)
@@ -435,11 +436,11 @@ void    check_version(void)
    HTTP does not place a predefined limit on the length of a
    request-line, as described in Section 2.5.  A server that receives a
    method longer than any that it implements SHOULD respond with a 501
-   (Not Implemented) status code.  
+   (Not Implemented) status code.
 */
 
 /*
-    RFC 7230   
+    RFC 7230
     request-target longer than any URI it wishes to parse MUST respond
     with a 414 (URI Too Long) status code (see Section 6.5.12 of
     [RFC7231]).
@@ -488,7 +489,7 @@ void    _check_str_us_ascii(std::string &str)
         {
             str.erase(i, 1);
             i--;
-        }    
+        }
     }
 }
 
@@ -570,7 +571,7 @@ void    _check_token(std::string &str)
 void    _check_field_name_len(std::string str)
 {
     size_t  len = str.length();
-      
+
     // check for empty key
     if (len == 0)
     {
@@ -588,7 +589,7 @@ void    _check_field_name_len(std::string str)
 void    _check_field_value_len(std::string str)
 {
     size_t  len = str.length();
-      
+
     // a value can be empty check for empty key
     if (len > MAX_FIELD_VALUE_LEN)
     {
@@ -631,7 +632,7 @@ void    _parser_header_line(std::string line)
 
     // check field value size
     _check_field_value_len(value);
-          
+
     // check for vchar and invalid characters for token = field name
     _check_token(key);
 
@@ -655,7 +656,7 @@ void    _parser_header_line(std::string line)
     // key already exist in map
     else
     {
-        // check if the repeated field name is   "field-name: field-value" for "field-value, field-value" 
+        // check if the repeated field name is   "field-name: field-value" for "field-value, field-value"
         size_t idx_dp = _headers_map[key].find_first_of(":");
         size_t exist_len = _headers_map[key].length();
         if (exist_len > 0 && idx_dp != std::string::npos && idx_dp < exist_len)
@@ -679,8 +680,8 @@ void    _parser_header_line(std::string line)
             std::cerr << REDB << "Invalid duplicated header field-name" << RESET << std::endl;
             throw BadRequestException();
         }
-      
-    }        
+
+    }
 }
 
 /*
@@ -725,10 +726,10 @@ void _process_header_line(std::string header_line)
    inclusion of a Content-Length or Transfer-Encoding header field in
    the request's message-headers. A message-body MUST NOT be included in
    a request if the specification of the request method (section 5.1.1)
-   does not allow sending an entity-body in requests. 
+   does not allow sending an entity-body in requests.
 */
 // check body
-//implement 
+//implement
 
 void    print_headers_map(void)
 {
@@ -738,7 +739,7 @@ void    print_headers_map(void)
 	for (it = _headers_map.begin(); it != _headers_map.end(); it++)
 	{
         std::cout << "Key:<" << it->first << "> | Value:<" << it->second << ">" << std::endl;
-    } 
+    }
 }
 
 std::string    get_header_per_key(std::string header_key)
@@ -871,7 +872,7 @@ void     _convert_content_length(void)
 
    A recipient MUST be able to parse the chunked transfer coding
    (Section 4.1) because it plays a crucial role in framing messages
-   when the payload body size is not known in advance. 
+   when the payload body size is not known in advance.
 
 
 If any transfer coding
@@ -991,7 +992,7 @@ void    _process_chunk(std::string str)
             // chunk has reached its end
             // new body and new content length
             _body = accum_body;
-            set_content_length(accum_length); 
+            set_content_length(accum_length);
             return ;
         }
         accum_length += chunk_size;
@@ -1026,7 +1027,7 @@ void    _process_body(std::string body)
             std::cerr << REDB << "body is bigger than define max body size in ConfigFile" << RESET << std::endl;
             throw RequestEntityTooLargeException();
         }
-    }   
+    }
     else if (transfer_enconding.length() > 0)
     {
         if (transfer_enconding.compare("chunked") == 0)
@@ -1036,7 +1037,7 @@ void    _process_body(std::string body)
             std::cerr << REDB << "Transfer-Encoding: " << transfer_enconding << ", is not supported" << RESET << std::endl;
             throw BadRequestException();
         }
-    }    
+    }
 
      // handle file transfer?
 
@@ -1053,7 +1054,7 @@ A user agent SHOULD send a Content-Length in a request message when
    no Transfer-Encoding is sent and the request method defines a meaning
    for an enclosed payload body.  For example, a Content-Length header
    field is normally sent in a POST request even when the value is 0
-   (indicating an empty payload body). 
+   (indicating an empty payload body).
     (e.g., "Content-Length: 42, 42"),
    indicating that duplicate Content-Length header fields have been
    generated or combined by an upstream message processor, then the
@@ -1129,14 +1130,14 @@ void    request(void)
 
         // parse first line -> request line
         line = extract_until_delimiter(&_headers, "\r\n");
-        _process_request_line(line);       
+        _process_request_line(line);
 
         while (1)
         {
             line.clear();
             line = extract_until_delimiter(&_headers, "\r\n");
             if (line.length() == 0)
-                break; 
+                break;
             _process_header_line(line);
         }
 
@@ -1177,12 +1178,12 @@ void    request(void)
     {
         _error = 501;
         std::cerr << REDB << e.what() << RESET << std::endl;
-    }    
-    
+    }
+
     if (get_error() != 0)
         exit(_error);
 
-    
+
     // For testing and visualization of parsing results
 
     std::cout << std::endl;
@@ -1203,7 +1204,7 @@ void    request(void)
     std::cout << "Non-Existing Key 'Lasagna' value is : <" << get_header_per_key("Lasagna") << ">" << std::endl;
 
     std::cout << "---------  BODY  -------" << std::endl;
-    std::cout << "Body <" << _body << ">" << std::endl; 
+    std::cout << "Body <" << _body << ">" << std::endl;
 
 }
 

@@ -82,5 +82,6 @@
 		"execution": "cpp"
 	},
 	"42header.email": "mgranero@student.42wolfsburg.de",
-	"42header.username": "mgranero"
+	"42header.username": "mgranero",
+	"todo-tree.tree.showBadges": false
 }
