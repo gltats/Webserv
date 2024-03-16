@@ -57,3 +57,59 @@ int	main(int argc, char *argv[], char *env[])
 	
 	return (0);
 }
+
+// Sofia's tests ignore
+// void test()
+// {
+//     { 
+//         // Test 1: pass
+//         ConfigParser configParser;
+//         try {
+//             configParser.getConfig("configs/default.conf");
+//             // std::cout << configParser.getParameterValue(1, "listen") << std::endl;
+//             std::cout << configParser.getParameterValue(0, "listen") << std::endl;
+
+//         } catch (const std::invalid_argument& e) {
+//             std::cerr << "Test 1: " << e.what() << std::endl;
+//         } catch (const std::runtime_error& e) {
+//             std::cerr << "Test 1: " << e.what() << std::endl;
+//         }
+//     }
+//     { 
+//         // Test 2: non-existent file
+//         ConfigParser configParser;
+//         try {
+//             configParser.getConfig("configs/no_file.conf");
+//         } catch (const std::invalid_argument& e) {
+//             std::cerr << "Test 2: " << e.what() << std::endl;
+//         }
+//     }
+//     { 
+//         // Test 3: wrong extension
+//         ConfigParser configParser;
+//         try {
+//             configParser.getConfig("configs/lol");
+//         } catch (const std::invalid_argument& e) {
+//             std::cerr << "Test 3: " << e.what() << std::endl;
+//         }
+//     }
+//     { 
+//         // Test 4: file without server block
+//         ConfigParser configParser;
+//         try {
+//             configParser.getConfig("configs/single.conf");
+//         } catch (const std::invalid_argument& e) {
+//             std::cerr << "Test 4: " << e.what() << std::endl;
+//         }
+//     }
+// }
+
+
+// int main()
+// {
+//     test();
+//     return 0;
+
+// }
+
+ 

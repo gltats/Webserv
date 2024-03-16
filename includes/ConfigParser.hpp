@@ -31,20 +31,16 @@ class ConfigParser
 private:
 	std::string _path;
 	size_t _size;
-	void removeNewLines(std::string &content);
-	bool isDigit(const std::string& str);
 	// std::vector<std::string> servers;
 	// std::map<std::string, std::string> parameters;
 	// std::vector<std::map<std::string, std::string> > serverParameters;
 	// std::set<std::string> listenValues;
+
 public:
-	size_t startServer;
-	size_t endServer;
 	std::map<std::string, std::string> parameters;
 	std::vector<std::string> servers;
 	std::vector<std::map<std::string, std::string> > serverParameters;
 	std::set<std::string> listenValues;
-	std::vector<std::string> locations;
 	ConfigParser();
 	// ConfigParser(std::string const ConfigFile);
 	ConfigParser(const ConfigParser &copy);
@@ -52,31 +48,24 @@ public:
 	~ConfigParser();
 	void getConfig(const std::string &file);
 	std::map<std::string, std::string> parseParameters(const std::string &serverConfig);
+	// std::string serializeParameters(const std::map<std::string, std::string> &parameters);
+	bool isDigit(const std::string &str);
+
 	void checkCorrectParameters(std::map<std::string, std::string> parameters);
 	void splitServers(std::string &content);
 	void removeWhiteSpace(std::string &content);
+	void removeNewLines(std::string &content);
 	void removeComments(std::string &content);
 	// int getTypePath(std::string const path);
 	// int	checkFile(std::string const path, int mode);
 	// std::string	readFile(std::string path);
 	// bool checkExtension(std::string const path);
+
 	bool isFileExistAndReadable(std::string const path, std::string const index);
 	bool fileOpen(std::ifstream &configFile);
 	void print();
 	std::string getPath();
 	int getSize();
-	/// getters for sockets
-	std::string getListenValue(const std::map<std::string, std::string> &parameters);
-	std::string getServerName(const std::map<std::string, std::string> &parameters);
-	std::string getBodySize(const std::map<std::string, std::string> &parameters);
-	std::string getErrorNumber(const std::map<std::string, std::string> &parameters);
-	std::string getErrorPage(const std::map<std::string, std::string> &parameters);
-	std::string getErrorLocation(const std::map<std::string, std::string> &parameters);
-	std::string getLocation(const std::map<std::string, std::string> &parameters); // NEED TO BE CHANGED
-	std::string getPost(const std::map<std::string, std::string> &parameters);
-	std::string getGet(const std::map<std::string, std::string> &parameters);
-	std::string getDelete(const std::map<std::string, std::string> &parameters);
-	std::string getAutoindex(const std::map<std::string, std::string> &parameters);
-	std::string getIndexing(const std::map<std::string, std::string> &parameters);
-	std::string getCgi(const std::map<std::string, std::string> &parameters);
+	std::map<std::string, std::string> &getServerParameters(size_t index);
+	std::string getParameterValue(size_t serverIndex, const std::string &parameterKey);
 };
