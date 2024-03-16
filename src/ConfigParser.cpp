@@ -291,9 +291,9 @@ void ConfigParser::print()
 		std::cout << "--------------------------------------" << std::endl;
 		// PRINT METHODS:
 		std::cout << "------------- Methods -------------" << std::endl;
-		std::cout << "GET" << i << " " << getParameterValue(i, "GET") << std::endl;
-		std::cout << "POST: " << i << " " << getParameterValue(i, "POST") << std::endl;
-		std::cout << "DELETE: " << i << " " << getParameterValue(i, "DELETE") << std::endl;
+		std::cout << "GET" << i << ": " << getParameterValue(i, "GET") << std::endl;
+		std::cout << "POST" << i << ": " << getParameterValue(i, "POST") << std::endl;
+		std::cout << "DELETE" << i << ": " << getParameterValue(i, "DELETE") << std::endl;
 		// if (!parameters["NoAllowedMethods"].empty())
 		// {
 		// 	std::cout << "NoAllowedMethods: " << parameters["NoAllowedMethods"] << std::endl;
