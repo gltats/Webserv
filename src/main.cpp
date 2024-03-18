@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/18 21:44:35 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/18 21:47:09 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@
 // TODO check other mandatory checks for request
 // TODO setup nginx in a docker to compare behavior -> push it so others can also use it
 // TODO what should happen if there is more than one server with default_server flag for the same port in the config file
+// DONE Checked which methods can have a body. DELETE should not have a body and it will be ignored
 // DONE check with content lenght mandatory
 // DONE check if key case insensitive 
 // DONE check if values are case insensitive and if so, apply lower case to all before comparing to anythign. (always compare with lower case)
