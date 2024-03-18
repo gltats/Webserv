@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/15 16:07:43 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/18 21:44:35 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,18 +32,22 @@
 	buff_size 40000;'''
 */
 // TODO Ask Tatiana to add the server_default flag recognition as y or n
+// TODO tatiana file upload front end
+// TODO Talk to Arafa about the mime.types
+// TODO Ask tatiana to add 411 page LengthRequiredException
+// INFO risk: if python does not find the file it hangs (with Maira MVP for response) 
+
 // TODO read body size from server block and use it in the server
 // TODO check for no errno read in after a read/write
 // TODO Server with no server name defined as default for servers with the same port
 // TODO check the requirement in subject for : all read and write inside the loop
-// TODO check with content lenght mandatory
 // TODO check other mandatory checks for request
-// TODO tatiana file upload front end
 // TODO setup nginx in a docker to compare behavior -> push it so others can also use it
 // TODO what should happen if there is more than one server with default_server flag for the same port in the config file
-// TODO risk: if python does not find the file it hangs (with Maira MVP for response)
-// TODO check if key and values are case sensitive and if so, apply lower case to all before comparing to anythign. (always compare with lower case)
-
+// DONE check with content lenght mandatory
+// DONE check if key case insensitive 
+// DONE check if values are case insensitive and if so, apply lower case to all before comparing to anythign. (always compare with lower case)
+// DONE Deactivateed Error in Port in request does not match socket port, should be active?
 
 // Interface to Parser -> Server
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/14 16:46:21 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/18 21:41:18 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Request
         std::map<std::string, std::string> _headers_map;
 
         void                _cleanMemory(void);
+        std::string         _convert_tolower(std::string const &str) const;
         void                _remove_leading_whitespace(std::string &str);
         void                _remove_trailing_whitespace(std::string &str);
         std::string         _extract_until_delimiter(std::string *str, std::string delimiter);
@@ -85,6 +86,9 @@ class Request
 		void				_split_host_in_hostname_port(void);
 		void				_check_valid_port(void);
 		void				_check_valid_hostname(void);
+        void                _check_method_allows_body(void);
+        void                _check_content_length(void);
+        void                _modify_header_values_tolower(void);
 
         // Body
         void                _process_body(std::string body);
@@ -148,7 +152,7 @@ class Request
         // To access other Headers which getters are not here (incl. Customs),
         // use get_header_per_key and pass the Header name, if it was
         // received, it will return a string,∫ otherwise ""
-        std::string         get_header_per_key(std::string const &header_key) const;
+        std::string         get_header_per_key(std::string header_key) const;
 
         int                 get_error(void) const;
 };

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 19:42:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/02/23 10:14:10 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/18 19:57:51 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,11 @@ const char* ResponseError::what() const throw()
 }
 
 const char* MethodNotSupported::what() const throw()
+{
+   return ("Exception: Method not supported. Webserv supports GET, POST and DELETE. \nEnable them in Config File."); 
+}
+
+const char* LengthRequiredException::what() const throw()
 {
    return ("Exception: Method not supported. Webserv supports GET, POST and DELETE. \nEnable them in Config File."); 
 }

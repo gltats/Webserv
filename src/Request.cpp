@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/14 16:51:16 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/18 21:41:14 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,9 @@ void                Request::parse_request(char const *buffer)
             _process_header_line(line);
         }
 
+        // modify case-insensitive header values
+        _modify_header_values_tolower();
+ 
 		// check if mandatory fields where sent in the request
 		_check_mandatory_header_fields();
 
@@ -118,7 +121,11 @@ void                Request::parse_request(char const *buffer)
         _error = 414;
         std::cerr << REDB << e.what() << RESET << std::endl;
     }
-
+    catch(const LengthRequiredException &e)
+    {
+         _error = 411;
+        std::cerr << REDB << e.what() << RESET << std::endl;
+    }
     catch(const NotImplemented& e)
     {
         _error = 501;
@@ -142,8 +149,8 @@ void	Request::_split_host_in_hostname_port(void)
 			if (index + 1 < host.length())
 			{
 				port = host.substr(index + 1);
-				_headers_map["Hostname"] = hostname;
-				_headers_map["Port"] = port;
+				_headers_map["hostname"] = hostname;
+				_headers_map["port"] = port;
 			}
 			else
 			{
@@ -247,6 +254,7 @@ void	Request::_check_valid_port(void)
 		std::cout << REDB << "Request Host port '" << get_port() <<  "'" << std::endl;
 		throw BadRequestException();
 	}
+    
 }
 
 void	Request::_check_valid_hostname(void)
@@ -264,6 +272,21 @@ void	Request::_check_valid_hostname(void)
 
 
 // General Functions
+
+/*
+    Convert string to lower case. Used for Case insensitive string
+    Each header field consists of a case-insensitive field name followed
+    by a colon (":"),
+*/
+std::string Request::_convert_tolower(std::string const &str) const
+{
+    std::string out = str;
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        out[i] = tolower(str[i]);
+    }
+    return (out);
+}
 
 /*
     RFC7230
@@ -457,6 +480,19 @@ size_t              Request::_convert_str2hex(std::string str)
    the invalid request-line might be deliberately crafted to bypass
    security filters along the request chain.
 
+    URI is case-insensitive
+    The scheme and host are case-insensitive and normally provided in lowercase; all other
+    components are compared in a case-sensitive manner.  Characters other
+    than those in the "reserved" set are equivalent to their
+    percent-encoded octets: the normal form is to not encode them (see
+    Sections 2.1 and 2.2 of [RFC3986]).
+
+    For example, the following three URIs are equivalent:
+
+    http://example.com:80/~smith/home.html
+    http://EXAMPLE.com/%7Esmith/home.html
+    http://EXAMPLE.com:/%7esmith/home.html
+
 */
 
 
@@ -483,7 +519,7 @@ void                Request::_check_request_line_size(std::string str)
 void                Request::_parse_request_line(std::string request_line)
 {
     _method = _extract_until_delimiter(&request_line, " ");
-    _uri = _extract_until_delimiter(&request_line, " ");
+    _uri = _convert_tolower(_extract_until_delimiter(&request_line, " "));
     _protocol = _extract_until_delimiter(&request_line, "/");
     _version = request_line;
     request_line.clear();
@@ -619,6 +655,7 @@ void                Request::_process_request_line(std::string request_line)
     _check_uri();
     _check_protocol();
     _check_version();
+    _check_method_allows_body();
 }
 
 // ---------------- Headers  -----------------//
@@ -744,6 +781,76 @@ void				Request::_check_field_value_len(std::string str)
     }
 }
 
+/*
+    set case-insensitive header values from RFC7230 and RFC7231 to lower case
+    - transfer-coding
+    - te
+    - connection
+    - expect
+    - content-coding
+    - content-type
+    - charset
+    - vary
+    - language-tag
+*/
+void        Request::_modify_header_values_tolower(void)
+{
+    // modify header values that must be case-insensitive
+    if (get_header_per_key("transfer-coding").length() > 0)
+        _headers_map["transfer-coding"] = _convert_tolower(get_header_per_key("transfer-coding"));
+
+     if (get_header_per_key("te").length() > 0)
+        _headers_map["te"] = _convert_tolower(get_header_per_key("te"));
+
+     if (get_header_per_key("connection").length() > 0)
+        _headers_map["connection"] = _convert_tolower(get_header_per_key("connection"));
+     
+     if (get_header_per_key("expect").length() > 0)
+        _headers_map["expect"] = _convert_tolower(get_header_per_key("expect"));
+     
+     if (get_header_per_key("content-coding").length() > 0)
+        _headers_map["content-coding"] = _convert_tolower(get_header_per_key("content-coding"));
+
+    if (get_header_per_key("charset").length() > 0)
+        _headers_map["charset"] = _convert_tolower(get_header_per_key("charset"));
+   
+    if (get_header_per_key("vary").length() > 0)
+        _headers_map["vary"] = _convert_tolower(get_header_per_key("vary"));
+    
+    if (get_header_per_key("language-tag").length() > 0)
+        _headers_map["language-tag"] = _convert_tolower(get_header_per_key("language-tag"));
+}
+
+
+
+/*
+    RFC7230
+    A message-body MUST NOT be included in
+    a request if the specification of the request method (section 5.1.1)
+    does not allow sending an entity-body in requests. A server SHOULD
+    read and forward a message-body on any request; if the request method
+    does not include defined semantics for an entity-body, then the
+    message-body SHOULD be ignored when handling the request.
+
+    DELETE RFC7231
+    A payload within a DELETE request message has no defined semantics;
+    sending a payload body on a DELETE request might cause some existing
+    implementations to reject the request.
+*/
+void    Request::_check_method_allows_body(void)
+{
+    if (_method.compare("DELETE"))
+    {
+        // ignore any body senet
+        _body.clear();
+        set_content_length(0);
+    }
+}
+
+
+
+
+
 void				Request::_check_mandatory_header_fields(void)
 {
 	// Host is mandatory otherwise -> 404 Bad Request
@@ -753,19 +860,97 @@ void				Request::_check_mandatory_header_fields(void)
 		throw BadRequestException();
 	}
 
-	// if there is body, Content-Lenght is mandatory unless it is a chunked message
-	if (_body.length() > 0 &&
-		(get_header_per_key("Content-Length").length() == 0 || str2int(get_header_per_key("Content-Length")) < 0))
-	{
-		// is chunked?
-		if (get_transfer_encoding().length() == 0 || get_transfer_encoding().compare("chunked") != 0)
-		{
-			std::cout << REDB << "Content-Length field not in request or invalid number and transfer enconding is not chunked" << RESET << std::endl;
-			throw BadRequestException();
-		}
-	}
+    // content length is mandatory in some conditions
+    _check_content_length();
+
 }
 
+/*
+    RFC 7230
+    The message body (if any) of an HTTP message is used to carry the
+    payload body of that request or response.  The message body is
+    identical to the payload body unless a transfer coding has been
+    applied, as described in Section 3.3.1.
+
+    The presence of a message-body in a request is signaled by the
+    inclusion of a Content-Length or Transfer-Encoding header field in
+    the request's message-headers.
+
+    Content lenght
+
+    A user agent SHOULD send a Content-Length in a request message when
+    no Transfer-Encoding is sent and the request method defines a meaning
+    for an enclosed payload body.  For example, a Content-Length header
+    field is normally sent in a POST request even when the value is 0
+    (indicating an empty payload body).
+    (e.g., "Content-Length: 42, 42"),
+    indicating that duplicate Content-Length header fields have been
+    generated or combined by an upstream message processor, then the
+    recipient MUST either reject the message as invalid or replace the
+    duplicated field-values with a single valid Content-Length field
+    containing that decimal value prior to determining the message body
+    length or forwarding the message.
+
+    If a message is received with both a Transfer-Encoding and a
+        Content-Length header field, the Transfer-Encoding overrides the
+        Content-Length.  Such a message might indicate an attempt to
+        perform request smuggling (Section 9.5) or response splitting
+        (Section 9.4) and ought to be handled as an error.  A sender MUST
+        remove the received Content-Length field prior to forwarding such
+        a message downstream
+        If a valid Content-Length header field is present without
+        Transfer-Encoding, its decimal value defines the expected message
+        body length in octets.  If the sender closes the connection or
+        the recipient times out before the indicated number of octets are
+        received, the recipient MUST consider the message to be
+        incomplete and close the connection.
+
+        A server MAY reject a request that contains a message body but not a
+        Content-Length by responding with 411 (Length Required).
+        A server that receives an incomplete request message, usually due to
+        a canceled request or a triggered timeout exception, MAY send an
+        error response prior to closing the connection.
+*/
+void    Request::_check_content_length(void)
+{
+    std::string content_length = get_header_per_key("Content-Length");
+
+    // no content length sent but there is a body => 411 Length Required
+    if (content_length.length() == 0 && _body.length() > 0 )
+    {
+        // is chunked?
+		if (get_transfer_encoding().length() == 0 || get_transfer_encoding().compare("chunked") != 0)
+		{
+			std::cout << REDB << "Content-Length field necessary if body is sent and its transfer enconding is not chunked" << RESET << std::endl;
+			throw LengthRequiredException();
+		}
+    }
+
+    // content length only has digits
+    for (size_t i = 0; i < content_length.length(); i++)
+    {
+        if (std::isdigit(content_length[i]) == 0)
+        {
+            std::cout << REDB << "Content-Length is not a number" << RESET << std::endl;
+		    throw BadRequestException();
+        }
+    }
+
+    // negative content length is not allowed
+    if (content_length.length() != 0 && str2int(content_length) < 0)
+    {
+    	std::cout << REDB << "Content-Length is a negative number" << RESET << std::endl;
+		throw BadRequestException();
+    }
+
+    // body size is not the same as the body_size
+    else if (content_length.length() != 0 && str2int(content_length) != (int)_body.length()
+    && (get_transfer_encoding().length() == 0 || get_transfer_encoding().compare("chunked") != 0))
+    {
+        std::cout << REDB << "Content-Length does not match the size of the body received" << RESET << std::endl;
+        throw BadRequestException();
+    }
+}
 
 /*
     RFC 7230
@@ -819,7 +1004,7 @@ void                Request::_parser_header_line(std::string line)
     // key does not exist in the the map and can be added
     if (it == _headers_map.end())
     {
-        _headers_map[key] = value;
+        _headers_map[_convert_tolower(key)] = value;
     }
     // key already exist in map
     else
@@ -1091,9 +1276,11 @@ void                Request::_process_chunk(std::string str)
 // ---------------- Getters/Setters  -----------------//
 
 
-std::string         Request::get_header_per_key(std::string const &header_key) const
+std::string         Request::get_header_per_key(std::string header_key) const
 {
-    std::map<std::string, std::string>::const_iterator it = _headers_map.find(header_key);
+    if (header_key.length() == 0)
+        return ("");
+    std::map<std::string, std::string>::const_iterator it = _headers_map.find(_convert_tolower(header_key));
 
     if (it == _headers_map.end())
     {
@@ -1110,7 +1297,7 @@ size_t              Request::get_content_length(void)
 void                Request::set_content_length(size_t len)
 {
     _content_len = len;
-    _headers_map["Content-Length"] = size_t2str(_content_len);
+    _headers_map["content-length"] = size_t2str(_content_len);
 }
 
 int                 Request::get_error(void) const
@@ -1288,44 +1475,32 @@ std::string		    Request::get_body(void) const
     return (_body);
 }
 
-// To do's:
 
 /*
- The presence of a message-body in a request is signaled by the
-   inclusion of a Content-Length or Transfer-Encoding header field in
-   the request's message-headers. A message-body MUST NOT be included in
-   a request if the specification of the request method (section 5.1.1)
-   does not allow sending an entity-body in requests.
+    RFC7231
+    The "Expect" header field in a request indicates a certain set of
+    behaviors (expectations) that need to be supported by the server in
+    order to properly handle this request.  The only such expectation
+    defined by this specification is 100-continue.
+
+        Expect  = "100-continue"
+
+    The Expect field-value is case-insensitive.
+
+    A server that receives an Expect field-value other than 100-continue
+    MAY respond with a 417 (Expectation Failed) status code to indicate
+    that the unexpected expectation cannot be met.
 */
-// check body
-//implement
+
 
 // BODY
 
-/*
-    RFC 7230
-      The message body (if any) of an HTTP message is used to carry the
-   payload body of that request or response.  The message body is
-   identical to the payload body unless a transfer coding has been
-   applied, as described in Section 3.3.1.
-
-    message-body = *OCTET
-
-      The rules for when a message body is allowed in a message differ for
-   requests and responses.
-
-      The presence of a message body in a request is signaled by a
-   Content-Length or Transfer-Encoding header field.  Request message
-   framing is independent of method semantics, even if the method does
-   not define any use for a message body.
-
-
-*/
 
 /*
     message-body = *OCTET
     OCTET   =  %x00-FF (any 8-bit sequence of data)
 */
+
 // void    _check_body_octet(std::string str)
 // {
 //     for (size_t i = 0; i < str.length(); i++)
@@ -1343,59 +1518,18 @@ std::string		    Request::get_body(void) const
 
 
 /*
-Content lenght
 
-A user agent SHOULD send a Content-Length in a request message when
-   no Transfer-Encoding is sent and the request method defines a meaning
-   for an enclosed payload body.  For example, a Content-Length header
-   field is normally sent in a POST request even when the value is 0
-   (indicating an empty payload body).
-    (e.g., "Content-Length: 42, 42"),
-   indicating that duplicate Content-Length header fields have been
-   generated or combined by an upstream message processor, then the
-   recipient MUST either reject the message as invalid or replace the
-   duplicated field-values with a single valid Content-Length field
-   containing that decimal value prior to determining the message body
-   length or forwarding the message.
-
-   If a message is received with both a Transfer-Encoding and a
-       Content-Length header field, the Transfer-Encoding overrides the
-       Content-Length.  Such a message might indicate an attempt to
-       perform request smuggling (Section 9.5) or response splitting
-       (Section 9.4) and ought to be handled as an error.  A sender MUST
-       remove the received Content-Length field prior to forwarding such
-       a message downstream
-       If a valid Content-Length header field is present without
-       Transfer-Encoding, its decimal value defines the expected message
-       body length in octets.  If the sender closes the connection or
-       the recipient times out before the indicated number of octets are
-       received, the recipient MUST consider the message to be
-       incomplete and close the connection.
-
-          A server MAY reject a request that contains a message body but not a
-   Content-Length by responding with 411 (Length Required).
-   A server that receives an incomplete request message, usually due to
-   a canceled request or a triggered timeout exception, MAY send an
-   error response prior to closing the connection.
 
     RFC 2616 - 4.2 Message Headers
     Field names
-   are case-insensitive
-An HTTP/1.1 user agent MUST NOT preface
-   or follow a request with an extra CRLF.  If terminating the request
-   message body with a line-ending is desired, then the user agent MUST
-   count the terminating CRLF octets as part of the message body length
-   In the interest of robustness, a server that is expecting to receive
-   and parse a request-line SHOULD ignore at least one empty line (CRLF)
-   received prior to the request-line.
-
-
-
-
-Fielding & Reschke           Standards Track                   [Page 34]
-
-RFC 7230           HTTP/1.1 Message Syntax and Routing         June 2014
-
+    are case-insensitive 
+    An HTTP/1.1 user agent MUST NOT preface
+    or follow a request with an extra CRLF.  If terminating the request
+    message body with a line-ending is desired, then the user agent MUST
+    count the terminating CRLF octets as part of the message body length
+    In the interest of robustness, a server that is expecting to receive
+    and parse a request-line SHOULD ignore at least one empty line (CRLF)
+    received prior to the request-line.
 
    Although the line terminator for the start-line and header fields is
    the sequence CRLF, a recipient MAY recognize a single LF as a line
