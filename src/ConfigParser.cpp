@@ -106,34 +106,60 @@ void ConfigParser::splitServers(std::string &content)
 
 std::vector<std::map<std::string, std::string> > ConfigParser::parseLocations(const std::string &serverConfig)
 {
-    std::vector<std::map<std::string, std::string> > locations;
+	std::vector<std::map<std::string, std::string> > locations;
 
-    size_t startPos = serverConfig.find("location");
-    while (startPos != std::string::npos)
-    {
-        size_t endPos = serverConfig.find('}', startPos);
-        std::string locationBlock = serverConfig.substr(startPos, endPos - startPos + 1);
+	size_t startPos = serverConfig.find("location");
+	while (startPos != std::string::npos)
+	{
+		size_t endPos = serverConfig.find('}', startPos);
+		std::string locationBlock = serverConfig.substr(startPos, endPos - startPos + 1);
 
-        std::map<std::string, std::string> locationParameters;
-        for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
-        {
-            std::string key = keys[i];
-            size_t keyPos = locationBlock.find(key);
-            if (keyPos != std::string::npos)
-            {
-                keyPos += key.length();
-                size_t semicolonPos = locationBlock.find(';', keyPos);
-                std::string value = locationBlock.substr(keyPos, semicolonPos - keyPos);
-                locationParameters[key] = value;
-            }
-        }
+		std::map<std::string, std::string> locationParameters;
+		for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
+		{
+			std::string key = keys[i];
+			size_t keyPos = locationBlock.find(key);
+			if (keyPos != std::string::npos)
+			{
+				keyPos += key.length();
+				size_t semicolonPos = locationBlock.find(';', keyPos);
+				std::string value = locationBlock.substr(keyPos, semicolonPos - keyPos);
+				if (key == "allow_methods")
+				{
+					if (value.find("GET") != std::string::npos || value.find("POST") != std::string::npos || value.find("DELETE") != std::string::npos || value.empty())
+					{
+						if (value.find("GET") != std::string::npos)
+						{
+							locationParameters["GET"] = "Get";
+						}
+						if (value.find("POST") != std::string::npos)
+						{
+							locationParameters["POST"] = "Post";
+						}
+						if (value.find("DELETE") != std::string::npos)
+						{
+							locationParameters["DELETE"] = "Delete";
+						}
+						if (value.empty())
+						{
+							locationParameters["NoAllowedMethods"] = "NoAllowedMethods";
+						}
+					}
+					else
+					{
+						throw std::invalid_argument("Invalid method in allow_methods");
+					}
+				}
+				locationParameters[key] = value;
+			}
+		}
 
-        locations.push_back(locationParameters);
+		locations.push_back(locationParameters);
 
-        startPos = serverConfig.find("location", endPos);
-    }
+		startPos = serverConfig.find("location", endPos);
+	}
 
-    return locations;
+	return locations;
 }
 
 std::map<std::string, std::string> ConfigParser::parseParameters(const std::string &serverConfig)
@@ -171,34 +197,6 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 					std::string location = value.substr(0, braceStartPos);
 					parameters["location"] = location;
 				}
-			}
-			else if (key == "allow_methods")
-			{
-
-				if (value.find("GET") != std::string::npos || value.find("POST") != std::string::npos || value.find("DELETE") != std::string::npos || value.empty())
-				{
-					if (value.find("GET") != std::string::npos)
-					{
-						parameters["GET"] = "Get";
-					}
-					if (value.find("POST") != std::string::npos)
-					{
-						parameters["POST"] = "Post";
-					}
-					if (value.find("DELETE") != std::string::npos)
-					{
-						parameters["DELETE"] = "Delete";
-					}
-					if (value.empty())
-					{
-						parameters["NoAllowedMethods"] = "NoAllowedMethods";
-					}
-				}
-				else
-				{
-					throw std::invalid_argument("Invalid method in allow_methods");
-				}
-
 			}
 		}
 	}
@@ -309,24 +307,30 @@ std::string ConfigParser::getParameterValue(size_t serverIndex, const std::strin
             throw std::invalid_argument("Invalid parameter key");
     }
 
-    return it->second;
+	return it->second;
 }
 
 std::string ConfigParser::getLocationValue(size_t serverIndex, size_t locationIndex, const std::string &key)
 {
-    if (serverIndex >= serverLocations.size())
-        throw std::invalid_argument("Invalid server index");
+	if (serverIndex >= serverLocations.size())
+		throw std::invalid_argument("Invalid server index");
 
-    if (locationIndex >= serverLocations[serverIndex].size())
-        throw std::invalid_argument("Invalid location index");
+	if (locationIndex >= serverLocations[serverIndex].size())
+		throw std::invalid_argument("Invalid location index");
 
-    const std::map<std::string, std::string> &locationParameters = serverLocations[serverIndex][locationIndex];
-    std::map<std::string, std::string>::const_iterator it = locationParameters.find(key);
+	const std::map<std::string, std::string> &locationParameters = serverLocations[serverIndex][locationIndex];
+	std::map<std::string, std::string>::const_iterator it = locationParameters.find(key);
 
-    if (it == locationParameters.end())
-        throw std::invalid_argument("Invalid parameter key");
 
-    return it->second;
+ if (it == locationParameters.end())
+    {
+        if (key == "GET" || key == "POST" || key == "DELETE" || key == "NoAllowedMethods")
+            return "";  // or return some default value
+        else
+            throw std::invalid_argument("Invalid parameter key");
+    }
+
+	return it->second;
 }
 
 // Test functions
@@ -334,7 +338,7 @@ void ConfigParser::print()
 {
 
 	// want to print each part of the config file
-	std::cout << "------------- Config File -------------" << std::endl;
+	std::cout << "----------------------------------------------- Config File -----------------------------------------------" << std::endl;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
 		std::cout << servers[i] << std::endl;
@@ -343,16 +347,25 @@ void ConfigParser::print()
 		std::cout << "server_name: " << i << " " << getParameterValue(i, "server_name") << std::endl;
 		std::cout << "body_size: " << i << " " << getParameterValue(i, "body_size") << std::endl;
 		std::cout << "error_page_number: " << i << " " << getParameterValue(i, "error_page") << std::endl;
-		std::cout << "------------- Locations -------------" << std::endl;
-	 	for (size_t j = 0; j < serverLocations[i].size(); j++)
-        {
-            std::map<std::string, std::string> locationParameters = serverLocations[i][j];
+		std::cout << "-----------------------Locations---------------------------" << std::endl;
+		for (size_t j = 0; j < serverLocations[i].size(); j++)
+		{
+			std::map<std::string, std::string> locationParameters = serverLocations[i][j];
 			std::cout << j << " location on server " << i << ": " << getLocationValue(i, j, "location") << std::endl;
-			std::cout << j <<  " allowed methods on server " << i << ": " << getLocationValue(i, j, "allow_methods") << std::endl;
-			std::cout << j <<" autoindex on server " << i << ": " << getLocationValue(i, j, "autoindex") << std::endl;
+			std::cout << j << " allowed methods on server " << i << ": " << getLocationValue(i, j, "allow_methods") << std::endl;
+			std::cout << j << " autoindex on server " << i << ": " << getLocationValue(i, j, "autoindex") << std::endl;
 			std::cout << j << " cgi on server " << i << ": " << getLocationValue(i, j, "cgi") << std::endl;
-        }
-        std::cout << "--------------------------------------" << std::endl;
+			std::cout << "------------- Methods -------------" << std::endl;
+			std::cout << "GET" << j << ": " << getLocationValue(i, j, "GET") << std::endl;
+			std::cout << "POST" << j << ": " << getLocationValue(i, j, "POST") << std::endl;
+			std::cout << "DELETE" << j << ": " << getLocationValue(i, j, "DELETE") << std::endl;
+			if (!getLocationValue(i, j,  "NoAllowedMethods").empty())
+			{
+				std::cout << "NoAllowedMethods" << j << ": " << getLocationValue(i, j, "NoAllowedMethods") << std::endl;
+			}
+			std::cout << "------------------------------------------------------------------------------------------------------------" << std::endl;
+		}
+		std::cout << "" << std::endl;
 		// std::cout << "location:" << i << " " << getParameterValue(i, "location") << std::endl;
 		// std::cout << "allowed methods:" << i << " " << getParameterValue(i, "allow_methods") << std::endl;
 		// std::cout << "autoindex:" << i << " " << getParameterValue(i, "autoindex") << std::endl;
