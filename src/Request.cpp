@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/18 21:41:14 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/19 21:10:58 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,8 +87,8 @@ void                Request::parse_request(char const *buffer)
 		std::cout << CYAN << "_server_id " << _server_id << ", idenfied server is fd = " <<  _connection.get_server_socket() << ", port =  " << get_port() << ", server_name = " << get_hostname() << RESET << std::endl; // remove
 
 		// based on server id, check allowed methods
-		_check_allowed_method();
-
+		// _check_allowed_method(); // TODO uncomment
+ 
         _process_body(_body);
     }
     catch(const MethodNotAllowedException& e)
@@ -839,12 +839,12 @@ void        Request::_modify_header_values_tolower(void)
 */
 void    Request::_check_method_allows_body(void)
 {
-    if (_method.compare("DELETE"))
-    {
-        // ignore any body senet
-        _body.clear();
-        set_content_length(0);
-    }
+    // TODO if (_method.compare("DELETE") == 0) uncomment
+    // {
+    //     // ignore any body senet
+    //     _body.clear();
+    //     set_content_length(0);
+    // }
 }
 
 
@@ -861,7 +861,7 @@ void				Request::_check_mandatory_header_fields(void)
 	}
 
     // content length is mandatory in some conditions
-    _check_content_length();
+    _check_content_length(); // uncomment
 
 }
 
@@ -947,7 +947,7 @@ void    Request::_check_content_length(void)
     else if (content_length.length() != 0 && str2int(content_length) != (int)_body.length()
     && (get_transfer_encoding().length() == 0 || get_transfer_encoding().compare("chunked") != 0))
     {
-        std::cout << REDB << "Content-Length does not match the size of the body received" << RESET << std::endl;
+        std::cout << REDB << "Content-Length does not match the size of the body received. Content-Length is " << content_length << ",body is "  << _body.length() << RESET << std::endl;
         throw BadRequestException();
     }
 }
@@ -1102,7 +1102,7 @@ void                Request::_process_body(std::string body)
     }
     else if (transfer_enconding.length() > 0)
     {
-        if (transfer_enconding.compare("chunked") == 0)
+        if (transfer_enconding.compare("chunked") == 0) // uncomment this line
             _process_chunk(_body);
         else
         {
@@ -1122,86 +1122,110 @@ void                Request::_process_body(std::string body)
 // Transfer Encoding
 /*
     transfer-coding    = "chunked" ; Section 4.1
-                        / "compress" ; Section 4.2.1
-                        / "deflate" ; Section 4.2.2
-                        / "gzip" ; Section 4.2.3
-                        / transfer-extension
-     transfer-extension = token *( OWS ";" OWS transfer-parameter )
-   registered within the HTTP Transfer Coding registry, as defined in
-   Section 8.4.  They are used in the TE (Section 4.3) and
-   Transfer-Encoding (Section 3.3.1) header fields.
+                    / "compress" ; Section 4.2.1
+                    / "deflate" ; Section 4.2.2
+                    / "gzip" ; Section 4.2.3
+                    / transfer-extension
+    transfer-extension = token *( OWS ";" OWS transfer-parameter )
+    registered within the HTTP Transfer Coding registry, as defined in
+    Section 8.4.  They are used in the TE (Section 4.3) and
+    Transfer-Encoding (Section 3.3.1) header fields.
 
 
-   A recipient MUST be able to parse the chunked transfer coding
-   (Section 4.1) because it plays a crucial role in framing messages
-   when the payload body size is not known in advance.
+    A recipient MUST be able to parse the chunked transfer coding
+    (Section 4.1) because it plays a crucial role in framing messages
+    when the payload body size is not known in advance.
 
-
-If any transfer coding
-   other than chunked is applied to a request payload body, the sender
-   MUST apply chunked as the final transfer coding to ensure that the
-   message is properly framed.  If any transfer coding other than
-   chunked is applied to a response payload body, the sender MUST either
-   apply chunked as the final transfer coding or terminate the message
-   by closing the connection.
+    If any transfer coding
+    other than chunked is applied to a request payload body, the sender
+    MUST apply chunked as the final transfer coding to ensure that the
+    message is properly framed.  If any transfer coding other than
+    chunked is applied to a response payload body, the sender MUST either
+    apply chunked as the final transfer coding or terminate the message
+    by closing the connection.
 
     For example,
 
-     Transfer-Encoding: gzip, chunked
+        Transfer-Encoding: gzip, chunked
 
-   indicates that the payload body has been compressed using the gzip
-   coding and then chunked using the chunked coding while forming the
-   message body.
+    indicates that the payload body has been compressed using the gzip
+    coding and then chunked using the chunked coding while forming the
+    message body.
 
- chunked-body   = *chunk
-                      last-chunk
-                      trailer-part
-                      CRLF
+    chunked-body   = *chunk
+                        last-chunk
+                        trailer-part
+                        CRLF
 
-     chunk          = chunk-size [ chunk-ext ] CRLF
-                      chunk-data CRLF
-     chunk-size     = 1*HEXDIG
-     last-chunk     = 1*("0") [ chunk-ext ] CRLF
+        chunk          = chunk-size [ chunk-ext ] CRLF
+                        chunk-data CRLF
+        chunk-size     = 1*HEXDIG
+        last-chunk     = 1*("0") [ chunk-ext ] CRLF
 
-     chunk-data     = 1*OCTET ; a sequence of chunk-size octets
+        chunk-data     = 1*OCTET ; a sequence of chunk-size octets
 
     HEXDIG (hexadecimal 0-9/A-F/a-f)
 
-     The chunk-size field is a string of hex digits indicating the size of
-   the chunk-data in octets.  The chunked transfer coding is complete
-   when a chunk with a chunk-size of zero is received, possibly followed
-   by a trailer, and finally terminated by an empty line.
+        The chunk-size field is a string of hex digits indicating the size of
+    the chunk-data in octets.  The chunked transfer coding is complete
+    when a chunk with a chunk-size of zero is received, possibly followed
+    by a trailer, and finally terminated by an empty line.
 
-   A recipient MUST ignore unrecognized chunk extensions.  A server
-   ought to limit the total length of chunk extensions received in a
-   request to an amount reasonable for the services provided, in the
-   same way that it applies length limitations and timeouts for other
-   parts of a message, and generate an appropriate 4xx (Client Error)
-   response if that amount is exceeded.
+    A recipient MUST ignore unrecognized chunk extensions.  A server
+    ought to limit the total length of chunk extensions received in a
+    request to an amount reasonable for the services provided, in the
+    same way that it applies length limitations and timeouts for other
+    parts of a message, and generate an appropriate 4xx (Client Error)
+    response if that amount is exceeded.
 
-4.1.3.  Decoding Chunked
+    4.1.1.  Chunk Extensions
 
-   A process for decoding the chunked transfer coding can be represented
-   in pseudo-code as:
+    The chunked encoding allows each chunk to include zero or more chunk
+    extensions, immediately following the chunk-size, for the sake of
+    supplying per-chunk metadata (such as a signature or hash),
+    mid-message control information, or randomization of message body
+    size.
 
-     length := 0
-     read chunk-size, chunk-ext (if any), and CRLF
-     while (chunk-size > 0) {
+        chunk-ext      = *( ";" chunk-ext-name [ "=" chunk-ext-val ] )
+
+        chunk-ext-name = token
+        chunk-ext-val  = token / quoted-string
+        
+        Hence, use of chunk extensions is generally limited
+    to specialized HTTP services such as "long polling" (where client and
+    server can have shared expectations regarding the use of chunk
+    extensions) or for padding within an end-to-end secured connection.
+    A recipient MUST ignore unrecognized chunk extensions.  A server
+    ought to limit the total length of chunk extensions received in a
+    request to an amount reasonable for the services provided, in the
+    same way that it applies length limitations and timeouts for other
+    parts of a message, and generate an appropriate 4xx (Client Error)
+    response if that amount is exceeded.
+   
+
+    4.1.3.  Decoding Chunked
+
+    A process for decoding the chunked transfer coding can be represented
+    in pseudo-code as:
+
+        length := 0
+        read chunk-size, chunk-ext (if any), and CRLF
+        while (chunk-size > 0) {
         read chunk-data and CRLF
         append chunk-data to decoded-body
         length := length + chunk-size
         read chunk-size, chunk-ext (if any), and CRLF
-     }
-     read trailer field
-     while (trailer field is not empty) {
+        }
+        read trailer field
+        while (trailer field is not empty) {
         if (trailer field is allowed to be sent in a trailer) {
             append trailer field to existing header fields
         }
         read trailer-field
-     }
-     Content-Length := length
-     Remove "chunked" from Transfer-Encoding
-     Remove Trailer from existing header fields
+        }
+        Content-Length := length
+        Remove "chunked" from Transfer-Encoding
+        Remove Trailer from existing header fields
 
     POST /upload HTTP/1.1
     Host: example.com
@@ -1222,6 +1246,102 @@ void                Request::_convert_content_length(void)
 {
     set_content_length(_convert_str2size_t(get_header_per_key("Content-Length")));
 }
+
+/*
+
+4.1.2.  Chunked Trailer Part
+
+   A trailer allows the sender to include additional fields at the end
+   of a chunked message in order to supply metadata that might be
+   dynamically generated while the message body is sent, such as a
+   message integrity check, digital signature, or post-processing
+   status.  The trailer fields are identical to header fields, except
+   they are sent in a chunked trailer instead of the message's header
+   section.
+
+    trailer-part   = *( header-field CRLF )
+
+    Forbidden trailer headers
+    A sender MUST NOT generate a trailer that contains a field necessary
+    for message framing (e.g., Transfer-Encoding and Content-Length),
+    routing (e.g., Host), request modifiers (e.g., controls and
+    conditionals in Section 5 of [RFC7231]), authentication (e.g., see
+    [RFC7235] and [RFC6265]), response control data (e.g., see Section
+    7.1 of [RFC7231]), or determining how to process the payload (e.g.,
+    Content-Encoding, Content-Type, Content-Range, and Trailer).
+    When a chunked message containing a non-empty trailer is received,
+    the recipient MAY process the fields (aside from those forbidden
+    above) as if they were appended to the message's header section.  A
+    recipient MUST ignore (or consider as an error) any fields that are
+    forbidden to be sent in a trailer, since processing them as if they
+    were present in the header section might bypass external security
+    filters.
+
+    controls RFC7231 section 5
+    Cache-Control     | Section 5.2 of [RFC7234] |
+   | Expect            | Section 5.1.1            |
+   | Host              | Section 5.4 of [RFC7230] |
+   | Max-Forwards      | Section 5.1.2            |
+   | Pragma            | Section 5.4 of [RFC7234] |
+   | Range             | Section 3.1 of [RFC7233] |
+   | TE                | Section 4.3 of [RFC7230] |
+   
+
+*/
+void                Request::_find_chunk_trailer_headers(std::string &chunk_data, std::string &str)
+{
+    std::string line;
+    if (chunk_data.length() > 0)
+        _extract_chunk_trailer_header(chunk_data);
+    while (str.length() > 0)
+    {
+        line = _extract_until_delimiter(&str, "\r\n");
+        _extract_chunk_trailer_header(line);
+    }
+}
+
+
+void                Request::_extract_chunk_trailer_header(std::string &chunk_trailer_line)
+{
+     // check if the trailer content in chunk is  "field-name: field-value"
+    size_t idx_dp = chunk_trailer_line.find_first_of(":");
+    size_t len = chunk_trailer_line.length();
+    if (len > 0 && idx_dp != std::string::npos && idx_dp < len)
+    {
+        if (idx_dp > 0)
+        {
+            std::string key = _convert_tolower(chunk_trailer_line.substr(0, idx_dp));
+            std::string value = chunk_trailer_line.substr(idx_dp + 1);
+            // check if it is not a prohibit header
+            if (key.compare("transfer-encoding") == 0
+                || key.compare("content-length") == 0
+                || key.compare("host") == 0
+                || key.compare("content-encoding") == 0 
+                || key.compare("content-type") == 0
+                || key.compare("content-range") == 0
+                || key.compare("expect") == 0
+                || key.compare("trailer") == 0
+                || key.compare("max-forwards") == 0
+                || key.compare("pragma") == 0
+                || key.compare("range") == 0 
+                || key.compare("te") == 0 )
+            {
+                std::cerr << REDB << "Passed chunk header is forbidden" << RESET << std::endl;
+                throw BadRequestException();
+            }
+            _remove_leading_whitespace(value);
+            _remove_trailing_whitespace(value);
+            _headers_map[key] = value;
+        }
+        else
+        {
+            std::cerr << REDB << "Format error in chunk trailer" << RESET << std::endl;
+            throw BadRequestException();
+        }
+    }
+}
+
+
 void                Request::_process_chunk(std::string str)
 {
     size_t          accum_length = 0;
@@ -1244,20 +1364,24 @@ void                Request::_process_chunk(std::string str)
             throw BadRequestException();
         }
 
+        // TODO split here chunk size from chunk-extens...  
         chunk_size = _convert_str2hex(str_chunk_size);
 
         chunk_data = _extract_until_delimiter(&str, "\r\n");
-        if (chunk_data.length() != chunk_size)
-        {
-            std::cerr << REDB  << "chunk data length does not match chunk size" << RESET << std::endl;
-            throw BadRequestException();
-        }
-        else if (chunk_size == 0 && str.length() == 0)
+        // if (chunk_data.length() != chunk_size) // TODO should we remove this check? in case of trailer headers, this will always fail
+        // {
+        //     std::cerr << REDB  << "chunk data length does not match chunk size" << RESET << std::endl;
+        //     throw BadRequestException();
+        // }
+
+        // else if (chunk_size == 0) // && str.length() == 0)
+        if (chunk_size == 0) // && str.length() == 0)
         {
             // chunk has reached its end
             // new body and new content length
             _body = accum_body;
             set_content_length(accum_length);
+            _find_chunk_trailer_headers(chunk_data , str);
             return ;
         }
         accum_length += chunk_size;

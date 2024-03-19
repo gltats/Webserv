@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/18 21:41:18 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/19 21:18:55 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 #define MAX_REQUEST_LINE_LEN 8000
 #define MAX_FIELD_NAME_LEN 256
 #define MAX_FIELD_VALUE_LEN 512
-#define MAX_BODY_SIZE 2
+#define MAX_BODY_SIZE 200 // TODO make it come from config parser
 
 class Connection;
 
@@ -89,6 +89,8 @@ class Request
         void                _check_method_allows_body(void);
         void                _check_content_length(void);
         void                _modify_header_values_tolower(void);
+        void                _extract_chunk_trailer_header(std::string &chunk_trailer_line);
+        void                _find_chunk_trailer_headers(std::string &chunk_data, std::string &str);
 
         // Body
         void                _process_body(std::string body);

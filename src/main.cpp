@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/18 21:47:09 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/19 21:32:49 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,131 @@
 // DONE check if key case insensitive 
 // DONE check if values are case insensitive and if so, apply lower case to all before comparing to anythign. (always compare with lower case)
 // DONE Deactivateed Error in Port in request does not match socket port, should be active?
+// TODO testing with telnet ok_POST_body_1char -> NO Body and content lenght doubled
+/*
+    Key:<content-lenght> | Value:<1>
+        Key:<content-length> | Value:<0>
+	*/
+// TODO issue to get user temrination after error
+/*
+	Error:
+Connection closed. Please retry
+^CGeneric Exception during receive_request
+Exception: User Request for Termination
+^C^C^C^C==519== 
+==519== Process terminating with default action of signal 15 (SIGTERM)
+==519==    at 0x4BD666E: recv (recv.c:28)
+==519==    by 0x126033: Connection::receive_request() (in /42PROJECT/webserver)
+==519==    by 0x118077: ServerOS::_loop() (in /42PROJECT/webserver)
+==519==    by 0x116A32: ServerOS::launch_webserver() (in /42PROJECT/webserver)
+==519==    by 0x10CE29: main (in /42PROJECT/webserver)
+==519== 
+==519== FILE DESCRIPTORS: 9 open (3 std) at exit.
+==519== Open AF_INET socket 8: 127.0.0.1:4432 <-> 127.0.0.1:44474
+==519==    at 0x4BD6427: accept (accept.c:26)
+==519==    by 0x117AD6: ServerOS::_loop() (in /42PROJECT/webserver)
+==519==    by 0x116A32: ServerOS::launch_webserver() (in /42PROJECT/webserver)
+==519==    by 0x10CE29: main (in /42PROJECT/webserver)
+==519== 
+==519== Open AF_INET socket 7: 127.0.0.1:4432 <-> 127.0.0.1:39768
+==519==    at 0x4BD6427: accept (accept.c:26)
+==519==    by 0x117AD6: ServerOS::_loop() (in /42PROJECT/webserver)
+==519==    by 0x116A32: ServerOS::launch_webserver() (in /42PROJECT/webserver)
+==519==    by 0x10CE29: main (in /42PROJECT/webserver)
+==519== 
+==519== Open AF_INET socket 6: 0.0.0.0:4431 <-> unbound
+==519==    at 0x4BD6B3B: socket (syscall-template.S:120)
+==519==    by 0x116A6C: ServerOS::_setup_socket(int) (in /42PROJECT/webserver)
+==519==    by 0x11661F: ServerOS::ServerOS(int, ConfigParser&, char**) (in /42PROJECT/webserver)
+==519==    by 0x10CE1A: main (in /42PROJECT/webserver)
+==519== 
+==519== Open AF_INET socket 5: 0.0.0.0:4433 <-> unbound
+==519==    at 0x4BD6B3B: socket (syscall-template.S:120)
+==519==    by 0x116A6C: ServerOS::_setup_socket(int) (in /42PROJECT/webserver)
+==519==    by 0x11661F: ServerOS::ServerOS(int, ConfigParser&, char**) (in /42PROJECT/webserver)
+==519==    by 0x10CE1A: main (in /42PROJECT/webserver)
+==519== 
+==519== Open AF_INET socket 4: 0.0.0.0:4432 <-> unbound
+==519==    at 0x4BD6B3B: socket (syscall-template.S:120)
+==519==    by 0x116A6C: ServerOS::_setup_socket(int) (in /42PROJECT/webserver)
+==519==    by 0x11661F: ServerOS::ServerOS(int, ConfigParser&, char**) (in /42PROJECT/webserver)
+==519==    by 0x10CE1A: main (in /42PROJECT/webserver)
+==519== 
+==519== Open file descriptor 3:
+==519==    at 0x4BD5B1B: epoll_create (syscall-template.S:120)
+==519==    by 0x116373: ServerOS::ServerOS(int, ConfigParser&, char**) (in /42PROJECT/webserver)
+==519==    by 0x10CE1A: main (in /42PROJECT/webserver)
+==519== 
+==519== 
+==519== HEAP SUMMARY:
+==519==     in use at exit: 121,839 bytes in 190 blocks
+==519==   total heap usage: 442 allocs, 252 frees, 168,715 bytes allocated
+==519== 
+==519== LEAK SUMMARY:
+==519==    definitely lost: 0 bytes in 0 blocks
+==519==    indirectly lost: 0 bytes in 0 blocks
+==519==      possibly lost: 0 bytes in 0 blocks
+==519==    still reachable: 121,839 bytes in 190 blocks
+==519==         suppressed: 0 bytes in 0 blocks
+==519== Reachable blocks (those to which a pointer was found) are not shown.
+==519== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==519== 
+==519== For lists of detected and suppressed errors, rerun with: -s
+==519== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+Terminated
+root@91711e67e4c7:/42PROJECT# 
+
+*/
+// TODO Error in DELETE  nok_DELETE_with_body - its is saying 
+/*
+	Content-Length does not match the size of the body received. Content-Length is 10,body is 14
+	Exception: Status 400, Bad Request
+*/
+
+// TODO remove content lenght check with body size. as in body there is also the CRLF and traler, chunk ...
+
+// TODO file transfer request request example : "multipart/form-data"-
+/*
+	-------- Request Line --------
+			Method   <POST>
+			Uri      </html/basic_server01.html>
+			Protocol <HTTP>
+			Version  <1.1>
+
+	-------- Headers --------
+			Key:<accept-encoding> | Value:<gzip, deflate, br, zstd>
+			Key:<accept-language> | Value:<pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7>
+			Key:<cache-control> | Value:<no-cache>
+			Key:<connection> | Value:<keep-alive>
+			Key:<content-length> | Value:<193>
+			Key:<content-type> | Value:<multipart/form-data; boundary=----WebKitFormBoundary9n0LfczhsvPR5TbF>
+			Key:<host> | Value:<localhost:4432>
+			Key:<hostname> | Value:<localhost>
+			Key:<origin> | Value:<http://localhost:4432>
+			Key:<port> | Value:<4432>
+			Key:<pragma> | Value:<no-cache>
+			Key:<referer> | Value:<http://localhost:4432/html/basic_server01.html>
+			Key:<sec-ch-ua-mobile> | Value:<?0>
+			Key:<sec-ch-ua-platform> | Value:<"macOS">
+			Key:<sec-fetch-dest> | Value:<document>
+			Key:<sec-fetch-mode> | Value:<navigate>
+			Key:<sec-fetch-site> | Value:<same-origin>
+			Key:<sec-fetch-user> | Value:<?1>
+			Key:<upgrade-insecure-requests> | Value:<1>
+			Key:<user-agent> | Value:<Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36>
+
+	---------  BODY  -------
+			Body 
+	<------WebKitFormBoundary9n0LfczhsvPR5TbF
+	Content-Disposition: form-data; name="datei"; filename="me.txt"
+	Content-Type: text/plain
+
+	i am a file
+
+	------WebKitFormBoundary9n0LfczhsvPR5TbF--
+	>
+
+*/
 
 // Interface to Parser -> Server
 
