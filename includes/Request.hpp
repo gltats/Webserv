@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/20 21:12:12 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/21 19:38:34 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,12 @@
 
 #include <iostream>
 #include <map>
+#include <list>
 #include <stdlib.h>
 #include <cstring>
 #include "color_code.hpp"
 #include "library.hpp"
+#include "File.hpp"
 #include "ConfigParser.hpp"
 
 #define MAX_REQUEST_LINE_LEN 8000
@@ -49,7 +51,8 @@ class Request
         bool                _allow_DELETE; // get from configParser
 
 
-        std::map<std::string, std::string> _headers_map;
+        std::map<std::string, std::string>  _headers_map;
+        std::list<File>                     _file_transfer_list;
 
         void                _cleanMemory(void);
         std::string         _convert_tolower(std::string const &str) const;
@@ -104,7 +107,7 @@ class Request
         bool                _check_content_type_is_form(void);
         void                _extract_files_from_body(void);
         std::string         _extract_file_form_between_2delimiters(std::string &body_copy);
-
+        void                _extract_file_data(std::string form_data);
 
     public:
         Request(Connection &connection);

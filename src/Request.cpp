@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/21 15:47:08 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/21 19:57:15 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1549,6 +1549,7 @@ bool    Request::_check_content_type_is_form(void)
     return (false);
 }
 
+
 /*
     will extract a file from inbetween 2 delimiters. It works with a copy
     from a body as it is destructive
@@ -1610,8 +1611,97 @@ void    Request::_extract_files_from_body(void)
     {
         form_data.clear();
         form_data = _extract_file_form_between_2delimiters(body_copy);
-        std::cout << "form_data is <" << form_data << "> and size is " << form_data.length() << std::endl; // TODO remove
+        // std::cout << "form_data is <" << form_data << "> and size is " << form_data.length() << std::endl; // TODO remove
+        _extract_file_data(form_data);
     }
+}
+
+/*
+ <Content-Disposition: form-data; name="datei"; filename="me.txt"
+Content-Type: text/plain
+
+i am a file!
+
+>
+*/
+//TODO refactor!
+void    Request::_extract_file_data(std::string form_data)
+{
+    File file;
+    std::string key;
+    std::string value;
+    
+    // Content-Disposition
+    key = _extract_until_delimiter(&form_data, ":");
+    if (key.compare("Content-Disposition") != 0)
+    {
+        std::cerr << REDB << "File Transfer Content-Disposition not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    value = _extract_until_delimiter(&form_data, ";");
+    _remove_leading_whitespace(value);
+    _remove_trailing_whitespace(value);
+    if (value.compare("form-data"))
+    {
+        std::cerr << REDB << "File Transfer Content Disposition not supported" << RESET << std::endl;
+        throw NotImplemented(); // TODO is this the best exception
+    }
+    file.set_content_disposition(value);
+
+    // name
+    key = _extract_until_delimiter(&form_data, "=");
+    if (key.compare("name") != 0)
+    {
+        std::cerr << REDB << "File Transfer name not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    value = _extract_until_delimiter(&form_data, ";");
+    _remove_leading_whitespace(value);
+    _remove_trailing_whitespace(value);
+    if (value.length() == 0)
+    {
+        std::cerr << REDB << "File Transfer name value is empty" << RESET << std::endl;
+        throw BadRequestException(); 
+    }
+    file.set_name(value);
+
+    //filename
+    key = _extract_until_delimiter(&form_data, "=");
+    if (key.compare("filename") != 0)
+    {
+        std::cerr << REDB << "File Transfer filename not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    value = _extract_until_delimiter(&form_data, "\r\n");
+     _remove_leading_whitespace(value);
+    _remove_trailing_whitespace(value);
+    if (value.length() == 0)
+    {
+        std::cerr << REDB << "File Transfer filename value is empty" << RESET << std::endl;
+        throw BadRequestException(); 
+    }
+    file.set_filename(value);
+
+    //content-type
+    key = _extract_until_delimiter(&form_data, ":");
+    if (key.compare("Content-Type") != 0)
+    {
+        std::cerr << REDB << "File Transfer Content-Type not found" << RESET << std::endl;
+        throw BadRequestException();
+    }
+    value = _extract_until_delimiter(&form_data, "\r\n");
+     _remove_leading_whitespace(value);
+    _remove_trailing_whitespace(value);
+    if (value.length() == 0)
+    {
+        std::cerr << REDB << "File Transfer Content-Type value is empty" << RESET << std::endl;
+        throw BadRequestException(); 
+    }
+    // TODO check the Content Type for valid/supported/implemented content types MIMEs for file transfer
+    file.set_content_type(value);
+
+    std::cout << "File metadata is: " << std::endl << file << std::endl; // TODO remove 
+    
 }
 
 

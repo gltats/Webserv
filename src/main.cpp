@@ -3,14 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/20 20:18:45 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/21 19:58:58 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserver.hpp"
+
+
+// TODO debug filetransfer
+/*
+File Transfer name not found
+Exception: Status 400, Bad Request
+
+*/
 
 // TODO keepalive_timeout and keepalive_requests 
 /*
@@ -139,48 +147,8 @@ root@91711e67e4c7:/42PROJECT#
 
 // TODO remove content lenght check with body size. as in body there is also the CRLF and traler, chunk ...
 
-// TODO file transfer request request example : "multipart/form-data"-
-/*
-	-------- Request Line --------
-			Method   <POST>
-			Uri      </html/basic_server01.html>
-			Protocol <HTTP>
-			Version  <1.1>
+// DONE file transfer request request example : "multipart/form-data"-
 
-	-------- Headers --------
-			Key:<accept-encoding> | Value:<gzip, deflate, br, zstd>
-			Key:<accept-language> | Value:<pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7>
-			Key:<cache-control> | Value:<no-cache>
-			Key:<connection> | Value:<keep-alive>
-			Key:<content-length> | Value:<193>
-			Key:<content-type> | Value:<multipart/form-data; boundary=----WebKitFormBoundary9n0LfczhsvPR5TbF>
-			Key:<host> | Value:<localhost:4432>
-			Key:<hostname> | Value:<localhost>
-			Key:<origin> | Value:<http://localhost:4432>
-			Key:<port> | Value:<4432>
-			Key:<pragma> | Value:<no-cache>
-			Key:<referer> | Value:<http://localhost:4432/html/basic_server01.html>
-			Key:<sec-ch-ua-mobile> | Value:<?0>
-			Key:<sec-ch-ua-platform> | Value:<"macOS">
-			Key:<sec-fetch-dest> | Value:<document>
-			Key:<sec-fetch-mode> | Value:<navigate>
-			Key:<sec-fetch-site> | Value:<same-origin>
-			Key:<sec-fetch-user> | Value:<?1>
-			Key:<upgrade-insecure-requests> | Value:<1>
-			Key:<user-agent> | Value:<Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36>
-
-	---------  BODY  -------
-			Body 
-	<------WebKitFormBoundary9n0LfczhsvPR5TbF
-	Content-Disposition: form-data; name="datei"; filename="me.txt"
-	Content-Type: text/plain
-
-	i am a file
-
-	------WebKitFormBoundary9n0LfczhsvPR5TbF--
-	>
-
-*/
 
 // Interface to Parser -> Server
 
