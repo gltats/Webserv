@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/19 21:10:58 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/21 15:47:08 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ void                Request::parse_request(char const *buffer)
 
         // modify case-insensitive header values
         _modify_header_values_tolower();
- 
+
 		// check if mandatory fields where sent in the request
 		_check_mandatory_header_fields();
 
@@ -88,7 +88,7 @@ void                Request::parse_request(char const *buffer)
 
 		// based on server id, check allowed methods
 		// _check_allowed_method(); // TODO uncomment
- 
+
         _process_body(_body);
     }
     catch(const MethodNotAllowedException& e)
@@ -254,7 +254,7 @@ void	Request::_check_valid_port(void)
 		std::cout << REDB << "Request Host port '" << get_port() <<  "'" << std::endl;
 		throw BadRequestException();
 	}
-    
+
 }
 
 void	Request::_check_valid_hostname(void)
@@ -804,19 +804,19 @@ void        Request::_modify_header_values_tolower(void)
 
      if (get_header_per_key("connection").length() > 0)
         _headers_map["connection"] = _convert_tolower(get_header_per_key("connection"));
-     
+
      if (get_header_per_key("expect").length() > 0)
         _headers_map["expect"] = _convert_tolower(get_header_per_key("expect"));
-     
+
      if (get_header_per_key("content-coding").length() > 0)
         _headers_map["content-coding"] = _convert_tolower(get_header_per_key("content-coding"));
 
     if (get_header_per_key("charset").length() > 0)
         _headers_map["charset"] = _convert_tolower(get_header_per_key("charset"));
-   
+
     if (get_header_per_key("vary").length() > 0)
         _headers_map["vary"] = _convert_tolower(get_header_per_key("vary"));
-    
+
     if (get_header_per_key("language-tag").length() > 0)
         _headers_map["language-tag"] = _convert_tolower(get_header_per_key("language-tag"));
 }
@@ -943,13 +943,19 @@ void    Request::_check_content_length(void)
 		throw BadRequestException();
     }
 
-    // body size is not the same as the body_size
-    else if (content_length.length() != 0 && str2int(content_length) != (int)_body.length()
-    && (get_transfer_encoding().length() == 0 || get_transfer_encoding().compare("chunked") != 0))
-    {
-        std::cout << REDB << "Content-Length does not match the size of the body received. Content-Length is " << content_length << ",body is "  << _body.length() << RESET << std::endl;
-        throw BadRequestException();
-    }
+    // // body size is not the same as the body_size
+    // else if (content_length.length() != 0 && str2int(content_length) != (int)_body.length()
+    // && (get_transfer_encoding().length() == 0 || get_transfer_encoding().compare("chunked") != 0))
+    // {
+    //     std::cout << REDB << "Content-Length does not match the size of the body received. Content-Length is " << content_length << ",body is "  << _body.length() << RESET << std::endl;
+    //     throw BadRequestException();
+    // } // TODO find out why is giving error when sending file
+	/*
+		Error sent:
+		Content-Length does not match the size of the body received. Content-Length is 193,body is 0
+Exception: Status 400, Bad Request
+
+	*/
 }
 
 /*
@@ -1091,7 +1097,7 @@ void                Request::_process_body(std::string body)
         _convert_content_length();
         if (_content_len != _body.length())
         {
-            std::cerr << REDB  << "mismatch from Content-Header field value and actual body length received" << RESET << std::endl;
+            std::cerr << REDB  << "mismatch from Content-Header field value and actual body length received. _content_len :" <<_content_len << ", body length: " << _body.length() << RESET << std::endl;
             throw BadRequestException();
         }
         else if (_content_len > MAX_BODY_SIZE)
@@ -1099,6 +1105,12 @@ void                Request::_process_body(std::string body)
             std::cerr << REDB << "body is bigger than define max body size in ConfigFile" << RESET << std::endl;
             throw RequestEntityTooLargeException();
         }
+
+        if (_check_content_type_is_form() == true)
+        {
+            _extract_files_from_body();
+        }
+
     }
     else if (transfer_enconding.length() > 0)
     {
@@ -1110,8 +1122,6 @@ void                Request::_process_body(std::string body)
             throw BadRequestException();
         }
     }
-
-     // handle file transfer?
 
     //  _check_body_octet(_body);
 }
@@ -1190,7 +1200,7 @@ void                Request::_process_body(std::string body)
 
         chunk-ext-name = token
         chunk-ext-val  = token / quoted-string
-        
+
         Hence, use of chunk extensions is generally limited
     to specialized HTTP services such as "long polling" (where client and
     server can have shared expectations regarding the use of chunk
@@ -1201,7 +1211,7 @@ void                Request::_process_body(std::string body)
     same way that it applies length limitations and timeouts for other
     parts of a message, and generate an appropriate 4xx (Client Error)
     response if that amount is exceeded.
-   
+
 
     4.1.3.  Decoding Chunked
 
@@ -1285,7 +1295,7 @@ void                Request::_convert_content_length(void)
    | Pragma            | Section 5.4 of [RFC7234] |
    | Range             | Section 3.1 of [RFC7233] |
    | TE                | Section 4.3 of [RFC7230] |
-   
+
 
 */
 void                Request::_find_chunk_trailer_headers(std::string &chunk_data, std::string &str)
@@ -1316,14 +1326,14 @@ void                Request::_extract_chunk_trailer_header(std::string &chunk_tr
             if (key.compare("transfer-encoding") == 0
                 || key.compare("content-length") == 0
                 || key.compare("host") == 0
-                || key.compare("content-encoding") == 0 
+                || key.compare("content-encoding") == 0
                 || key.compare("content-type") == 0
                 || key.compare("content-range") == 0
                 || key.compare("expect") == 0
                 || key.compare("trailer") == 0
                 || key.compare("max-forwards") == 0
                 || key.compare("pragma") == 0
-                || key.compare("range") == 0 
+                || key.compare("range") == 0
                 || key.compare("te") == 0 )
             {
                 std::cerr << REDB << "Passed chunk header is forbidden" << RESET << std::endl;
@@ -1364,7 +1374,7 @@ void                Request::_process_chunk(std::string str)
             throw BadRequestException();
         }
 
-        // TODO split here chunk size from chunk-extens...  
+        // TODO split here chunk size from chunk-extens...
         chunk_size = _convert_str2hex(str_chunk_size);
 
         chunk_data = _extract_until_delimiter(&str, "\r\n");
@@ -1394,7 +1404,215 @@ void                Request::_process_chunk(std::string str)
 
 // ---------------- Transfer file  -----------------//
 
-/* to be added */
+/*
+
+    RFC 7578
+    Returning Values from Forms: multipart/form-data
+
+    4.1.  "Boundary" Parameter of multipart/form-data
+
+   As with other multipart types, the parts are delimited with a
+   boundary delimiter, constructed using CRLF, "--", and the value of
+   the "boundary" parameter.  The boundary is supplied as a "boundary"
+   parameter to the multipart/form-data type.  As noted in Section 5.1
+   of [RFC2046], the boundary delimiter MUST NOT appear inside any of
+   the encapsulated parts, and it is often necessary to enclose the
+   "boundary" parameter values in quotes in the Content-Type header
+   field.
+
+    Each part MUST contain a Content-Disposition header field [RFC2183]
+   where the disposition type is "form-data".  The Content-Disposition
+   header field MUST also contain an additional parameter of "name"; the
+   value of the "name" parameter is the original field name from the
+   form (possibly encoded; see Section 5.1).  For example, a part might
+   contain a header field such as the following, with the body of the
+   part containing the form data of the "user" field:
+
+           Content-Disposition: form-data; name="user"
+
+     For form data that represents the content of a file, a name for the
+   file SHOULD be supplied as well, by using a "filename" parameter of
+   the Content-Disposition header field.  The file name isn't mandatory
+   for cases where the file name isn't available or is meaningless or
+   private; this might result, for example, when selection or drag-and-
+   drop is used or when the form data content is streamed directly from
+   a device.
+
+    4.3.  Multiple Files for One Form Field
+
+   The form data for a form field might include multiple files.
+
+   [RFC2388] suggested that multiple files for a single form field be
+   transmitted using a nested "multipart/mixed" part.  This usage is
+   deprecated.
+
+   To match widely deployed implementations, multiple files MUST be sent
+   by supplying each file in a separate part but all with the same
+   "name" parameter.
+
+   Receiving applications intended for wide applicability (e.g.,
+   multipart/form-data parsing libraries) SHOULD also support the older
+   method of supplying multiple files.
+
+   4.4.  Content-Type Header Field for Each Part
+
+   Each part MAY have an (optional) "Content-Type" header field, which
+   defaults to "text/plain".  If the contents of a file are to be sent,
+   the file data SHOULD be labeled with an appropriate media type, if
+   known, or "application/octet-stream".
+
+4.5.  The Charset Parameter for "text/plain" Form Data
+
+   In the case where the form data is text, the charset parameter for
+   the "text/plain" Content-Type MAY be used to indicate the character
+   encoding used in that part.  For example, a form with a text field in
+   which a user typed "Joe owes <eu>100", where <eu> is the Euro symbol,
+   might have form data returned as:
+
+4.8.  Other "Content-" Header Fields
+
+   The multipart/form-data media type does not support any MIME header
+   fields in parts other than Content-Type, Content-Disposition, and (in
+   limited circumstances) Content-Transfer-Encoding.  Other header
+   fields MUST NOT be included and MUST be ignored.
+
+   Media Type Registration for multipart/form-data
+
+   This section is the media type registration using the template from
+   [RFC6838].
+
+   Type name:  multipart
+
+   Subtype name:  form-data
+
+   Required parameters:  boundary
+
+   Optional parameters:  none
+
+       --AaB03x
+       content-disposition: form-data; name="field1"
+       content-type: text/plain;charset=UTF-8
+       content-transfer-encoding: quoted-printable
+
+       Joe owes =E2=82=AC100.
+       --AaB03x
+
+    example:
+	Key:<content-length> | Value:<193>
+
+    Key:<content-type> | Value:<multipart/form-data; boundary=----WebKitFormBoundary9n0LfczhsvPR5TbF>
+			Body
+	<------WebKitFormBoundary9n0LfczhsvPR5TbF
+	Content-Disposition: form-data; name="datei"; filename="me.txt"
+	Content-Type: text/plain
+
+	i am a file
+
+	------WebKitFormBoundary9n0LfczhsvPR5TbF--
+*/
+
+/*
+    function will check if content-type is a multipart/form-data
+    if it is it will check if boundary was correctly sent.
+    if yes, it will store the delimiter in the headers map as
+    key "form_data_delimiter"
+*/
+bool    Request::_check_content_type_is_form(void)
+{
+    std::string type;
+    std::string boundary_keyword;
+    std::string boundary_value;
+    std::string content_type = get_header_per_key("content-type");
+
+    if (content_type.length() > 0)
+    {
+        type = _extract_until_delimiter(&content_type, ";");
+        if (type.length() > 0 && type.compare("multipart/form-data") == 0)
+        {
+            boundary_keyword = _extract_until_delimiter(&content_type, "=");
+            _remove_leading_whitespace(boundary_keyword);
+            if (boundary_keyword.compare("boundary") == 0)
+            {
+                boundary_value = content_type;
+                if (boundary_value.length() > 0)
+                {
+                    _headers_map["form_data_delimiter"] = boundary_value;
+                    return (true);
+                }
+            }
+            // if you reached this line you failed to find boundary keyword or boundary is empty
+            std::cerr << REDB << "multipart/form-data does not include boundary" << RESET << std::endl;
+            throw BadRequestException();
+
+        }
+    }
+    return (false);
+}
+
+/*
+    will extract a file from inbetween 2 delimiters. It works with a copy
+    from a body as it is destructive
+*/
+// TODO refactor and clean up
+std::string Request::_extract_file_form_between_2delimiters(std::string &body_copy)
+{
+    // size_t idx_start;
+    // size_t idx_end;
+    std::string delimiter = _headers_map["form_data_delimiter"];
+
+
+	delimiter.insert(0, "--");
+	std::string del1 = delimiter;
+	del1.append("\r\n");
+	    // idx_start = body_copy.find_first_of(delimiter);
+    // if (idx_start != std::string::npos)
+    // {
+    //     idx_end = body_copy.find_first_of(delimiter, idx_start + delimiter.length() + 1);
+    //     if (idx_end != std::string::npos)
+    //     {
+            // delimiter.insert(0, "--");
+            std::string first_delimiter = body_copy.substr(0, del1.length());
+
+			//  std::string first_delimiter = _extract_until_delimiter(&body_copy, delimiter);
+            if (first_delimiter.compare(del1) == 0)
+            {
+				body_copy.erase(0, del1.length());
+				std::string del2 = delimiter;
+
+				del2.append("--\r\n");
+                std::size_t pos = body_copy.find(del2);
+    			std::string file_form = body_copy.substr(0, pos );
+				body_copy.erase(0, pos + del2.length());
+				if (file_form.length() > 0)
+                    return file_form;
+            }
+            else
+            {
+                std::cerr << REDB << " sending invalid extra data together with file transfer" << std::endl;
+			    throw BadRequestException();
+            }
+
+
+    //     }
+    // }
+    // // if you reached this line, you could not find the first delimiter or the second
+    // std::cerr << REDB << "File Transfer first(" << idx_start << ") or last(" << idx_end << ") delimiter not found" << std::endl;
+    // throw BadRequestException();
+	return "";
+}
+
+
+void    Request::_extract_files_from_body(void)
+{
+    std::string body_copy = _body; // copy for destructive extract process
+    std::string form_data;
+    while (body_copy.length() > 0) // for multiple files
+    {
+        form_data.clear();
+        form_data = _extract_file_form_between_2delimiters(body_copy);
+        std::cout << "form_data is <" << form_data << "> and size is " << form_data.length() << std::endl; // TODO remove
+    }
+}
 
 
 // ---------------- Getters/Setters  -----------------//
@@ -1646,7 +1864,7 @@ std::string		    Request::get_body(void) const
 
     RFC 2616 - 4.2 Message Headers
     Field names
-    are case-insensitive 
+    are case-insensitive
     An HTTP/1.1 user agent MUST NOT preface
     or follow a request with an extra CRLF.  If terminating the request
     message body with a line-ending is desired, then the user agent MUST

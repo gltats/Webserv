@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/19 21:18:55 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/20 21:12:12 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,11 @@ class Request
         // Chunked Body
         void                _convert_content_length(void);
         void                _process_chunk(std::string str);
+
+        // File Transfer
+        bool                _check_content_type_is_form(void);
+        void                _extract_files_from_body(void);
+        std::string         _extract_file_form_between_2delimiters(std::string &body_copy);
 
 
     public:

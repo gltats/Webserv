@@ -6,12 +6,19 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/19 21:32:49 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/20 20:18:45 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserver.hpp"
 
+// TODO keepalive_timeout and keepalive_requests 
+/*
+The default values for keep-alive connections in Nginx are as follows:
+
+keepalive_timeout: By default, Nginx sets this to 75 seconds.
+keepalive_requests: By default, Nginx sets this to 100 requests per keep-alive connection.
+*/
 // TODO Chunk extensions and passing key,values within
 // TODO File Transfer with multipart/form-data
 // TODO check Response code from Arafa and help
