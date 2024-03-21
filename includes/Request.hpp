@@ -161,6 +161,9 @@ class Request
         // received, it will return a string,∫ otherwise ""
         std::string         get_header_per_key(std::string header_key) const;
 
+        // Get id of the server who sent the request
+        int                get_server_id(void) const;
+
         int                 get_error(void) const;
 };
 

@@ -136,7 +136,7 @@ general-header = Cache-Control            ; Section 14.9
 // 	std::cout << "Response default constructor" << std::endl;
 // }
 
-Response::Response(ConfigParser &configParser, Request &_request, char *env[]): _configParser(configParser)
+Response::Response(ConfigParser &configParser, Request &request, char *env[]): _configParser(configParser), _request(request)
 {
 	// to avoid error of unused argumentss
 	if (_configParser.get_listen(0).length() != 0 || _request.get_method().compare("Hi") == 0 || env == 0)
@@ -197,10 +197,12 @@ void	Response::_setup_response(char *env[])
 // 	return (_response);
 // }
 
-void	Response::create_response(Request const &req, char *env[])
+void	Response::create_response(int server_id, char *env[])
 {
+	if (server_id == -1) // consume as it unused at the moment
+		std::cout << "" << std::endl; 
 	_setup_response(env);
-	_parse_response(req);
+	_parse_response(_request);
 
 }
 

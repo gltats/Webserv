@@ -76,12 +76,14 @@ class Response
 	private:
 
 		ConfigParser 						&_configParser;
+		Request								&_request;
 
 		// int									_status;
 		std::string							_html_content;
 		size_t								_html_content_size;
 		std::string							_status_line;
 		std::string							_response;
+
 		char 								**_envp;
 		std::map<std::string, std::string>	_error_page_map;
 		std::map<std::string, std::string>	_response_status_map;
@@ -95,12 +97,12 @@ class Response
 
 
 	public:
-		Response(ConfigParser &configParser, Request &_request, char *env[]);
+		Response(ConfigParser &configParser, Request &request, char *env[]);
 
 
 
 		~Response(void);
-		void								create_response(Request const &req, char *env[]);
+		void								create_response(int server_id, char *env[]);
 
 		std::string							get_response(void) const;
 		std::string							get_html_content(void) const;

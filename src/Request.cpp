@@ -1817,6 +1817,13 @@ std::string		    Request::get_body(void) const
     return (_body);
 }
 
+int                Request::get_server_id(void) const
+{
+    return (_server_id);
+}
+
+
+
 
 /*
     RFC7231

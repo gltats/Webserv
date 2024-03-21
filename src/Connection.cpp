@@ -93,7 +93,7 @@ void		Connection::send_response(void)
 
 	size_t	send_size = 0;
 
-	_response.create_response(_request, _env);
+	_response.create_response(_request.get_server_id(), _env);
 
 	if (_response.get_response().length() > 0)
 	{
