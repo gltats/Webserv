@@ -5,10 +5,18 @@
 <h1>My First Heading: server 01</h1>
 <p>server name devserver.de port 4033</p>
 
-<!-- Mithilfe des accept-Attributs kann angegeben werden, welche Dateitypen für den Upload vorgesehen sind. Sie können in diesem Attribut eine durch Komma getrennte Liste von Dateitypangaben hinterlegen, Dateityp können Sie auf Computern, die Extensions benutzen, eine File Extension (.txt, .png, .exe) verwenden, eine MIME-Typangabe (text/plain) oder eine MIME-Typ Sammelangabe ("audio/*).  -->
-<form method="post" enctype="multipart/form-data">
+<!-- to restrict the data types to be send -->
+<!-- <form method="post" enctype="multipart/form-data">
     <label>Choose a file (*.txt, *.html) from your computer.
       <input name="datei" type="file" size="50" accept="text/*"> 
+    </label>  
+    <button>Click here to send to server (Post)!</button>
+  </form> -->
+
+<!-- allows every data type -->
+  <form method="post" enctype="multipart/form-data">
+    <label>Choose a file from your computer:
+        <input name="file" type="file" size="50">
     </label>  
     <button>Click here to send to server (Post)!</button>
   </form>

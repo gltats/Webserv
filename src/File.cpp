@@ -40,10 +40,12 @@ File &File::operator=(File const &rhs)
 
 std::ostream & operator<<(std::ostream & o, const File &f)
 {
+    o << "---File Metadata---" << std::endl;
 	o << "Content-Disposition = <" <<  f.get_content_disposition() << ">" << std::endl;
 	o << "name = <" <<  f.get_name() << ">" << std::endl;
 	o << "filename = <" <<  f.get_filename() << ">" << std::endl;
 	o << "Content-Type = <" <<  f.get_content_type() << ">" << std::endl;
+    std::cout << "----- ----- " << std::endl;
 	return o;
 }
 
@@ -73,6 +75,11 @@ std::string File::get_content_type(void) const
     return(_content_type);
 }
 
+std::string File::get_content(void) const
+{
+    return(_content);
+}
+
 void File::set_fd(int nb)
 {
     _fd = nb;
@@ -96,6 +103,11 @@ void File::set_filename(std::string str)
 void File::set_content_type(std::string str) 
 {
     _content_type = str;
+}
+
+void File::set_content(std::string str) 
+{
+    _content = str;
 }
 
 

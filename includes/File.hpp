@@ -23,6 +23,7 @@ class File
         std::string _name;
         std::string _filename;
         std::string _content_type;
+        std::string _content;
 
     public:
         File(void);
@@ -35,12 +36,14 @@ class File
         std::string get_name(void) const;
         std::string get_filename(void) const;
         std::string get_content_type(void) const;
+        std::string get_content(void) const;
 
         void        set_fd(int fd);
         void        set_content_disposition(std::string str);
         void        set_name(std::string str);
         void        set_filename(std::string str);
         void        set_content_type(std::string str);
+        void        set_content(std::string str);
 };
 
 std::ostream & operator<<(std::ostream & o, const File &f);

@@ -79,7 +79,8 @@
 		"response_logic": "c",
 		"set": "cpp",
 		"__memory": "cpp",
-		"execution": "cpp"
+		"execution": "cpp",
+		"list": "cpp"
 	},
 	"42header.email": "mgranero@student.42wolfsburg.de",
 	"42header.username": "mgranero",

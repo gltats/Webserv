@@ -48,7 +48,7 @@
 #define MAX_FIELD_NAME_LEN 256
 #define MAX_FIELD_VALUE_LEN 512
 
-#define MAX_BODY_SIZE 2
+#define MAX_BODY_SIZE 2000000  // TODO Max body size diagnostic not working. is it commented out?
 
 bool        _allow_GET = true;
 bool        _allow_POST = true;
@@ -401,12 +401,12 @@ void    check_protocol(void)
 {
     if (_protocol.length() == 4 && _protocol.compare("HTTP") == 0)
     {
-        std::cout << CYAN << "Valid Protocol <" << _protocol << ">" << RESET << std::endl;
+        std::cout << CYAN << "Valid Protocol <" << _protocol << ">" << RESET << std::endl; // TODO refactor to remove
     }
     else
     {
-        std::cerr << REDB << "Invalid Protocol <" << _protocol << ">" << RESET << std::endl;
-        throw BadRequestException();
+        std::cerr << REDB << "Invalid Protocol <" << _protocol << ">" << RESET << std::endl;// TODO refactor to remove
+        throw BadRequestException(); 
     }
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/21 19:57:15 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/22 19:56:26 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,11 @@ void                Request::parse_request(char const *buffer)
 
     try
     {
+                std::cout << "request full is <" << request_buffer << "> and lenght is " << request_buffer.length() << std::endl; // remove
+
+
         _split_headers_body(request_buffer);
+
 
         // parse first line -> request line
         line = _extract_until_delimiter(&_headers, "\r\n");
@@ -1094,13 +1098,14 @@ void                Request::_process_body(std::string body)
      // if header content len is passed, convert content length to long
     if (get_header_per_key("Content-Length").length() > 0)
     {
-        _convert_content_length();
-        if (_content_len != _body.length())
-        {
-            std::cerr << REDB  << "mismatch from Content-Header field value and actual body length received. _content_len :" <<_content_len << ", body length: " << _body.length() << RESET << std::endl;
-            throw BadRequestException();
-        }
-        else if (_content_len > MAX_BODY_SIZE)
+        // _convert_content_length(); // TODO analyse and uncomment
+        // if (_content_len != _body.length())
+        // {
+        //     std::cerr << REDB  << "mismatch from Content-Header field value and actual body length received. _content_len :" <<_content_len << ", body length: " << _body.length() << RESET << std::endl;
+        //     throw BadRequestException();
+        // }
+        // else 
+        if (_content_len > MAX_BODY_SIZE)
         {
             std::cerr << REDB << "body is bigger than define max body size in ConfigFile" << RESET << std::endl;
             throw RequestEntityTooLargeException();
@@ -1641,16 +1646,18 @@ void    Request::_extract_file_data(std::string form_data)
     value = _extract_until_delimiter(&form_data, ";");
     _remove_leading_whitespace(value);
     _remove_trailing_whitespace(value);
+    std::cout << "Content-disposition value is <" << value << ">" << std::endl;
     if (value.compare("form-data"))
     {
-        std::cerr << REDB << "File Transfer Content Disposition not supported" << RESET << std::endl;
+        std::cerr << REDB << "File Transfer Content Disposition not supported" << RESET << std::endl; 
         throw NotImplemented(); // TODO is this the best exception
     }
     file.set_content_disposition(value);
 
+    
     // name
     key = _extract_until_delimiter(&form_data, "=");
-    if (key.compare("name") != 0)
+    if (key.compare(" name") != 0)
     {
         std::cerr << REDB << "File Transfer name not found" << RESET << std::endl;
         throw BadRequestException();
@@ -1658,16 +1665,19 @@ void    Request::_extract_file_data(std::string form_data)
     value = _extract_until_delimiter(&form_data, ";");
     _remove_leading_whitespace(value);
     _remove_trailing_whitespace(value);
+
     if (value.length() == 0)
     {
         std::cerr << REDB << "File Transfer name value is empty" << RESET << std::endl;
         throw BadRequestException(); 
     }
+    value.erase(0, 1); // remove " at the begin
+    value.erase(value.length() - 1, 1); // remove " at the end
     file.set_name(value);
 
     //filename
     key = _extract_until_delimiter(&form_data, "=");
-    if (key.compare("filename") != 0)
+    if (key.compare(" filename") != 0)
     {
         std::cerr << REDB << "File Transfer filename not found" << RESET << std::endl;
         throw BadRequestException();
@@ -1675,12 +1685,16 @@ void    Request::_extract_file_data(std::string form_data)
     value = _extract_until_delimiter(&form_data, "\r\n");
      _remove_leading_whitespace(value);
     _remove_trailing_whitespace(value);
+    value.erase(0,1); // remove " at the begin
+    value.erase(value.length() - 1, 1); // remove " at the end
+
     if (value.length() == 0)
     {
         std::cerr << REDB << "File Transfer filename value is empty" << RESET << std::endl;
         throw BadRequestException(); 
     }
     file.set_filename(value);
+
 
     //content-type
     key = _extract_until_delimiter(&form_data, ":");
@@ -1692,6 +1706,7 @@ void    Request::_extract_file_data(std::string form_data)
     value = _extract_until_delimiter(&form_data, "\r\n");
      _remove_leading_whitespace(value);
     _remove_trailing_whitespace(value);
+
     if (value.length() == 0)
     {
         std::cerr << REDB << "File Transfer Content-Type value is empty" << RESET << std::endl;
@@ -1700,8 +1715,29 @@ void    Request::_extract_file_data(std::string form_data)
     // TODO check the Content Type for valid/supported/implemented content types MIMEs for file transfer
     file.set_content_type(value);
 
-    std::cout << "File metadata is: " << std::endl << file << std::endl; // TODO remove 
     
+    // remove empty line from content begin
+    form_data.erase(0, 2);
+    form_data.erase(form_data.length() -3, 3);
+    file.set_content(form_data);
+
+     std::cout << "File metadata is: " << std::endl << file << std::endl; // TODO remove 
+    std::cout << "file contents <" << file.get_content() << ">" << std::endl; // TODO remove
+    
+
+
+    std::string path_filename = "./database/";
+    path_filename.append(file.get_filename());
+    
+        std::ofstream ofs;
+    ofs.open (path_filename.c_str(), std::ofstream::out | std::ofstream::trunc);
+
+    ofs << file.get_content();
+
+    ofs.close();
+    _file_transfer_list.push_back(file);
+
+
 }
 
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/21 19:58:58 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/22 21:12:42 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,11 @@ File Transfer name not found
 Exception: Status 400, Bad Request
 
 */
+
+// TODO if errror in sendv, recv, read, write client is removed
+
+// TODO if errror in sendv, recv, read, write check return value for 0 and -1
+// TODO check for errno after a read or write
 
 // TODO keepalive_timeout and keepalive_requests 
 /*
