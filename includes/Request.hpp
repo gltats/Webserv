@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/21 19:38:34 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 11:34:23 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,8 @@ class Request
         void                _check_field_value_obs_fold(std::string field_value);
         void                _split_headers_body(std::string &buffer);
 
-        size_t              _convert_str2size_t(std::string str); // move to library convertions
-        size_t              _convert_str2hex(std::string str); // move to library convertions
+        size_t              _convert_str2size_t(std::string str); // TODO move to library convertions
+        size_t              _convert_str2hex(std::string str); // TODO move to library convertions
 
         void                _identify_server(void);
 
@@ -170,7 +170,7 @@ class Request
         int                 get_error(void) const;
 };
 
-/* move to the webserv exceptions file */
+/* move to the webserv exceptions file */ // TODO move to exceptions file and also remove declaration and implementation which are now together in the header
 class MethodNotAllowedException: public std::exception
 {
 	public:

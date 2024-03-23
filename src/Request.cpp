@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/22 19:56:26 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 11:28:46 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,26 @@ Request::Request(Connection &connection): _connection(connection)
 {
     _cleanMemory();
 
+    // allowed methods:  getLocationValue(i, j, "allow_methods")
+
+    // std::cout << CYAN <<  "allow methods Get <" << connection.get_configParser().getServerParameters() 
+    // if (_config_map["allow_GET"].compare("y") == 0)
+	// 	_allow_GET = true;
+	// else
+	// 	_allow_GET = false;
+
+	// if (_config_map["allow_POST"].compare("y") == 0)
+	// 	_allow_POST = true;
+	// else
+	// 	_allow_POST = false;
+
+	// if (_config_map["allow_DELETE"].compare("y") == 0)
+	// 	_allow_DELETE = true;
+	// else
+	// 	_allow_DELETE = false;
+
     // for testing: must come from configParser
+    // TODO get allow methods from ConfigParser
     _allow_GET = true; // get from configParser
     _allow_POST = true; // get from configParser
     _allow_DELETE = true; // get from configParser
@@ -188,7 +207,7 @@ first server block encountered in the configuration that is listening on the req
 */
 void    Request::_identify_server(void)
 {
-    int             nb_of_servers = _connection.get_configParser().get_nb_of_servers();
+    int             nb_of_servers = _connection.get_configParser().getSize();
     int             socket = _connection.get_server_socket();
     int             *servers_fd = _connection.get_servers_fd();
 
@@ -204,18 +223,19 @@ void    Request::_identify_server(void)
     {
         if (socket == servers_fd[i]) // should not look for server_fd ERRADO
         {
-			if (_connection.get_configParser().get_server_name(i).compare(get_hostname()) == 0)
+			if (_connection.get_configParser().getParameterValue(i, "server_name").compare(get_hostname()) == 0)
             {
                 _server_id = i;
                 return ;
             }
 
 			// save the server_id with a default flag, if any
-			if (_connection.get_configParser().get_default_server(i).compare("y") == 0)
-			{
-				default_flag = i; // save server id which has a default_server flag
-				once = true; // fallback not necessary as a server is defined as default
-			}
+            // TODO uncomment when tatiana implements default_server flag
+			// if (_connection.get_configParser().get_default_server(i).compare("y") == 0)
+			// {
+			// 	default_flag = i; // save server id which has a default_server flag
+			// 	once = true; // fallback not necessary as a server is defined as default
+			// }
 
 			// get first server with the port in case of fallback necessary
             if (once == false)
@@ -251,10 +271,10 @@ void    Request::_identify_server(void)
 void	Request::_check_valid_port(void)
 {
 	// check port matches the socket port
-	if (_connection.get_configParser().get_listen(_server_id).compare(get_port()) != 0)
+	if (_connection.get_configParser().getParameterValue(_server_id, "listen").compare(get_port()) != 0)
 	{
 		print_error("Error in Port in request does not match socket port");
-		std::cout << REDB << "Socket port '" << _connection.get_configParser().get_listen(_server_id) << "', server_id" << _server_id << std::endl;
+		std::cout << REDB << "Socket port '" << _connection.get_configParser().getParameterValue(_server_id, "listen") << "', server_id" << _server_id << std::endl;
 		std::cout << REDB << "Request Host port '" << get_port() <<  "'" << std::endl;
 		throw BadRequestException();
 	}
@@ -264,10 +284,10 @@ void	Request::_check_valid_port(void)
 void	Request::_check_valid_hostname(void)
 {
 	// check port matches the socket hostname
-	if (_connection.get_configParser().get_server_name(_server_id).compare(get_hostname()) != 0)
+	if (_connection.get_configParser().getParameterValue(_server_id, "server_name").compare(get_hostname()) != 0)
 	{
 		print_error("Error in Hostname in request does not match server name");
-		std::cout << REDB << "Server hostname'" << _connection.get_configParser().get_server_name(_server_id) << "', server_id" << _server_id << std::endl;
+		std::cout << REDB << "Server hostname'" << _connection.get_configParser().getParameterValue(_server_id, "server_name") << "', server_id" << _server_id << std::endl;
 		std::cout << REDB << "Request hostname '" << get_hostname() <<  "'" << std::endl;
 		throw BadRequestException();
 	}

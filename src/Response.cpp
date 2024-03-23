@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/14 21:49:37 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 11:34:51 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,21 +139,14 @@ general-header = Cache-Control            ; Section 14.9
 Response::Response(ConfigParser &configParser, Request &request, char *env[]): _configParser(configParser), _request(request)
 {
 	// to avoid error of unused argumentss
-	if (_configParser.get_listen(0).length() != 0 || _request.get_method().compare("Hi") == 0 || env == 0)
+	if (_configParser.getParameterValue(0, "listen").length() != 0 || _request.get_method().compare("Hi") == 0 || env == 0)
 		std::cout << "";
 
 
 	_html_content_size = 0;
 	_html_content.clear();
 	_response.clear();
-	// map default error pages number and path
 
-	map_default_error_pages(_error_page_map);
-
-	map_reponse_status(_response_status_map);
-
-	// if (_config_map["autoindex"].compare("on") == 0)
-	// 	std::cout << "used config_map to avoid unused variable error" << std::endl;
 
 	std::cout << "Response default constructor" << std::endl;
 

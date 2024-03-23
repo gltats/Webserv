@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/14 15:32:29 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 11:36:17 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,10 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdlib.h> // for exit
-#include <cerrno> // for errno : only pre-development
-// #include <netinet/in.h> // for sockaddr_un support
-// #include <sys/socket.h> // for sockaddr_un support
-#include <sys/un.h> // for sockaddr_un support
-#include <arpa/inet.h> // for htons...
-
+#include <stdlib.h> 
+#include <cerrno>
+#include <sys/un.h> 
+#include <arpa/inet.h> 
 #include "color_code.hpp"
 #include "Request.hpp"
 #include "Response.hpp"

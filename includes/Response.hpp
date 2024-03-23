@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/14 14:46:37 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 11:33:08 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,9 +37,9 @@
 
 #include <sstream>
 #include <unistd.h>
-#include <fcntl.h> // open
+#include <fcntl.h>
 #include <map>
-#include <stdlib.h> // for exit
+#include <stdlib.h>
 
 #include "Request.hpp"
 #include "map.hpp"
@@ -98,8 +98,6 @@ class Response
 
 	public:
 		Response(ConfigParser &configParser, Request &request, char *env[]);
-
-
 
 		~Response(void);
 		void								create_response(int server_id, char *env[]);

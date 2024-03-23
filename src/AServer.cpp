@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "AServer.hpp"
 
 // Server::Server(void)
 // {
@@ -33,13 +33,13 @@ Server::Server(int server_index, ConfigParser &configParser, char *env[]): _serv
 
 	// configParser.build_map();
 
-	std::cout << " Nb of servers " << configParser.get_nb_of_servers() << std::endl;
-	for (int i = 0; i < configParser.get_nb_of_servers(); i++)
+	std::cout << " Nb of servers " << configParser.getSize() << std::endl;
+	for (int i = 0; i < configParser.getSize(); i++)
 	{
 			std::cout << std::endl;
 			std::cout << " -- Server " << i << " -- " << std::endl;
-			std::cout << "listen port : " << configParser.get_listen(i) << std::endl;
-			std::cout << "server name : " << configParser.get_server_name(i) << std::endl;
+			std::cout << "listen port : " << configParser.getParameterValue(i, "listen") << std::endl;
+			std::cout << "server name : " << configParser.getParameterValue(i, "server_name") << std::endl;
 	}
 
 

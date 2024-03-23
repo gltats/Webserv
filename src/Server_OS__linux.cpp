@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/14 15:34:42 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 10:45:45 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int	_is_port_already_set(int port, int *array_ports_set, int size_array)
 	return (-1);
 }
 
-ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env), _nb_of_servers(configParser.get_nb_of_servers())
+ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env), _nb_of_servers(configParser.getSize())
 {
 	std::string		key;
 	std::string		value;
@@ -63,7 +63,7 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 	for (int i = 0; i < _nb_of_servers; i++)
 	{
 		std::cout << std::endl;
-		port = str2int(configParser.get_listen(i));
+		port = str2int(configParser.getParameterValue(i, "listen"));
 		// we can have doubled ports for different servers, but their socket must be set once per port
 		int index = _is_port_already_set(port, port_array, _nb_of_servers);
 		if (index == -1) // if new port create a new socket and set _server_fd_port_name

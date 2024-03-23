@@ -35,12 +35,6 @@ class Server
 		int									_server_index;
 		ConfigParser 						&_configParser;
 
-
-		// std::string 						_server_port;
-		// std::string							_server_name;
-
-		// int									_server_socket;
-		// int									_connection_socket;
 		int									_max_backlog_queue;
 
 		char								**_env;
@@ -66,14 +60,6 @@ class Server
 
 		virtual void						launch_webserver(void)  = 0;
 
-
-		// int									get_server_socket(void) const;
-		// std::string							get_server_name(void) const;
-		// std::string							get_server_port(void) const;
-
-		// bool								get_allow_GET(void) const;
-		// bool								get_allow_POST(void) const;
-		// bool								get_allow_DELETE(void) const;
 		virtual void	   					 close_server_socket(int fd) = 0;
 
 };

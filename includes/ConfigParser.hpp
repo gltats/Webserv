@@ -65,4 +65,6 @@ public:
 	std::string getParameterValue(size_t serverIndex, const std::string &parameterKey);
 	std::string getLocationValue(size_t serverIndex, size_t locationIndex, const std::string &key);
 
+
+	void setSize(int nb); // TODO remove : from Maira
 };

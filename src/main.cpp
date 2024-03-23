@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/22 21:12:42 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 11:21:15 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,32 +163,37 @@ root@91711e67e4c7:/42PROJECT#
 
 int	main(int argc, char *argv[], char *env[])
 {
-	std::string path_configfile;
-	// if (argc != 2)
-	// {
-	// 	path_configfile = "config/default,conf";
-	// }
-	// else if (argc == 2 && strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0))
-	// {
-	// 	sd::cout << REDB << "Please pass a configuration file to the webserver.\nFor example: ./webserver configs/single.conf" << std::endl;
-	// 	print_error_error_exit("or run without arguments to use config/default -> ./webserver", 1);
-	// }
-	// else
-	// {
-	// 	path_configfile = argv[1];
-	// }
-	// consume
-	if (argv[0] == 0 || argc == 0)
-		return (1);
+    std::string		config;
+    ConfigParser configParser;
+	
+	if(argc == 1 || argc == 2)
+    {
+        config = (argc == 1 ? "configs/default.conf" : argv[1]);
+       	try 
+		{
+	    	configParser.getConfig(config);
+		}
+		catch (const std::invalid_argument& e)
+		{
+			std::cerr << REDB << "webserver Parser: " << e.what() << RESET << std::endl;
+		}
+		catch (const std::runtime_error& e)
+		{
+			std::cerr << REDB << "webserver Parser: " << e.what() << RESET << std::endl;
+		}
+    }
+    else
+    {
+		std::cout << REDB << "Wrong arguments" << RESET << std::endl;
+		exit(1);
+	}   
 
-	std::cout << RESET;
-
- 	ConfigParser configParser;
-	// try {
-	// 	configParser.getConfig(argv[1]);
-	// } catch (const std::invalid_argument& e) {
-	// 	std::cerr << "webserver Parser: " << e.what() << std::endl;
-	// }
+	configParser.setSize(2); // TODO: remove this once nb of servers is available
+	if (configParser.getSize() == 0)
+	{
+		std::cerr << REDB << "No valid Server Configurations passed to the webserver" << RESET << std::endl;
+		exit(1);
+	}
 
 
 	//setup signal handler
