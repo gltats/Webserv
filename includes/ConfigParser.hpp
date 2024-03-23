@@ -1,45 +1,68 @@
+/**
+ * @ Author: Gl.tats
+ * @ Create Time: 2023-12-21 16:17:33
+ * @ Modified by: Gltats
+ * @ Modified time: 2024-02-05 17:07:40
+ * @ Description: webserv
+ */
 
-// MOCK Config Parser
-#ifndef CONFIG_PARSER_HPP
-#define CONFIG_PARSER_HPP
+#pragma once
 
-#include <map>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <sys/stat.h>
 #include <string>
+#include <unistd.h>
+#include <exception>
+#include <vector>
+#include <map>
+#include <set>
+#include <cctype>
+
+#include "ConfigFile.hpp"
+
+class ConfigFile;
+
+static std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "autoindex", "indexing", "cgi"};
 
 class ConfigParser
 {
-    private:
-        std::map<int, std::map<std::string, std::string> >   _server_map;
-        int                                                  _nb_servers;
-    public:
-        ConfigParser(void);
-        ~ConfigParser(void);
+private:
+	std::string _path;
+	size_t _size;
 
-        std::string get_server_map_key(int server_id, std::string);
+public:
+	std::map<std::string, std::string> parameters;
+	std::vector<std::string> servers;
+	std::vector<std::map<std::string, std::string> > serverParameters;
+	std::vector<std::vector<std::map<std::string, std::string> > > serverLocations;
+	std::set<std::string> listenValues;
+	ConfigParser();
+	ConfigParser(std::string const ConfigParser);
+	ConfigParser(const ConfigParser &copy);
+	ConfigParser &operator=(const ConfigParser &copy);
+	~ConfigParser();
+	void getConfig(const std::string &file);
+	std::map<std::string, std::string> parseParameters(const std::string &serverConfig);
+	std::vector<std::map<std::string, std::string> > parseLocations(const std::string &serverConfig);
+	
+	bool isDigit(const std::string &str);
 
-        int         get_nb_of_servers(void) const;
+	void checkCorrectParameters(std::map<std::string, std::string> parameters);
+	void splitServers(std::string &content);
+	void removeWhiteSpace(std::string &content);
+	void removeNewLines(std::string &content);
+	void removeComments(std::string &content);
 
-        std::string get_listen(int server_id) const;
 
-        std::string get_server_name(int server_id) const;
-
-        std::string get_error_page404(int server_id) const;
-
-        std::string get_allow_GET(int server_id) const;
-
-        std::string get_allow_POST(int server_id) const;
-
-        std::string get_allow_DELETE(int server_id) const;
-
-        std::string get_allow_autoindex(int server_id) const;
-
-        std::string get_allow_index(int server_id) const;
-
-        std::string get_allow_cgi(int server_id) const;
-
-        std::string get_default_server(int server_id) const; // new! y or n
-
+	bool isFileExistAndReadable(std::string const path, std::string const index);
+	bool fileOpen(std::ifstream &configFile);
+	void print();
+	std::string getPath();
+	int getSize();
+	std::map<std::string, std::string> &getServerParameters(size_t index);
+	std::string getParameterValue(size_t serverIndex, const std::string &parameterKey);
+	std::string getLocationValue(size_t serverIndex, size_t locationIndex, const std::string &key);
 
 };
-
-#endif
