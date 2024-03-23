@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 11:21:15 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 16:36:36 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ keepalive_requests: By default, Nginx sets this to 100 requests per keep-alive c
 */
 // TODO Ask Tatiana to add the server_default flag recognition as y or n
 // TODO tatiana file upload front end
-// TODO Talk to Arafa about the mime.types
+// DONE Talk to Arafa about the mime.types
 // TODO Ask tatiana to add 411 page LengthRequiredException
 // INFO risk: if python does not find the file it hangs (with Maira MVP for response) 
 

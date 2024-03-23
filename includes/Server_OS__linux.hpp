@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 18:07:41 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 11:32:54 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 15:21:46 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 
 # include "AServer.hpp"
 
+#define MAXMSG 8192*200
+
 class ServerOS : public Server
 {
     private:
@@ -25,10 +27,13 @@ class ServerOS : public Server
         int                                                    *_servers_fd; // TODO can i remove it and replace by _server_fd_port_name?
         
         int                                                    _nb_of_servers;
+        int                                                        _flags_recv;
 
         std::map<int, int>                                     _server_fd_port;
+        std::map<int, int>                               _cgi_fd_2_connection_fd;
       
-         bool	           _is_a_server_socket(int fd) const;
+        bool	           _is_a_server_socket(int fd) const;
+        bool	           _is_key_in_map(std::map<int, Connection *> *map, int key);
 
         
         void	           _print_epoll_events(uint32_t event, int fd);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 10:45:45 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 16:55:42 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 	int				*port_array;
 	int 			port;
 	std::string 	identity;
+
+	_flags_recv = 0;
 
 	// create an epoll instance in a file descriptor
 	_epoll_fd = epoll_create(1);	 // argument is obsolete and must be >0
@@ -228,7 +230,7 @@ void	ServerOS::_close_connection(int _epoll_fd, int fd_to_remove, struct epoll_e
 
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd_to_remove, &ev_ref) == -1)
 	{
-		std::cerr << REDB <<  "Error:\n epoll_ctl server socket could not be set to monitored file descriptor list" << RESET << std::endl;
+		std::cerr << REDB <<  "Error:\n epoll_ctl connection fd could not be removed from monitored file descriptor list" << RESET << std::endl;
 		throw ServerCriticalError();
 	}
 	// delete allocated Connection
@@ -282,6 +284,12 @@ bool	ServerOS::_is_a_server_socket(int fd) const
 	return (false);
 }
 
+bool	ServerOS::_is_key_in_map(std::map<int, Connection *> *map, int key)
+{
+	if (map->find(key) == map->end())
+		return (false);
+	return (true);
+}
 
 /*
 	EPOLLIN: Event file descriptor is available to read
@@ -369,8 +377,8 @@ void	ServerOS::_loop(void)
 						continue;
 					}
 					// set connection socket to nonblock too
-					int flags = fcntl(client_fd, F_GETFL, 0, 0); // remove - illegal function
-					fcntl(client_fd, F_SETFL, flags | O_NONBLOCK); // remove - illegal function
+					int flags = fcntl(client_fd, F_GETFL, 0, 0); // TODO is illegal function
+					fcntl(client_fd, F_SETFL, flags | O_NONBLOCK); // TODO is illegal function
 
 					// add file descriptor to be monitored
 					_ev_server.data.fd = client_fd;
@@ -391,30 +399,116 @@ void	ServerOS::_loop(void)
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
 					std::cout << "Client PORT: " << _fd2client_map[client_fd]->get_client_port() << std::endl;
 				}
-				else // Request is from a already connected client
+				else // file descriptor ready to read
 				{
-					try
+					bool is_cgi = false;
+					char buffer[MAXMSG];
+					int size_data_recv = 0;
+					// int fd_read = -1;
+
+					clear_memory(buffer, MAXMSG);
+			
+					if (_is_key_in_map (&_fd2client_map, ep_event[i].data.fd))
 					{
-						_fd2client_map[ep_event[i].data.fd]->receive_request();
+						is_cgi = false;
+						// fd_read = ep_event[i].data.fd;
+					}
+					else
+					{
+						is_cgi = true;
+						
+						// reading returned values from cgi pipe. 
+						// dup2(_response.get_fd_pipe_0(), STDIN_FILENO);
+						// fd_read = STDIN_FILENO;	
+						// fd_read = _response.get_fd_pipe_0();
+						
+						// if a fd from the cgi read pipe read, find the matching connection and process cgi response
+					
+					}
+
+					std::cout << CYAN << "about to read in fd " << ep_event[i].data.fd << RESET << std::endl; // TODO remove
+					size_data_recv = recv(ep_event[i].data.fd , buffer, MAXMSG, _flags_recv);
+					if (size_data_recv == -1 || size_data_recv == 0)
+					{
+						std::cout << REDB << "Error to recv : size of received is " << size_data_recv << RESET << std::endl;
+						if (is_cgi == true)
+						{
+							std::cout << REDB << "Closing file descriptor pipe read " << ep_event[i].data.fd << RESET << std::endl;
+							close(ep_event[i].data.fd);
+							// _close_connection(_epoll_fd, _cgi_fd_2_connection_fd[ep_event[i].data.fd], _ev_server);
+						}	
+						else
+						{
+							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
+						}
+						std::cout << REDB << "Closing connection sockets " << ep_event[i].data.fd << " and returning" << RESET << std::endl;
+						
+					}
+
+					if (is_cgi == true) // read from cgi socket
+					{
+						int connection_fd = _cgi_fd_2_connection_fd[ep_event[i].data.fd];
+						// return STDFILE IN to original after reading from pipe
+						_fd2client_map[connection_fd]->process_cgi(buffer, size_data_recv);
+						if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, ep_event[i].data.fd, &_ev_server) == -1)
+						{
+							std::cerr << REDB <<  "Error:\n epoll_ctl pipe read fd could not be removed from file descriptor list" << RESET << std::endl;
+							throw ServerCriticalError();
+						}
+						_cgi_fd_2_connection_fd.erase(ep_event[i].data.fd); // processed - remove from map
+						close(ep_event[i].data.fd); // pipe fd 0
+					}
+					else
+					{
+						// process read from socket
+						_fd2client_map[ep_event[i].data.fd]->parse_request(buffer, size_data_recv);
+
+						if (VERBOSE == 1)
+							_fd2client_map[ep_event[i].data.fd]->print_request();
+						
+						_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(true); // TODO remove? 
+
+
+
 						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 0)
 						{
-							// temporary until request can handle this errors it self
-							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 							print_error("Connection closed. Please retry");
+							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 						}
-					}
-					catch(const InvalidRequest& e)
-					{
-						std::cout << e.what() << std::endl;
-					}
-					catch(const MethodNotSupported& e)
-					{
-						std::cout << e.what() << std::endl;
-					}
-					catch(const std::exception& e)
-					{
-						std::cerr << "Generic Exception during receive_request" << '\n';
-						std::cerr << e.what() << '\n';
+						else
+						{
+
+							_fd2client_map[ep_event[i].data.fd]->create_response();
+
+
+							if (_fd2client_map[ep_event[i].data.fd]->response_is_cgi())
+							{
+
+								int pipe_fd_0 = _fd2client_map[ep_event[i].data.fd]->get_fd_pipe_0();
+								// if the response needs cgi, store the read pipe_fd 0
+								_cgi_fd_2_connection_fd[pipe_fd_0] = ep_event[i].data.fd;
+									// set connection socket to nonblock too
+								
+								//add it to the file descriptors to NONBLOCK  and set it to listened fd
+								int flags = fcntl(pipe_fd_0, F_GETFL, 0, 0); // TODO is illegal function
+								fcntl(pipe_fd_0, F_SETFL, flags | O_NONBLOCK); // TODO is illegal function
+
+								// add file descriptor to be monitored
+								_ev_server.data.fd = pipe_fd_0;
+
+								// add new Connection file descriptor to the list of monitored file descriptors
+								if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, pipe_fd_0, &_ev_server) == -1)
+								{
+									print_error_fd("epoll_ctl. Not possible to add pipe read fd to monitored events lists. fd", pipe_fd_0);
+									std::cout << REDB << "errno " << strerror(errno) << RESET << std::endl;
+									_close_connection(_epoll_fd, pipe_fd_0, _ev_server);
+									print_error("Connection closed. Please retry");
+									continue;
+								}
+
+							}	
+						}
+							
 					}
 				}
 			}
@@ -422,12 +516,15 @@ void	ServerOS::_loop(void)
 
 			else if (ep_event[i].events & EPOLLOUT && _is_a_server_socket(ep_event[i].data.fd) == false && _fd2client_map[ep_event[i].data.fd]->get_is_read_complete())
 			{
+
 				if(_fd2client_map.find(ep_event[i].data.fd) != _fd2client_map.end())
 				// if (_fd2client_map[ep_event[i].data.fd])
 				{
 					try
 					{
+
 						_fd2client_map[ep_event[i].data.fd]->send_response();
+
 					}
 					catch(const ResponseError& e)
 					{
@@ -443,7 +540,9 @@ void	ServerOS::_loop(void)
 					// if keep alive or not: if not remove connection
 					// if (_fd2client_map[ep_event[i].data.fd]->get_connection().compare("keep-alive") != 0)
 					// {
-						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
+						std::cout << "closing connection on fd " <<  ep_event[i].data.fd << std::endl; //TODO
+						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server); // TODO remove
+						//_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(0); // prepare for next request
 					// }
 				}
 				else

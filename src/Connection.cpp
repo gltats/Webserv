@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/21 21:30:39 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 15:53:12 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,31 +57,77 @@ Connection::~Connection(void)
 	}
 }
 
-void				Connection::receive_request(void)
+void				Connection::print_request(void)
 {
-	clear_memory(_buffer_rcv, _buffer_rcv_size);
-
-	_size_data_recv = recv(_connection_socket, _buffer_rcv, _buffer_rcv_size, _flags_recv);
-	if (_size_data_recv == -1)
-	{
-		// std::cout << "Error: to recv. Reason: " << strerror(errno) << " # fd = " << _connection_socket << std::endl;
-		std::cout << "Closing connection sockets " << _connection_socket << " and returning" << std::endl;
-		close(_connection_socket);
-
-		// throw exception
-		return; // at the moment just return
-	}
-	if (_size_data_recv > 0)
-	{
-		_request.parse_request(_buffer_rcv);
-
-		if (VERBOSE == 1)
-			_request.print_request();
-		_is_read_complete = 1;
-	}
-	// else
-	// 	print_error_fd("No request received from connection fd ", _connection_socket);
+	_request.print_request();
 }
+
+void				Connection::create_response(void)
+{
+	_response.create_response(_request.get_server_id());
+}
+
+
+int					Connection::get_fd_pipe_0(void) const
+{
+		return ( _response.get_fd_pipe_0());
+}
+
+// void				Connection::receive_request(void)
+// {
+// 	clear_memory(_buffer_rcv, _buffer_rcv_size);
+
+// 	bool is_cgi_read = false;
+// 	int fd_read = -1;
+
+// 	//if fd from a cgi read
+// 	{
+// 		// reading returned valus from cgi pipe. 
+// 		dup2(_response.get_fd_pipe_0(), STDIN_FILENO);
+// 		fd_read = STDIN_FILENO;
+// 		is_cgi_read = true;
+// 	}
+// 	else
+// 	{
+// 		// read from socket
+// 		fd_read = _connection_socket;
+// 	}
+
+// 	_size_data_recv = recv(fd_read, _buffer_rcv, _buffer_rcv_size, _flags_recv);
+// 	if (_size_data_recv == -1 || _size_data_recv == 0)
+// 	{
+// 		std::cout << REDB << "Error to recv : size of received is " << _size_data_recv << RESET << std::endl;
+// 		std::cout << "Closing connection sockets " << _connection_socket << " and returning" << std::endl;
+// 		close(_connection_socket);
+
+// 		// throw exception
+// 		return; // at the moment just return
+// 	}
+
+// 	if (is_cgi_read == true) // read from cgi socket
+// 	{
+// 		// return STDFILE IN to original after reading from pipe
+// 		_process_response(_buffer_rcv);
+// 	}
+// 	else
+// 	{
+// 		// process read from socket
+// 		_request.parse_request(_buffer_rcv);
+
+// 		if (VERBOSE == 1)
+// 			_request.print_request();
+// 		_is_read_complete = 1;
+// 	}
+	
+
+	
+
+	
+	
+	
+// 	// else
+// 	// 	print_error_fd("No request received from connection fd ", _connection_socket);
+// }
 
 std::string				Connection::get_response(void)
 {
@@ -93,13 +139,15 @@ void		Connection::send_response(void)
 
 	size_t	send_size = 0;
 
-	_response.create_response(_request.get_server_id(), _env);
+	// _response.create_response(_request.get_server_id(), _env);
 
 	if (_response.get_response().length() > 0)
 	{
 		size_t buffer_send_size = _response.get_response().length() + 1;
 		if (VERBOSE == 1)
 			std::cout <<"\tTrying to send to socket " << _connection_socket << ", message size is "<< buffer_send_size << RESET << std::endl;
+
+		std::cout << CYAN << "response is <" << _response.get_response() << ">" << std::endl; // TODO remove
 
 		send_size = send(_connection_socket, _response.get_response().c_str() , buffer_send_size, 0); // this works
 
@@ -119,6 +167,23 @@ void		Connection::send_response(void)
 	}
 	else
 		close(_connection_socket);
+}
+
+void					Connection::process_cgi(char const *buffer, size_t buffer_size)
+{
+	_response.process_cgi(buffer, buffer_size);
+}
+
+void					Connection::parse_request(char const *buffer, size_t buffer_size)
+{
+	if (buffer_size == 0) // not used, consume
+		std::cout << "";
+	_request.parse_request(buffer);
+}
+
+bool					Connection::response_is_cgi(void)
+{
+	return(_response.get_is_cgi());
 }
 
 std::string				Connection::get_connection(void) const

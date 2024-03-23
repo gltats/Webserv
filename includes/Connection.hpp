@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 11:36:17 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 15:26:12 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,14 @@ class Connection
 		bool								is_response_empty(void) const;
 		bool 								get_is_read_complete(void) const;
 		void								set_is_read_complete(bool status); // is it required?
+
+		void								print_request(void);
+		void								create_response(void);
+		int									get_fd_pipe_0(void) const;
+		bool								response_is_cgi(void);
+		void								process_cgi(char const *buffer, size_t buffer_size);
+		void								parse_request(char const *buffer, size_t buffer_size);
+
 
 		std::string							get_client_ip(void) const;
 		std::string							get_client_port(void) const;

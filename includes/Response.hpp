@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 11:33:08 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 15:23:34 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@
 #include <stdlib.h>
 
 #include "Request.hpp"
-#include "map.hpp"
 #include "library.hpp"
 
 
@@ -88,25 +87,37 @@ class Response
 		std::map<std::string, std::string>	_error_page_map;
 		std::map<std::string, std::string>	_response_status_map;
 
+		int 								_fd_stdin;
+		int 								_fd_stdout;
+		int									_fd_pipe[2];
+
+		bool								_is_cgi;
+
 		// Response(Response const &src);
 		Response							&operator=(Response const &rhs);
 		int									_read_file_data(Request const &req);
 		int									_create_status_line(void);
 		void 								_setup_response(char *env[]);
 		void								_parse_response(Request const &req);
+		void								_read_from_cgi(File &file);
 
 
 	public:
 		Response(ConfigParser &configParser, Request &request, char *env[]);
 
 		~Response(void);
-		void								create_response(int server_id, char *env[]);
+		void								create_response(int server_id);
+		void 								process_cgi(char const *buffer, int buffer_size);
+		bool								get_is_cgi(void);
 
 		std::string							get_response(void) const;
 		std::string							get_html_content(void) const;
 		size_t								get_html_size(void) const;
 		std::map<std::string, std::string>	get_error_page_map(void) const;
 		std::map<std::string, std::string>	get_response_status_map(void) const;
+		int									get_fd_stdin(void) const;
+		int									get_fd_pipe_0(void) const;
+
 
 };
 
