@@ -1,0 +1,7 @@
+DELETE /html/index.html HTTP/1.1
+Connection: keep-alive
+Host: localhost:4432
+Content-Length: 10
+
+This body?
+

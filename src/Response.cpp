@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/07 21:28:47 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 20:53:23 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,25 +136,18 @@ general-header = Cache-Control            ; Section 14.9
 // 	std::cout << "Response default constructor" << std::endl;
 // }
 
-Response::Response(int server_index, ConfigParser &configParser, Request &_request, char *env[]): _configParser(configParser)
+Response::Response(ConfigParser &configParser, Request &request, char *env[]): _configParser(configParser), _request(request), _envp(env)
 {
 	// to avoid error of unused argumentss
-	if (_configParser.getSize() != 0 || server_index == -1 || _request.get_method().compare("Hi") == 0 || env == 0)
+	if (_configParser.getParameterValue(0, "listen").length() != 0 || _request.get_method().compare("Hi") == 0 || env == 0)
 		std::cout << "";
 
 
 	_html_content_size = 0;
 	_html_content.clear();
 	_response.clear();
-	// map default error pages number and path
 
-	map_default_error_pages(_error_page_map);
 
-	map_reponse_status(_response_status_map);
-
-	// if (_config_map["autoindex"].compare("on") == 0)
-	// 	std::cout << "used config_map to avoid unused variable error" << std::endl;
-	
 	std::cout << "Response default constructor" << std::endl;
 
 
@@ -176,11 +169,10 @@ Response	&Response::operator=(Response const &rhs)
 	return (*this);
 }
 
-void	Response::_setup_response(char *env[])
+void	Response::_setup_response(void)
 {
 	// std::cout << "Response parametric constructor" << std::endl;
 	_html_content_size = 0;
-	 _envp = env;
 	_html_content.clear();
 	_status_line.clear();
 	_response.clear();
@@ -197,10 +189,12 @@ void	Response::_setup_response(char *env[])
 // 	return (_response);
 // }
 
-void	Response::create_response(Request const &req, char *env[])
+void	Response::create_response(int server_id)
 {
-	_setup_response(env);
-	_parse_response(req);
+	if (server_id == -1) // consume as it unused at the moment
+		std::cout << "" << std::endl; 
+	_setup_response();
+	_parse_response(_request);
 
 }
 
@@ -210,35 +204,42 @@ std::string		Response::get_response(void) const
 }
 
 
+
+void Response::process_cgi(char const *buffer, int buffer_size)
+{
+	if (buffer_size == 0) // consume as it is not used at the moment
+		std::cout << "";
+	// dup2(_response.get_fd_stdin(), STDIN_FILENO); 
+	// create a response
+	// close(_ fd_pipe[0]);
+	_create_status_line();
+
+	// append response
+	_response.append(_status_line);
+	_response.append("Server: Webserv\r\n");
+
+	_response.append(buffer);
+
+}
 void	Response::_parse_response(Request const &req)
 {
 	//  _response ="HTTP/1.1 200 OK\r\nDate: Mon, 27 Jul 2009 12:28:53 GMT\r\nServer: Apache/2.2.14 (Win32)\r\nLast-Modified: Wed, 22 Jul 2009 19:15:56 GMT\r\nContent-Length: 88\r\nContent-Type: text/html\r\nConnection: Closed\r\n\r\n<html><body><h1>Hello, World9</h1></body></html>";
-
+	_is_cgi = false;
 	// check if it is a cgi
 	std::string uri = req.get_uri();
 	if (uri.find("cgi-bin/") != std::string::npos)
 	{
-		/* test if file exists*/
-		// int fd = open("cgi-bin/hello_cgi.py", O_RDONLY );
-		// 	if (fd == -1)
+			_is_cgi = true;
+		_fd_stdin = dup(STDIN_FILENO); // save original stdin
+		_fd_stdout = dup(STDOUT_FILENO); // save original stdin
 
-		// 	{
-		// 		perror("Open CGI Error");
-		// 		close(fd);
-		// 		exit(1);
-		// 	}
-		// 	close(fd);
-
-		int fd_stdin = dup(STDIN_FILENO); // save original stdin
-		int fd_stdout = dup(STDOUT_FILENO); // save original stdin
-
-		int fd_pipe[2];
-		if (pipe(fd_pipe) == -1)
+		if (pipe(_fd_pipe) == -1)
 		{
 			// error
 			std::cout << "Error: pipe creation" << std::endl;
 			return ;
 		}
+		std::cout << "pipe0 is fd" << _fd_pipe[0] << std::endl; //remove 
 		// it is a cgi
 		pid_t pid;
 		pid = fork();
@@ -255,63 +256,34 @@ void	Response::_parse_response(Request const &req)
 			python_path = python_path_mac;
 			if (OS_PATH == LINUX)
 				python_path = python_path_linux;
-			
 
+
+		
+			uri.erase(0, 1);
 			char *exe[3] = {python_path, (char *)uri.c_str(), 0};
 
-			dup2(fd_pipe[1], STDOUT_FILENO);
-			close(fd_pipe[0]);
-			close(fd_pipe[1]);
-			close(fd_stdin);
+			dup2(_fd_pipe[1], STDOUT_FILENO);
+			close(_fd_pipe[0]);
+			close(_fd_pipe[1]);
+			close(_fd_stdin);
 
 			execve(exe[0], exe, _envp);
+			std::cout << REDB << "reason:" << strerror(errno) <<  RESET << std::endl;
 
-			dup2(fd_stdout, STDOUT_FILENO); // return output to stdout to print error
+			dup2(_fd_stdout, STDOUT_FILENO); // return output to stdout to print error
 			std::cout << "Error: CGI could not be executed : " << uri << std::endl;
 			exit(1);
 		}
 		else
 		{
-			dup2(fd_pipe[0], STDIN_FILENO);
-			close(fd_pipe[0]);
-			close(fd_pipe[1]);
-
-			//parent = webserver
-			int MSGSIZE = 8192*2;
-			ssize_t nb_characters;
-			char inbuf[MSGSIZE];
-			clear_memory(inbuf, MSGSIZE);
-			nb_characters = read(STDIN_FILENO, &inbuf, MSGSIZE );
-			if (nb_characters == -1)
-				std::cout << "Received nothing from pipe" << std::endl;
-			// std::cout << "received the following form the pipe '" << inbuf << "'" << std::endl;
-			std::cout << "file content is size " << nb_characters << " (" << int2str(nb_characters) << ")" << std::endl;
-			dup2(fd_stdin, STDIN_FILENO); // return STDFILE IN to original
-			// std::cout << "CGI in buff is :$" << inbuf << "$" << std::endl;
-
-			// create a response
-			_create_status_line();
-
-			// append response
-			_response.append(_status_line);
-			_response.append("Server: Webserv\r\n");
-			// cgi has also a type of data line which means nb_characters is not the size of content but bigger
-			// _response.append("Content-Length: "); 
-			// _response.append(int2str(nb_characters));
-			// _response.append("\r\n");
-			_response.append(inbuf);
-
-			// std::cout << "response looks like this " << std::endl << _response << std::endl;
-
+			waitpid(pid, 0, WNOHANG);
+			close(_fd_pipe[1]);
+			close (_fd_stdin);
+			close(_fd_stdout);
 			return ;
 		}
 
 	}
-
-	// // read html file content
-		// _response.clear();
-
-
 
 	if (_read_file_data(req) == -1)
 		return ;
@@ -329,15 +301,33 @@ void	Response::_parse_response(Request const &req)
 
 	ss_len << "Content-Length: " << _html_content_size +1  << "\r\n";
 	ss_len << "Content-Type: " << "text/html"  << "\r\n";
-	
+
 	_response.append(ss_len.str()); // convert string stream to a string
 
 	_response.append("\r\n"); // empty line
 	_response.append(_html_content);
-	// std::cout << "Response in object is:\n#" << _response  << "#" << std::endl;
-	std::cout << "file content is size " << _html_content_size << " (" << int2str(_html_content_size) << ")" << std::endl;
-	// std::cout << "response is "<< std::endl << _response << std::endl;
+	// std::cout << "file content is size " << _html_content_size << " (" << int2str(_html_content_size) << ")" << std::endl;
 }
+
+
+		
+bool		Response::get_is_cgi(void)
+{
+	return (_is_cgi);
+}
+
+
+int	Response::get_fd_stdin(void) const
+{
+	return (_fd_stdin);
+}
+
+
+int	Response::get_fd_pipe_0(void) const
+{
+	return (_fd_pipe[0]);
+}
+
 
 Response::~Response(void)
 {
@@ -356,16 +346,14 @@ int	Response::_read_file_data(Request const &req)
 	// std::string			fcontent;
 
 	// std::cout << "...trying to open <" <<req.get_uri() << ">" << std::endl;
-	
+
 	html_file.open(file.c_str(), std::ifstream::in);
 	if (html_file.is_open() == 0)
 	{
 		std::cout << REDB << "Error: _get_file_data. File could not be openned" << RESET << std::endl;
-		// return (-1);
 
 		// at the moment the path to the style and img are not matching the current structure.
 		_error_page_map["404"];
-		// html_file.open(_error_page_map["404"], std::ifstream::in);
 		html_file.open("./html/error404.html", std::ifstream::in);
 
 		if (html_file.is_open() == 0)

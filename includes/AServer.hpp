@@ -35,28 +35,22 @@ class Server
 		int									_server_index;
 		ConfigParser 						&_configParser;
 
-
-		std::string 						_server_port;
-		std::string							_server_name;
-
-		int									_server_socket;
-		int									_connection_socket;
 		int									_max_backlog_queue;
 
 		char								**_env;
 
 		// map to hold Connection Object pointer per file descriptor
 		std::map<int, Connection *>			_fd2client_map;
-		int 								_epoll_fd;
 
 
 		// Server(void);
 		// Server(Server const & src);
 		Server								&operator=(Server const &rhs);
-		void								_setup_server(void);
-		virtual void						_setup_socket(void) = 0;
+		// void								_setup_server(void);
+		virtual int							_setup_socket(int port) = 0;
 		virtual void						_loop(void) = 0;
-		void								_listen_socket(void);
+		virtual void	    				_listen_sockets(int fd_server, int port) = 0;
+
 
 	public:
 		// does the server needs the map to the error pages or only the response object?
@@ -66,16 +60,7 @@ class Server
 
 		virtual void						launch_webserver(void)  = 0;
 
-
-		int									get_server_socket(void) const;
-		std::string							get_server_name(void) const;
-		std::string							get_server_port(void) const;
-
-		bool								get_allow_GET(void) const;
-		bool								get_allow_POST(void) const;
-		bool								get_allow_DELETE(void) const;
-
-		void								close_server_socket(void);
+		virtual void	   					 close_server_socket(int fd) = 0;
 
 };
 

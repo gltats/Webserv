@@ -1,0 +1,16 @@
+
+# to send request where host and name resolution are required.
+# Request will be print in terminal
+# Response will be written in log_curl.log
+
+# PORT 4431
+rm log_curl.log & curl -v -i -X GET -H "Host: nginx_fake:4431"  --resolve nginx_fake:4431:127.0.0.1 http://nginx_fake:4431/html/basic_server03.html --output log_curl.log
+
+# PORT 4432
+rm -f log_curl.log & curl -v -i -X GET -H "Host: webserv42.com:4432"  --resolve webserv42.com:4432:127.0.0.1 http://webserv42.com:4432/html/index.html --output log_curl.log
+rm log_curl.log & curl -v -i -X GET -H "Host: 42warriors.br:4432"  --resolve 42warriors.br:4432:127.0.0.1 http://42warriors.br:4432/html/basic_server02.html --output log_curl.log
+
+rm log_curl.log & curl -v -i -X GET -H "Host: pokemon.com:4432"  --resolve pokemon.com:4432:127.0.0.1 http://pokemon.com:4432/html/basic_server02.html --output log_curl.log
+
+#PORT 4433
+rm -f log_curl.log & curl -v -i -X GET -H "Host: devserver.de:4433"  --resolve devserver.de:4433:127.0.0.1 http://devserver.de:4433/html/basic_server01.html --output log_curl.log

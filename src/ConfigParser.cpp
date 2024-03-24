@@ -8,6 +8,12 @@
 
 #include "ConfigParser.hpp"
 
+void ConfigParser::setSize(int nb) // TODO remove : from Maira
+{
+	_size = nb;
+}
+
+
 // Default constructor
 ConfigParser::ConfigParser() : _size(0), servers()
 {

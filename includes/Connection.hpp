@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:12:29 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/23 15:26:12 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,10 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdlib.h> // for exit
-#include <cerrno> // for errno : only pre-development
-// #include <netinet/in.h> // for sockaddr_un support
-// #include <sys/socket.h> // for sockaddr_un support
-#include <sys/un.h> // for sockaddr_un support
-#include <arpa/inet.h> // for htons...
-
+#include <stdlib.h> 
+#include <cerrno>
+#include <sys/un.h> 
+#include <arpa/inet.h> 
 #include "color_code.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
@@ -30,10 +27,11 @@
 class Connection
 {
 	private:
-		int 								_server_index;
 		ConfigParser 						&_configParser;
 		char								**_env;
 		int									_connection_socket;
+		int									_server_socket;
+		int									*_servers_fd;
 		ssize_t								_size_data_recv;
 		int									_flags_recv;
 		const size_t						_buffer_rcv_size;
@@ -53,7 +51,7 @@ class Connection
 		// Connection		&operator=(Connection const &rhs);
 		// Connection(void);
 	public:
-		Connection(int server_index, ConfigParser &configParser, int connection_socket, struct sockaddr_in &_client_addr, char *env[]);
+		Connection(ConfigParser &configParser, int connection_socket, struct sockaddr_in &_client_addr, int server_socket, int *servers_fd, char *env[]);
 		~Connection(void);
 
 		void								receive_request(void);
@@ -63,9 +61,24 @@ class Connection
 		bool								is_response_empty(void) const;
 		bool 								get_is_read_complete(void) const;
 		void								set_is_read_complete(bool status); // is it required?
+
+		void								print_request(void);
+		void								create_response(void);
+		int									get_fd_pipe_0(void) const;
+		bool								response_is_cgi(void);
+		void								process_cgi(char const *buffer, size_t buffer_size);
+		void								parse_request(char const *buffer, size_t buffer_size);
+
+
 		std::string							get_client_ip(void) const;
 		std::string							get_client_port(void) const;
-	
+
+		int									get_error(void) const;
+		int									*get_servers_fd(void) const;
+		ConfigParser						&get_configParser(void) const;
+		int									get_connection_socket(void) const;
+		int									get_server_socket(void) const;
+
 };
 
 #endif

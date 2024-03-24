@@ -13,25 +13,20 @@
 #include "Webserv_Exceptions.hpp"
 #include "library.hpp"
 
-#include "Server.hpp"
+#include "AServer.hpp"
 
 # ifndef VERBOSE
-#  define VERBOSE 1
+#  define VERBOSE 0
 # endif
 
 
 # ifdef __linux__
     #include "Server_OS__linux.hpp"
 
-// # elif defined __mac__
-//# include "Server__mac.hpp"
 
 # else
     # include "Server_OS__singleClient.hpp" 
 # endif
-
-
-
 
 
 void	ft_signal_handler(int signum);

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/06 23:08:39 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 21:39:29 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,13 @@
 
 #include <sstream>
 #include <unistd.h>
-#include <fcntl.h> // open
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <stdlib.h>
 #include <map>
-#include <stdlib.h> // for exit
+#include <stdlib.h>
 
 #include "Request.hpp"
-#include "map.hpp"
 #include "library.hpp"
 
 
@@ -76,37 +77,48 @@ class Response
 	private:
 
 		ConfigParser 						&_configParser;
+		Request								&_request;
 
 		// int									_status;
 		std::string							_html_content;
 		size_t								_html_content_size;
 		std::string							_status_line;
 		std::string							_response;
+
 		char 								**_envp;
 		std::map<std::string, std::string>	_error_page_map;
 		std::map<std::string, std::string>	_response_status_map;
+
+		int 								_fd_stdin;
+		int 								_fd_stdout;
+		int									_fd_pipe[2];
+
+		bool								_is_cgi;
 
 		// Response(Response const &src);
 		Response							&operator=(Response const &rhs);
 		int									_read_file_data(Request const &req);
 		int									_create_status_line(void);
-		void 								_setup_response(char *env[]);
+		void 								_setup_response(void);
 		void								_parse_response(Request const &req);
 
 
 	public:
-		Response(int server_index, ConfigParser &configParser, Request &_request, char *env[]);
-
-		
+		Response(ConfigParser &configParser, Request &request, char *env[]);
 
 		~Response(void);
-		void								create_response(Request const &req, char *env[]);
+		void								create_response(int server_id);
+		void 								process_cgi(char const *buffer, int buffer_size);
+		bool								get_is_cgi(void);
 
 		std::string							get_response(void) const;
 		std::string							get_html_content(void) const;
 		size_t								get_html_size(void) const;
 		std::map<std::string, std::string>	get_error_page_map(void) const;
 		std::map<std::string, std::string>	get_response_status_map(void) const;
+		int									get_fd_stdin(void) const;
+		int									get_fd_pipe_0(void) const;
+
 
 };
 
