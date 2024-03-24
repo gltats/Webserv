@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 16:55:42 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 21:14:53 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -411,52 +411,45 @@ void	ServerOS::_loop(void)
 					if (_is_key_in_map (&_fd2client_map, ep_event[i].data.fd))
 					{
 						is_cgi = false;
-						// fd_read = ep_event[i].data.fd;
 					}
 					else
 					{
 						is_cgi = true;
-						
-						// reading returned values from cgi pipe. 
-						// dup2(_response.get_fd_pipe_0(), STDIN_FILENO);
-						// fd_read = STDIN_FILENO;	
-						// fd_read = _response.get_fd_pipe_0();
-						
-						// if a fd from the cgi read pipe read, find the matching connection and process cgi response
-					
 					}
+					
+					size_data_recv = read(ep_event[i].data.fd , buffer, MAXMSG);
 
-					std::cout << CYAN << "about to read in fd " << ep_event[i].data.fd << RESET << std::endl; // TODO remove
-					size_data_recv = recv(ep_event[i].data.fd , buffer, MAXMSG, _flags_recv);
 					if (size_data_recv == -1 || size_data_recv == 0)
 					{
 						std::cout << REDB << "Error to recv : size of received is " << size_data_recv << RESET << std::endl;
+						// std::cout<< REDB << "Error reason : " <<strerror(errno) << std::endl; // TODO remove
 						if (is_cgi == true)
 						{
 							std::cout << REDB << "Closing file descriptor pipe read " << ep_event[i].data.fd << RESET << std::endl;
 							close(ep_event[i].data.fd);
-							// _close_connection(_epoll_fd, _cgi_fd_2_connection_fd[ep_event[i].data.fd], _ev_server);
 						}	
 						else
 						{
+							std::cout << REDB << "Closing connection sockets " << ep_event[i].data.fd << " and returning" << RESET << std::endl;
 							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 						}
-						std::cout << REDB << "Closing connection sockets " << ep_event[i].data.fd << " and returning" << RESET << std::endl;
-						
+						continue;
 					}
 
 					if (is_cgi == true) // read from cgi socket
 					{
 						int connection_fd = _cgi_fd_2_connection_fd[ep_event[i].data.fd];
-						// return STDFILE IN to original after reading from pipe
 						_fd2client_map[connection_fd]->process_cgi(buffer, size_data_recv);
+
 						if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, ep_event[i].data.fd, &_ev_server) == -1)
 						{
 							std::cerr << REDB <<  "Error:\n epoll_ctl pipe read fd could not be removed from file descriptor list" << RESET << std::endl;
 							throw ServerCriticalError();
 						}
-						_cgi_fd_2_connection_fd.erase(ep_event[i].data.fd); // processed - remove from map
+						_cgi_fd_2_connection_fd.erase(connection_fd); // processed - remove from map
 						close(ep_event[i].data.fd); // pipe fd 0
+						_fd2client_map[connection_fd]->set_is_read_complete(true);
+						continue;
 					}
 					else
 					{
@@ -466,13 +459,10 @@ void	ServerOS::_loop(void)
 						if (VERBOSE == 1)
 							_fd2client_map[ep_event[i].data.fd]->print_request();
 						
-						_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(true); // TODO remove? 
-
-
 
 						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 0)
 						{
-							print_error("Connection closed. Please retry");
+							print_error("Error: Connection closed. Please retry");
 							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 						}
 						else
@@ -480,15 +470,14 @@ void	ServerOS::_loop(void)
 
 							_fd2client_map[ep_event[i].data.fd]->create_response();
 
-
 							if (_fd2client_map[ep_event[i].data.fd]->response_is_cgi())
 							{
 
 								int pipe_fd_0 = _fd2client_map[ep_event[i].data.fd]->get_fd_pipe_0();
 								// if the response needs cgi, store the read pipe_fd 0
 								_cgi_fd_2_connection_fd[pipe_fd_0] = ep_event[i].data.fd;
-									// set connection socket to nonblock too
-								
+								// set connection socket to nonblock too
+
 								//add it to the file descriptors to NONBLOCK  and set it to listened fd
 								int flags = fcntl(pipe_fd_0, F_GETFL, 0, 0); // TODO is illegal function
 								fcntl(pipe_fd_0, F_SETFL, flags | O_NONBLOCK); // TODO is illegal function
@@ -507,6 +496,9 @@ void	ServerOS::_loop(void)
 								}
 
 							}	
+							else
+								_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(true);
+
 						}
 							
 					}
@@ -516,9 +508,7 @@ void	ServerOS::_loop(void)
 
 			else if (ep_event[i].events & EPOLLOUT && _is_a_server_socket(ep_event[i].data.fd) == false && _fd2client_map[ep_event[i].data.fd]->get_is_read_complete())
 			{
-
 				if(_fd2client_map.find(ep_event[i].data.fd) != _fd2client_map.end())
-				// if (_fd2client_map[ep_event[i].data.fd])
 				{
 					try
 					{
@@ -541,8 +531,8 @@ void	ServerOS::_loop(void)
 					// if (_fd2client_map[ep_event[i].data.fd]->get_connection().compare("keep-alive") != 0)
 					// {
 						std::cout << "closing connection on fd " <<  ep_event[i].data.fd << std::endl; //TODO
+						_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(0); // prepare for next request
 						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server); // TODO remove
-						//_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(0); // prepare for next request
 					// }
 				}
 				else
@@ -554,12 +544,14 @@ void	ServerOS::_loop(void)
 			else if (ep_event[i].events & EPOLLRDHUP)
 			{
 				//	EPOLLDHRHUP: Event file descriptor stream socket peer closed connection
+				std::cout << "EPOLLRDHUP received for fd" << ep_event[i].data.fd << std::endl;
 				_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 			}
 
 			else if (ep_event[i].events & EPOLLHUP)
 			{
 				// EPOLLHUP: Event file descriptor hang up
+				std::cout << "EPOLLHUP received for fd" << ep_event[i].data.fd << std::endl;
 				_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 			}
 		}

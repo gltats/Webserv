@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 16:36:36 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 21:15:12 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ Exception: Status 400, Bad Request
 
 */
 
-// TODO if errror in sendv, recv, read, write client is removed
+// DONE if errror in sendv, recv, read, write client is removed
 
-// TODO if errror in sendv, recv, read, write check return value for 0 and -1
+// DONE if errror in sendv, recv, read, write check return value for 0 and -1
 // TODO check for errno after a read or write
 
 // TODO keepalive_timeout and keepalive_requests 

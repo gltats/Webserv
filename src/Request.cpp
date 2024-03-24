@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 15:15:58 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 20:23:25 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void                Request::parse_request(char const *buffer)
 
     try
     {
-                std::cout << "request full is <" << request_buffer << "> and lenght is " << request_buffer.length() << std::endl; // remove
+                // std::cout << "request full is <" << request_buffer << "> and lenght is " << request_buffer.length() << std::endl; // remove
 
 
         _split_headers_body(request_buffer);
@@ -1131,10 +1131,10 @@ void                Request::_process_body(std::string body)
             throw RequestEntityTooLargeException();
         }
 
-        if (_check_content_type_is_form() == true)
-        {
-            _extract_files_from_body();
-        }
+        // if (_check_content_type_is_form() == true)
+        // {
+        //     _extract_files_from_body();
+        // }
 
     }
     else if (transfer_enconding.length() > 0)

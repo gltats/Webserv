@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 15:23:34 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 20:53:16 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@
 #include <sstream>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
+#include <stdlib.h>
 #include <map>
 #include <stdlib.h>
 
@@ -97,7 +99,7 @@ class Response
 		Response							&operator=(Response const &rhs);
 		int									_read_file_data(Request const &req);
 		int									_create_status_line(void);
-		void 								_setup_response(char *env[]);
+		void 								_setup_response(void);
 		void								_parse_response(Request const &req);
 		void								_read_from_cgi(File &file);
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 15:53:12 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 21:16:53 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,21 +137,22 @@ std::string				Connection::get_response(void)
 void		Connection::send_response(void)
 {
 
-	size_t	send_size = 0;
+	int	send_size = 0;
 
 	// _response.create_response(_request.get_server_id(), _env);
 
 	if (_response.get_response().length() > 0)
 	{
-		size_t buffer_send_size = _response.get_response().length() + 1;
+		int buffer_send_size = _response.get_response().length() + 1;
 		if (VERBOSE == 1)
 			std::cout <<"\tTrying to send to socket " << _connection_socket << ", message size is "<< buffer_send_size << RESET << std::endl;
 
-		std::cout << CYAN << "response is <" << _response.get_response() << ">" << std::endl; // TODO remove
+		// std::cout << CYAN << "response is <" << _response.get_response() << ">" << std::endl; // TODO remove
 
 		send_size = send(_connection_socket, _response.get_response().c_str() , buffer_send_size, 0); // this works
 
-		if (send_size != buffer_send_size)
+
+		if (send_size == 0 ||  send_size == -1 || send_size != buffer_send_size)
 		{
 			std::cout << "Error: to send. Reason: " << strerror(errno) << std::endl;
 			std::cout << "Closing connection sockets " << _connection_socket << " and returning" << std::endl;

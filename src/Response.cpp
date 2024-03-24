@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 16:19:17 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/03/24 20:53:23 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ general-header = Cache-Control            ; Section 14.9
 // 	std::cout << "Response default constructor" << std::endl;
 // }
 
-Response::Response(ConfigParser &configParser, Request &request, char *env[]): _configParser(configParser), _request(request)
+Response::Response(ConfigParser &configParser, Request &request, char *env[]): _configParser(configParser), _request(request), _envp(env)
 {
 	// to avoid error of unused argumentss
 	if (_configParser.getParameterValue(0, "listen").length() != 0 || _request.get_method().compare("Hi") == 0 || env == 0)
@@ -169,11 +169,10 @@ Response	&Response::operator=(Response const &rhs)
 	return (*this);
 }
 
-void	Response::_setup_response(char *env[])
+void	Response::_setup_response(void)
 {
 	// std::cout << "Response parametric constructor" << std::endl;
 	_html_content_size = 0;
-	 _envp = env;
 	_html_content.clear();
 	_status_line.clear();
 	_response.clear();
@@ -194,7 +193,7 @@ void	Response::create_response(int server_id)
 {
 	if (server_id == -1) // consume as it unused at the moment
 		std::cout << "" << std::endl; 
-	_setup_response(_envp);
+	_setup_response();
 	_parse_response(_request);
 
 }
@@ -240,6 +239,7 @@ void	Response::_parse_response(Request const &req)
 			std::cout << "Error: pipe creation" << std::endl;
 			return ;
 		}
+		std::cout << "pipe0 is fd" << _fd_pipe[0] << std::endl; //remove 
 		// it is a cgi
 		pid_t pid;
 		pid = fork();
@@ -268,14 +268,15 @@ void	Response::_parse_response(Request const &req)
 			close(_fd_stdin);
 
 			execve(exe[0], exe, _envp);
+			std::cout << REDB << "reason:" << strerror(errno) <<  RESET << std::endl;
 
 			dup2(_fd_stdout, STDOUT_FILENO); // return output to stdout to print error
 			std::cout << "Error: CGI could not be executed : " << uri << std::endl;
-			std::cout << REDB << "reason:" << strerror(errno) <<  RESET << std::endl;
 			exit(1);
 		}
 		else
 		{
+			waitpid(pid, 0, WNOHANG);
 			close(_fd_pipe[1]);
 			close (_fd_stdin);
 			close(_fd_stdout);
