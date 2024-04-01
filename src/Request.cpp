@@ -1751,3 +1751,14 @@ If the host identifier is provided as an IP address, the origin server is the li
 If host is a registered name, the registered name is an indirect identifier for use with a name resolution service, such as DNS, to find an address
 for that origin server. If the port subcomponent is empty or not given, TCP port 80 (the reserved port for WWW services) is the default.
 */
+
+
+std::string         Request::get_query(void) const
+{
+    return ("");
+}
+
+int                  Request::get_ret(void) const
+{
+    return (0);
+}

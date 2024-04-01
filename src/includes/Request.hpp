@@ -161,9 +161,6 @@ class Request
         int                get_server_id(void) const;
 
         int                 get_error(void) const;
-
-        std::string         get_query(void) const;
-        int                 get_ret(void) const;
 };
 
 /* move to the webserv exceptions file */ // TODO move to exceptions file and also remove declaration and implementation which are now together in the header
