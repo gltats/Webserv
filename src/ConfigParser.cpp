@@ -72,17 +72,13 @@ void ConfigParser::getConfig(const std::string &configtFile)
 	removeNewLines(content);
 	
 	splitServers(content);
-	// std::cout << "Content: " << content << std::endl;
 	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
 	{
 		parameters = parseParameters(*it);
 		std::vector<std::map<std::string, std::string> > locations = parseLocations(*it);
 
-		// checkCorrectParameters(parameters);
 		serverParameters.push_back(parameters);
-		
 		serverLocations.push_back(locations);
-		// std::cout << "Locations " << locations.size() << std::endl; 
 	}
 	print(); // test function
 }
@@ -341,13 +337,13 @@ size_t ConfigParser::getNumServers()
     return servers.size();
 }
 
-// Test functions
+// Test function
 void ConfigParser::print()
 {
 
 	// want to print each part of the config file
 	std::cout << "======================================== Config File ========================================" << std::endl;
-	for (size_t i = 0; i < servers.size(); i++)
+	for (size_t i = 0; i < getNumServers(); i++)
 	{
 		std::cout << servers[i] << std::endl;
 		std::map<std::string, std::string> parameters = getServerParameters(i);
@@ -355,7 +351,9 @@ void ConfigParser::print()
 		std::cout << "listen: " << i << " " << getParameterValue(i, "listen") << std::endl;
 		std::cout << "server_name: " << i << " " << getParameterValue(i, "server_name") << std::endl;
 		std::cout << "body_size: " << i << " " << getParameterValue(i, "body_size") << std::endl;
-		std::cout << "error_page_number: " << i << " " << getParameterValue(i, "error_page") << std::endl;
+		std::cout << "error_page: " << i << " " << getParameterValue(i, "error_page") << std::endl;
+		std::cout << "error page number: " << i << " " << getParameterValue(i, "error_number") << std::endl;
+		std::cout << "error page location: " << i << " " << getParameterValue(i, "error_location") << std::endl;
 		std::cout << "***********************************************************" << std::endl;
 
 		std::cout << "********************** Locations **************************" << std::endl;
@@ -372,11 +370,6 @@ void ConfigParser::print()
 			std::cout << j << " location with cgi on server " << i << ": " << getLocationValue(i, j, "cgi") << std::endl;
 		}
 		std::cout << "" << std::endl;
-		// PRINT ERROR PAGES:
-		std::cout << "------------- extra ---------------" << std::endl;
-		std::cout << "error_page_number:" << i << " " << getParameterValue(i, "error_number") << std::endl;
-		std::cout << "error_page_number:" << i << " " << getParameterValue(i, "error_location") << std::endl;
-		std::cout << "-----------------------------------" << std::endl;
 		std::cout << "***********************************************************" << std::endl;
 	}
 	std::cout << "=============================================================================================" << std::endl;

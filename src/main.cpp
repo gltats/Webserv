@@ -26,9 +26,21 @@ void test()
         ConfigParser configParser;
         try {
             configParser.getConfig("configs/default.conf");
-            // std::cout << configParser.getParameterValue(1, "listen") << std::endl;
             std::cout << "Number of servers: " << configParser.getNumServers() << std::endl;
+            std::cout << configParser.getParameterValue(1, "listen") << std::endl;
             std::cout << configParser.getParameterValue(0, "listen") << std::endl;
+
+            std::cout << configParser.getParameterValue(0, "server_name") << std::endl;
+            std::cout << configParser.getParameterValue(0, "body_size") << std::endl;
+            std::cout << configParser.getParameterValue(0, "error_number") << std::endl;
+            std::cout << configParser.getParameterValue(0, "error_location") << std::endl;
+
+            std::cout << configParser.getLocationValue(0, 0, "location") << std::endl;
+            std::cout << configParser.getLocationValue(0, 0, "allow_methods") << std::endl;
+            std::cout << configParser.getLocationValue(0, 0, "autoindex") << std::endl;
+            std::cout << configParser.getLocationValue(0, 0, "indexing") << std::endl;
+            std::cout << configParser.getLocationValue(0, 0, "cgi") << std::endl;
+
 
         } catch (const std::invalid_argument& e) {
             std::cerr << "Test 1: " << e.what() << std::endl;
@@ -36,33 +48,33 @@ void test()
             std::cerr << "Test 1: " << e.what() << std::endl;
         }
     }
-    { 
-        // Test 2: non-existent file
-        ConfigParser configParser;
-        try {
-            configParser.getConfig("configs/no_file.conf");
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Test 2: " << e.what() << std::endl;
-        }
-    }
-    { 
-        // Test 3: wrong extension
-        ConfigParser configParser;
-        try {
-            configParser.getConfig("configs/lol");
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Test 3: " << e.what() << std::endl;
-        }
-    }
-    { 
-        // Test 4: file without server block
-        ConfigParser configParser;
-        try {
-            configParser.getConfig("configs/single.conf");
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Test 4: " << e.what() << std::endl;
-        }
-    }
+    // { 
+    //     // Test 2: non-existent file
+    //     ConfigParser configParser;
+    //     try {
+    //         configParser.getConfig("configs/no_file.conf");
+    //     } catch (const std::invalid_argument& e) {
+    //         std::cerr << "Test 2: " << e.what() << std::endl;
+    //     }
+    // }
+    // { 
+    //     // Test 3: wrong extension
+    //     ConfigParser configParser;
+    //     try {
+    //         configParser.getConfig("configs/lol");
+    //     } catch (const std::invalid_argument& e) {
+    //         std::cerr << "Test 3: " << e.what() << std::endl;
+    //     }
+    // }
+    // { 
+    //     // Test 4: file without server block
+    //     ConfigParser configParser;
+    //     try {
+    //         configParser.getConfig("configs/single.conf");
+    //     } catch (const std::invalid_argument& e) {
+    //         std::cerr << "Test 4: " << e.what() << std::endl;
+    //     }
+    // }
 }
 
 

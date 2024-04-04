@@ -64,10 +64,12 @@ public:
 	ConfigParser(const ConfigParser &copy);
 	ConfigParser &operator=(const ConfigParser &copy);
 	~ConfigParser();
+
 	void getConfig(const std::string &file);
 
 	std::string getParameterValue(size_t serverIndex, const std::string &parameterKey);
 	std::string getLocationValue(size_t serverIndex, size_t locationIndex, const std::string &key);
+
 	size_t getNumServers();
 
 };
