@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:14:53 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/04 16:39:59 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int	_is_port_already_set(int port, int *array_ports_set, int size_array)
 	return (-1);
 }
 
-ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env), _nb_of_servers(configParser.getSize())
+ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env), _nb_of_servers(configParser.getNumServers())
 {
 	std::string		key;
 	std::string		value;

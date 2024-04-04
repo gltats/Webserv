@@ -105,8 +105,9 @@ std::string ConfigFile::readFile(std::string path)
 	std::ifstream config_file(path.c_str());
 	if (!config_file || !config_file.is_open())
 		throw std::invalid_argument("File is not open");
-
 	std::string content((std::istreambuf_iterator<char>(config_file)), std::istreambuf_iterator<char>());
+	config_file.close();
+	// std::cout << "Content: " << content << std::endl;
 	return content;
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:46:37 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/04 16:39:52 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,9 @@ int	main(int argc, char *argv[], char *env[])
 		exit(1);
 	}   
 
-	configParser.setSize(2); // TODO: ATTENTION: remove this once nb of servers is available or setSize for the number of servers passed in default.conf
+	// configParser.setSize(2); // TODO: ATTENTION: remove this once nb of servers is available or setSize for the number of servers passed in default.conf
 	
-	if (configParser.getSize() == 0)
+	if (configParser.getNumServers() == 0)
 	{
 		std::cerr << REDB << "No valid Server Configurations passed to the webserver" << RESET << std::endl;
 		exit(1);

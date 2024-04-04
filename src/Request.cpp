@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:42:34 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/04 16:40:03 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,7 +207,7 @@ first server block encountered in the configuration that is listening on the req
 */
 void    Request::_identify_server(void)
 {
-    int             nb_of_servers = _connection.get_configParser().getSize();
+    int             nb_of_servers = _connection.get_configParser().getNumServers();
     int             socket = _connection.get_server_socket();
     int             *servers_fd = _connection.get_servers_fd();
 

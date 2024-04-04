@@ -33,8 +33,8 @@ Server::Server(int server_index, ConfigParser &configParser, char *env[]): _serv
 
 	// configParser.build_map();
 
-	std::cout << " Nb of servers " << configParser.getSize() << std::endl;
-	for (int i = 0; i < configParser.getSize(); i++)
+	std::cout << " Nb of servers " << configParser.getNumServers() << std::endl;
+	for (size_t i = 0; i < configParser.getNumServers(); i++)
 	{
 			std::cout << std::endl;
 			std::cout << " -- Server " << i << " -- " << std::endl;
