@@ -124,7 +124,7 @@ void	Response::initContentMap()
 	std::ifstream file;
 	std::string line;
 
-	file.open("src/conf/mime.types");
+	file.open("mime.types");
 	if (file.is_open())
 	{
 		while (getline(file, line))

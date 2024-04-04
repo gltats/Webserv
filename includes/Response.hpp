@@ -32,23 +32,28 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include <iostream>
-#include <fstream>
+#define ROOT "./frontEnd"
 
-#include <sstream>
-#include <ctime>
+
+#include <iostream>
+#include "fcntl.h"
 #include <vector>
-#include <sstream>
-#include <dirent.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <stdlib.h>
+#include <fstream>
+#include <string>
 #include <map>
+#include <exception>
+#include <sstream>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <ctime>
 #include <stdlib.h>
+#include <limits>
 
 #include "Request.hpp"
 #include "library.hpp"
+#include "ConfigParser.hpp"
+
+
 
 
 
@@ -80,7 +85,7 @@ class Response
 {
 	private:
 
-		ConfigParser 						&_configParser;
+		ConfigParser 						&_server;
 		Request								&_request;
 
 		// int									_status;
@@ -135,7 +140,7 @@ class Response
 
 	// Request &request;
 	//fds_info &fd;
-	//Servers &server;
+	//ConfigParser &server;
 
 
 	std::map<std::string, std::string>_header;

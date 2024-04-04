@@ -54,7 +54,7 @@ void	Response::_setup_response(void)
 	_html_content.clear();
 	_status_line.clear();
 	_response.clear();
-
+	_is_cgi = 0;
 }
 
 // // void	Response::set_error_page_map(std::map<std::string, std::string> *error_page_map)
@@ -299,7 +299,7 @@ int	Response::get_fd_pipe_0(void) const
 // }
 
 
-Response::Response(ConfigParser &configParser, Request &request, char *env[]): _configParser(configParser), _request(request), _envp(env)
+Response::Response(ConfigParser &configParser, Request &request, char *env[]): _server(configParser), _request(request), _envp(env)
 {
 	// initErrorMap();
 	// initRespMaps();
@@ -410,7 +410,7 @@ void	Response::initContentMap()
 	std::ifstream file;
 	std::string line;
 
-	file.open("src/conf/mime.types");
+	file.open("./src/mime.types");
 	if (file.is_open())
 	{
 		while (getline(file, line))

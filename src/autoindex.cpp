@@ -87,6 +87,10 @@ std::string Response::getIndex()
 //     </html>\n";
 //     closedir(dir);
 //     return dirs;
+	std::string string = "Hello There";
+
+	return string;
+	
 	
 }
 
@@ -94,9 +98,9 @@ std::string Response::getIndex()
 
 int Response::deafIndex()
 { 
-	if (!server.index.empty())
+	if (!_server.getLocationValue(0, 0,"location").empty())
 	{
-		_path = server.index;
+		_path = _server.getLocationValue(0, 0, "location"); // ask Maira for this path
 		return(200);
 	}
 	return(404);
@@ -106,9 +110,9 @@ int Response::deafIndex()
 
 void Response::isAutoindex(size_t i)
 {
-	if (i == SIZE_MAX)
+	if (i == std::numeric_limits<size_t>::max())
 		_autoindex = false;
-	else if (server.locations[i].autoindex == "true")
+	else if (_server.getLocationValue(0,0, "autoindex") == "true")
 		_autoindex = true;
 	// isDefaultindex();
 }
