@@ -9,7 +9,7 @@
 #include "ConfigParser.hpp"
 
 // Default constructor
-ConfigParser::ConfigParser() : _size(0), servers()
+ConfigParser::ConfigParser() : servers()
 {
 }
 
@@ -18,7 +18,6 @@ ConfigParser::ConfigParser(const ConfigParser &copy)
 {
 	if (this != &copy)
 	{
-		this->_size = copy._size;
 		this->servers = copy.servers;
 	}
 }
@@ -28,7 +27,6 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &copy)
 {
 	if (this != &copy)
 	{
-		this->_size = copy._size;
 		this->servers = copy.servers;
 	}
 	return (*this);
@@ -383,11 +381,4 @@ void ConfigParser::print()
 	}
 	std::cout << "=============================================================================================" << std::endl;
 
-}
-
-// getters
-
-int ConfigParser::getSize()
-{
-	return (this->_size);
 }
