@@ -338,6 +338,11 @@ std::string ConfigParser::getLocationValue(size_t serverIndex, size_t locationIn
 	return it->second;
 }
 
+size_t ConfigParser::getNumServers()
+{
+    return servers.size();
+}
+
 // Test functions
 void ConfigParser::print()
 {

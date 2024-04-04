@@ -64,5 +64,6 @@ public:
 	std::map<std::string, std::string> &getServerParameters(size_t index);
 	std::string getParameterValue(size_t serverIndex, const std::string &parameterKey);
 	std::string getLocationValue(size_t serverIndex, size_t locationIndex, const std::string &key);
+	size_t getNumServers();
 
 };
