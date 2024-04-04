@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/04 16:39:52 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/04 17:31:08 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ int	main(int argc, char *argv[], char *env[])
 		std::cerr << REDB << "No valid Server Configurations passed to the webserver" << RESET << std::endl;
 		exit(1);
 	}
+
 
 
 	//setup signal handler

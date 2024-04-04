@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 20:53:23 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/04 17:49:35 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,6 +151,8 @@ Response::Response(ConfigParser &configParser, Request &request, char *env[]): _
 	std::cout << "Response default constructor" << std::endl;
 
 
+
+
 }
 
 /*
@@ -191,6 +193,19 @@ void	Response::_setup_response(void)
 
 void	Response::create_response(int server_id)
 {
+	
+	// // TODO remove from here
+	// std::cout << "--------"  << std::endl;
+	// for (size_t i = 0; i < 2; i++)
+	// {
+	// 	std::cout << "<" << _request.get_location(0, i) << ">" << std::endl;
+	// }
+	// std::cout << "--------"  << std::endl;
+
+	// std::cout << "-->Location index is : " << _request.get_location_index(server_id);
+	// // TODO remove until here
+
+
 	if (server_id == -1) // consume as it unused at the moment
 		std::cout << "" << std::endl; 
 	_setup_response();

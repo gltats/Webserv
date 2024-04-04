@@ -6,12 +6,39 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/04 16:40:03 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/04 17:48:15 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include "Connection.hpp"
+
+// TODO move this quick fix to the appropriate file
+std::string         Request::get_location(int const &server_id, int const &location_index) const
+{
+    std::string location_full_line = _connection.get_configParser().getLocationValue(server_id, location_index, "location");
+
+    size_t index_split = location_full_line.find('{');
+    std::string location = location_full_line.substr(0, index_split);
+    if (location[0] != '/')
+        location.insert(0, "/");
+    return(location);
+}
+
+int                 Request::get_location_index(int const &server_id) const
+{
+    // TODO add here the getter for the amount of locations
+    // actual number of locations is set to be 2 fixed
+    size_t nb_of_locations = 2; // TODO REMOVE THIS AND ADD THE GETTER FROM CONFIGPARSRE
+
+    for (size_t i = 0; i < nb_of_locations; i++)
+    {
+        if (get_location(server_id, i).compare(get_uri()) == 0)
+            return (i);
+        
+    }
+    return (-1); // no match found
+}
 
 Request::Request(Connection &connection): _connection(connection)
 {

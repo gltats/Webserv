@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:42:57 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/04 17:34:47 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,8 @@ class Request
         void                _convert_content_length(void);
         void                _process_chunk(std::string str);
 
+        
+
 
     public:
         Request(Connection &connection);
@@ -155,12 +157,19 @@ class Request
         // To access other Headers which getters are not here (incl. Customs),
         // use get_header_per_key and pass the Header name, if it was
         // received, it will return a string,∫ otherwise ""
-        std::string         get_header_per_key(std::string header_key) const;
+        std::string        get_header_per_key(std::string header_key) const;
 
         // Get id of the server who sent the request
         int                get_server_id(void) const;
 
-        int                 get_error(void) const;
+        int                get_error(void) const;
+
+
+        // Quick FIX // TODO move to another file
+        std::string         get_location(int const &server_id, int const &location_index) const;
+        int                 get_location_index(int const &server_id) const;
+
+
 };
 
 /* move to the webserv exceptions file */ // TODO move to exceptions file and also remove declaration and implementation which are now together in the header
