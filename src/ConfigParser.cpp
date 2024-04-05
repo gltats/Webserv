@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-05 18:01:38
+ * @ Modified time: 2024-04-05 18:16:48
  * @ Description: webserv
  */
 
@@ -51,11 +51,11 @@ void ConfigParser::getConfig(const std::string &configtFile)
 	// Check if the file exists, has the correct path and is readable
 	file.checkPath(configtFile);
 	std::string content = file.content;
-	
+
 	// std::cout << "Heeeeereer Content: " << content << std::endl;
 	removeComments(content);
 	removeWhiteSpace(content);
-	
+
 	std::istringstream stream(content);
 	std::string line;
 	while (std::getline(stream, line))
@@ -70,7 +70,7 @@ void ConfigParser::getConfig(const std::string &configtFile)
 		}
 	}
 	removeNewLines(content);
-	
+
 	splitServers(content);
 	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
 	{
@@ -145,6 +145,14 @@ std::vector<std::map<std::string, std::string> > ConfigParser::parseLocations(co
 						}
 					}
 					else
+					{
+						throw std::invalid_argument("Invalid method in allow_methods");
+					}
+
+					// Check if value contains any other methods
+					std::string allowedMethods = "GETPOSTDELETE";
+					size_t pos = value.find_first_not_of(allowedMethods);
+					if (pos != std::string::npos)
 					{
 						throw std::invalid_argument("Invalid method in allow_methods");
 					}
@@ -295,16 +303,16 @@ std::string ConfigParser::getParameterValue(size_t serverIndex, const std::strin
 	if (serverIndex >= serverParameters.size())
 		throw std::invalid_argument("Invalid server index");
 
- const std::map<std::string, std::string> &parameters = serverParameters[serverIndex];
-    std::map<std::string, std::string>::const_iterator it = parameters.find(parameterKey);
+	const std::map<std::string, std::string> &parameters = serverParameters[serverIndex];
+	std::map<std::string, std::string>::const_iterator it = parameters.find(parameterKey);
 
-    if (it == parameters.end())
-    {
-        if (parameterKey == "GET" || parameterKey == "POST" || parameterKey == "DELETE" || parameterKey == "NoAllowedMethods")
-            return "";  // or return some default value
-        else
-            throw std::invalid_argument("Invalid parameter key");
-    }
+	if (it == parameters.end())
+	{
+		if (parameterKey == "GET" || parameterKey == "POST" || parameterKey == "DELETE" || parameterKey == "NoAllowedMethods")
+			return ""; // or return some default value
+		else
+			throw std::invalid_argument("Invalid method");
+	}
 
 	return it->second;
 }
@@ -320,21 +328,20 @@ std::string ConfigParser::getLocationValue(size_t serverIndex, size_t locationIn
 	const std::map<std::string, std::string> &locationParameters = serverLocations[serverIndex][locationIndex];
 	std::map<std::string, std::string>::const_iterator it = locationParameters.find(key);
 
-
- if (it == locationParameters.end())
-    {
-        if (key == "GET" || key == "POST" || key == "DELETE" || key == "NoAllowedMethods")
-            return "";  // or return some default value
-        else
-            throw std::invalid_argument("Invalid parameter key");
-    }
+	if (it == locationParameters.end())
+	{
+		if (key == "GET" || key == "POST" || key == "DELETE" || key == "NoAllowedMethods")
+			return ""; // or return some default value
+		else
+			throw std::invalid_argument("Invalid parameter key");
+	}
 
 	return it->second;
 }
 
 size_t ConfigParser::getNumServers()
 {
-    return servers.size();
+	return servers.size();
 }
 
 size_t ConfigParser::getNumLocations(size_t serverIndex)
@@ -370,7 +377,7 @@ void ConfigParser::print()
 			std::map<std::string, std::string> locationParameters = serverLocations[i][j];
 			std::cout << j << " location on server " << i << ": " << getLocationValue(i, j, "location") << std::endl;
 			std::cout << j << " location with allowed methods on server " << i << ": " << getLocationValue(i, j, "GET") << " " << getLocationValue(i, j, "POST") << " " << getLocationValue(i, j, "DELETE") << std::endl;
-			if (!getLocationValue(i, j,  "NoAllowedMethods").empty())
+			if (!getLocationValue(i, j, "NoAllowedMethods").empty())
 			{
 				std::cout << "NoAllowedMethods" << j << ": " << getLocationValue(i, j, "NoAllowedMethods") << std::endl;
 			}
@@ -383,5 +390,4 @@ void ConfigParser::print()
 
 	std::cout << "check location number of the 1st server: " << getNumLocations(0) << std::endl;
 	std::cout << "=============================================================================================" << std::endl;
-
 }
