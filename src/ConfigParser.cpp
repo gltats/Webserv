@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-05 17:44:21
+ * @ Modified time: 2024-04-05 17:56:13
  * @ Description: webserv
  */
 #include "ConfigParser.hpp"
@@ -336,6 +336,14 @@ size_t ConfigParser::getNumServers()
     return servers.size();
 }
 
+size_t ConfigParser::getNumLocations(size_t serverIndex)
+{
+	if (serverIndex >= serverLocations.size())
+		throw std::invalid_argument("Invalid server index");
+
+	return serverLocations[serverIndex].size();
+}
+
 // Test function
 void ConfigParser::print()
 {
@@ -371,6 +379,8 @@ void ConfigParser::print()
 		std::cout << "" << std::endl;
 		std::cout << "***********************************************************" << std::endl;
 	}
+
+	std::cout << "check location number of the 1st server: " << getNumLocations(0) << std::endl;
 	std::cout << "=============================================================================================" << std::endl;
 
 }
