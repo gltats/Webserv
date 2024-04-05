@@ -24,7 +24,7 @@ int	_is_port_already_set(int port, int *array_ports_set, int size_array)
 	return (-1);
 }
 
-ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env), _nb_of_servers(configParser.getSize())
+ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): Server(server_index, configParser, env), _nb_of_servers(configParser.getNumServers())
 {
 	std::string		key;
 	std::string		value;

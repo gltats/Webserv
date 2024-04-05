@@ -207,7 +207,7 @@ first server block encountered in the configuration that is listening on the req
 */
 void    Request::_identify_server(void)
 {
-    int             nb_of_servers = _connection.get_configParser().getSize();
+    int             nb_of_servers = _connection.get_configParser().getNumServers();
     int             socket = _connection.get_server_socket();
     int             *servers_fd = _connection.get_servers_fd();
 

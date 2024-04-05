@@ -43,13 +43,13 @@ int	main(int argc, char *argv[], char *env[])
 		exit(1);
 	}   
 
-	configParser.setSize(2); // TODO: ATTENTION: remove this once nb of servers is available or setSize for the number of servers passed in default.conf
+	// configParser.setSize(2); // TODO: ATTENTION: remove this once nb of servers is available or setSize for the number of servers passed in default.conf
 	
-	if (configParser.getSize() == 0)
-	{
-		std::cerr << REDB << "No valid Server Configurations passed to the webserver" << RESET << std::endl;
-		exit(1);
-	}
+	// if (configParser.getSize() == 0)
+	// {
+	// 	std::cerr << REDB << "No valid Server Configurations passed to the webserver" << RESET << std::endl;
+	// 	exit(1);
+	// } TSofia: commented out because it is not necessary to check it, the parsing already checks it, and triggers an exception if there is no valid server configuration
 
 
 	//setup signal handler
