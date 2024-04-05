@@ -27,7 +27,7 @@ void test()
         try {
             configParser.getConfig("configs/default.conf");
             std::cout << "Number of servers: " << configParser.getNumServers() << std::endl;
-            std::cout << configParser.getParameterValue(1, "listen") << std::endl;
+            // std::cout << configParser.getParameterValue(1, "listen") << std::endl;
             std::cout << configParser.getParameterValue(0, "listen") << std::endl;
 
             std::cout << configParser.getParameterValue(0, "server_name") << std::endl;
@@ -40,6 +40,13 @@ void test()
             std::cout << configParser.getLocationValue(0, 0, "autoindex") << std::endl;
             std::cout << configParser.getLocationValue(0, 0, "indexing") << std::endl;
             std::cout << configParser.getLocationValue(0, 0, "cgi") << std::endl;
+
+std::cout << "-----------------------------------" << std::endl;
+            std::cout << configParser.getLocationValue(0, 1, "location") << std::endl;
+            std::cout << configParser.getLocationValue(0, 1, "allow_methods") << std::endl;
+            std::cout << configParser.getLocationValue(0, 1, "autoindex") << std::endl;
+            std::cout << configParser.getLocationValue(0, 1, "indexing") << std::endl;
+            std::cout << configParser.getLocationValue(0, 1, "cgi") << std::endl;
 
 
         } catch (const std::invalid_argument& e) {
