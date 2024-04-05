@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:33
  * @ Modified by: Gltats
- * @ Modified time: 2024-02-05 17:07:40
+ * @ Modified time: 2024-04-05 18:01:48
  * @ Description: webserv
  */
 
@@ -71,5 +71,5 @@ public:
 	std::string getLocationValue(size_t serverIndex, size_t locationIndex, const std::string &key);
 
 	size_t getNumServers();
-
+	size_t getNumLocations(size_t serverIndex);
 };
