@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 20:53:23 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/06 13:01:35 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,16 +70,17 @@ void	Response::_setup_response(void)
 void	Response::create_response(int server_id)
 {
 	_serverID = server_id;
-	initErrorMap();
-	initRespMaps();
-	initContentMap();
+	// initErrorMap(); // moved to Response constructor
+	// initRespMaps(); // moved to Response constructor
+	// initContentMap(); // moved to Response constructor
+	_setup_response(); // move to this line, it cleans attributes before new message is received
 	setPath();
 	setBool();
 	if (isAbsoluteURI())
 		changeHost();
-	_setup_response();
+	call(); // added function to create a response
 	//_parse_response(_request);
-
+	
 }
 
 std::string		Response::get_response(void) const
@@ -301,9 +302,9 @@ int	Response::get_fd_pipe_0(void) const
 
 Response::Response(ConfigParser &configParser, Request &request, char *env[]): _server(configParser), _request(request), _envp(env)
 {
-	// initErrorMap();
-	// initRespMaps();
-	// initContentMap();
+	initErrorMap();
+	initRespMaps();
+	initContentMap();
 	// setPath();
 	// setBool();
 	// if (isAbsoluteURI())
@@ -356,6 +357,9 @@ void Response::changeHost()
 		newHost.erase(i, 9);
 		newHost = "127.0.0.1" + newHost;
 	}
+
+	// modified host is not being used and will be delete when function gets out of scope
+	_host = newHost; // ADDED this line, is this what we are supposed to do with newHost?
 }
 
 /* ************************************************************************** */
@@ -447,13 +451,22 @@ std::string Response::call()
 
 void	Response::setPath()
 {
-	// if (server.root[server.root.length() - 1] == '/')
-	// 	server.root.erase(server.root.length() - 1);
-	// this->_path = request.get_path();
-	// _path = decodePath();
-	_root = ("html/index.html"); // Tats config_parser
+	std::string root_path = ROOT; // ADDED Maira
+	// if (server.root[server.root.length() - 1] == '/') // ORIGINAL
+	// 	server.root.erase(server.root.length() - 1); // ORIGINAL
+	
+	// this->_path = request.get_path(); // ORIGINAL
+	this->_path = _request.get_uri(); // MODIFIED
+
+		
+	_path = decodePath();
+	// _root = ("html/index.html"); // Tats config_parser
+	if (_path == "/") // TODO Maira Modified for testing
+		_path = root_path + "/index.html"; // TODO Maira Modified for testing
+	else // TODO Maira Modified for testing
+		_path = root_path + _path; // TODO Maira Modified for testing
 	setVersion();
-	_path = _request.get_uri();
+	// _path = _request.get_uri(); // COMMENTED OUT, SET ABOVE
 }
 
 

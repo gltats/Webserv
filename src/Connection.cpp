@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:16:53 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/06 13:11:30 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ Connection::~Connection(void)
 	{
 		if (VERBOSE == 1)
 		{
-			std::cout << "Closing _connection_socket fd in Connection" << std::endl;
+			std::cout << "Closing _connection_socket fd in Connection" << std::endl << std::endl << std::endl;
 			delete[] _buffer_rcv;
 		}
 	}
@@ -65,7 +65,12 @@ void				Connection::print_request(void)
 void				Connection::create_response(void)
 {
 	_response.create_response(_request.get_server_id());
-}
+	
+
+	std::cout << CYAN << "-------- Response Line Start --------" << std::endl;// TODO remove, only for testing
+	std::cout << "<" << _response.get_response() << ">" << std::endl; // TODO remove, only for testing
+	std::cout << "-------- Response Line Start --------" << RESET << std::endl  << std::endl; // TODO remove, only for testing
+} 
 
 
 int					Connection::get_fd_pipe_0(void) const
@@ -167,7 +172,10 @@ void		Connection::send_response(void)
 		_is_read_complete = 1;
 	}
 	else
-		close(_connection_socket);
+	{
+		std::cerr << REDB << "Error: trying to write an empty _response to file descriptor " <<  _connection_socket << RESET << std::endl;
+		throw EmptyResponseException();
+	}
 }
 
 void					Connection::process_cgi(char const *buffer, size_t buffer_size)

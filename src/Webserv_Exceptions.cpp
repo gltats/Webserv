@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv_Exceptions.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 19:42:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/18 19:57:51 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/06 10:46:25 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,3 +42,7 @@ const char* LengthRequiredException::what() const throw()
    return ("Exception: Method not supported. Webserv supports GET, POST and DELETE. \nEnable them in Config File."); 
 }
 
+const char* EmptyResponseException::what() const throw()
+{
+   return ("Exception: Attempt to write an empty response."); 
+}

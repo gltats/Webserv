@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:42:34 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/06 13:09:24 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1085,7 +1085,7 @@ void                Request::print_headers_map(void)
 void                Request::print_request(void)
 {
     std::cout << YELLOW << std::endl;
-    std::cout << "-------- Request Line --------" << std::endl;
+    std::cout << "-------- Request Line Start --------" << std::endl;
     std::cout << "\tMethod   <" << get_method() << ">" << std::endl;
     std::cout << "\tUri      <" << get_uri() << ">" << std::endl;
     std::cout << "\tProtocol <" << get_protocol() << ">" << std::endl;
@@ -1098,6 +1098,7 @@ void                Request::print_request(void)
 
     std::cout << "---------  BODY  -------" << std::endl;
     std::cout << "\tBody " << std::endl << "<" << get_body() << ">" << std::endl;
+     std::cout << "---------  Request Line End  -------" << std::endl;
     std::cout << std::endl;
 
 	std::cout << RESET;

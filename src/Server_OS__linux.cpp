@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:14:53 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/06 13:04:38 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,7 +230,8 @@ void	ServerOS::_close_connection(int _epoll_fd, int fd_to_remove, struct epoll_e
 
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd_to_remove, &ev_ref) == -1)
 	{
-		std::cerr << REDB <<  "Error:\n epoll_ctl connection fd could not be removed from monitored file descriptor list" << RESET << std::endl;
+		std::cerr << REDB <<  "Error:\n epoll_ctl connection fd could not be removed from monitored file descriptor list, fd: " << _epoll_fd << RESET << std::endl;
+		std::cerr << strerror(errno) << std::endl;
 		throw ServerCriticalError();
 	}
 	// delete allocated Connection
@@ -245,7 +246,7 @@ void	ServerOS::_close_connection(int _epoll_fd, int fd_to_remove, struct epoll_e
 	close(fd_to_remove);
 	// remove from map
 	if (VERBOSE == 1)
-		std::cout << "file descriptor removed from map " << fd_to_remove << std::endl;
+		std::cout << "file descriptor removed from map " << fd_to_remove << std::endl << std::endl;
 
 	_fd2client_map.erase(fd_to_remove);
 }
@@ -395,7 +396,7 @@ void	ServerOS::_loop(void)
 					// save fd as key and connection as a pointer to allow multiple clients at the same time and a expandable list/dictionary
 
 					_fd2client_map[client_fd] = new Connection(_configParser ,client_fd, client_addr, ep_event[i].data.fd,  _servers_fd, _env);
-					std::cout << "New client connected in fd " << client_fd << std::endl;
+					std::cout << std::endl << "New client connected in fd " << client_fd << std::endl;
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
 					std::cout << "Client PORT: " << _fd2client_map[client_fd]->get_client_port() << std::endl;
 				}
@@ -462,6 +463,7 @@ void	ServerOS::_loop(void)
 
 						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 0)
 						{
+							std::cerr << "Error in Request-  error page: " << _fd2client_map[ep_event[i].data.fd]->get_error() << std::endl;
 							print_error("Error: Connection closed. Please retry");
 							_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 						}
@@ -519,12 +521,22 @@ void	ServerOS::_loop(void)
 					catch(const ResponseError& e)
 					{
 						std::cout << e.what() << std::endl;
+						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
+						continue;
+					}
+					catch(const EmptyResponseException& e)
+					{
+						std::cout << e.what() << std::endl;
+						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
+						continue;
 					}
 
 					catch(const std::exception& e)
 					{
 						std::cerr << "Generic Exception during send_response" << '\n';
 						std::cerr << e.what() << '\n';
+						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server); 
+						continue;
 					}
 
 					// if keep alive or not: if not remove connection

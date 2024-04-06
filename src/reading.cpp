@@ -5,8 +5,9 @@ int Response::readFile()
 {
 	std::ifstream file;
 	std::stringstream buff;
-	//file.open(server.root.c_str(), std::ifstream::in);
-	file.open(_request.get_uri().c_str(), std::ifstream::in);
+	//file.open(server.root.c_str(), std::ifstream::in); 
+	// file.open(_request.get_uri().c_str(), std::ifstream::in); // we should not open with get_uri as we need to add root to path. i guess we should open with path
+	file.open(_path.c_str(), std::ifstream::in);
 	if (file.is_open())
 	{
 		buff << file.rdbuf();
@@ -35,7 +36,7 @@ int Response::readDefault()
 		_Resbody = buff.str();
 		file.close();
 		return (_ret = 200, 1);
-	}
+	}	
 	if (_autoindex)
 		return (_Resbody = getIndex(), 200);
 	return (_ret = 404, 0);
