@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/24 21:39:29 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/08 17:32:52 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,8 @@ class Response
 		int 								_fd_stdout;
 		int									_fd_pipe[2];
 
+		int									_location_index;
+
 		bool								_is_cgi;
 
 		// Response(Response const &src);
@@ -189,7 +191,7 @@ class Response
 	std::string			get_value(std::string line);
 
 
-	// int					ParsingResponse();
+	int					ParsingResponse();
 	size_t 				getLocation();
 	size_t				regularExpretion();
 	size_t				exactLocation();

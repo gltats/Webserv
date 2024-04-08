@@ -157,7 +157,7 @@ int Response::iscgi(std::string path)
 		//_l = getIndexLocation(path);
 		_l = 0;
 		_indexcgi = true;
-		_is_cgi = true;
+		//_is_cgi = true;
 		return(1);
 	}
 	return (0);

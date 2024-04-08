@@ -1,26 +1,26 @@
 #include "Response.hpp"
 
 
-// int	Response::ParsingResponse()
-// {
+int	Response::ParsingResponse()
+{
 // 	// _l = _configParser.getLocationValue(_serverID, 0, "location"); // Talk to tats
-// 	_l = 1;
-// 	if (_l == std::string::npos)
-// 	{
-// 		return (404);
-// 	}
-// 	else
-// 	{
-// 		changeRoot(); // ^ Root changing
-// 		if (redirection())
-// 			return (_ret); // ^ Redirection
-// 		if (!checkPath())
-// 			return (404); //^ Not found
-// 		if (!allowed())
-// 			return(405); //^ METHOD NOT ALLOWED AND THE RESPONSE SHOULD HAVE A HEADER OF ALLOWED METHODS FOR A REQUEST.
-// 	}
-// 	return (200);
-// }
+	_l = _request.get_location_index(_serverID);
+	if (_l == std::string::npos)
+	{
+		return (404);
+	}
+	else
+	{
+		changeRoot(); // ^ Root changing
+		if (redirection())
+			return (_ret); // ^ Redirection
+		if (!checkPath())
+			return (404); //^ Not found
+		if (!allowed())
+			return(405); //^ METHOD NOT ALLOWED AND THE RESPONSE SHOULD HAVE A HEADER OF ALLOWED METHODS FOR A REQUEST.
+	}
+	return (200);
+}
 
 // /* ************************************************************************** */
 

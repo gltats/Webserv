@@ -6,12 +6,51 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/06 13:09:24 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/08 17:27:16 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include "Connection.hpp"
+
+// TODO move this quick fix to the appropriate file
+std::string         Request::get_location(int const &server_id, int const &location_index) const
+{
+    std::string location_full_line = _connection.get_configParser().getLocationValue(server_id, location_index, "location");
+
+    size_t index_split = location_full_line.find('{');
+    std::string location = location_full_line.substr(0, index_split);
+    if (location[0] != '/')
+        location.insert(0, "/");
+    return(location);
+}
+
+size_t                 Request::get_location_index(int const &server_id) const
+{
+    // TODO add here the getter for the amount of locations
+    // actual number of locations is set to be 2 fixed
+    size_t nb_of_locations = 2; // TODO REMOVE THIS AND ADD THE GETTER FROM CONFIGPARSRE
+    std::string str;
+    size_t pos;
+
+    for (size_t i = 0; i < nb_of_locations; i++)
+    {
+        str.clear();
+        pos = -1;
+        pos = get_uri().find('/');
+        if (pos != std::string::npos)
+        {
+             str = get_uri().substr(0, pos);
+        }
+        else
+            str = get_uri();
+       
+        if (get_location(server_id, i).compare(str) == 0)
+            return (i);
+        
+    }
+    return (std::string::npos); // no match found
+}
 
 Request::Request(Connection &connection): _connection(connection)
 {
@@ -1085,7 +1124,7 @@ void                Request::print_headers_map(void)
 void                Request::print_request(void)
 {
     std::cout << YELLOW << std::endl;
-    std::cout << "-------- Request Line Start --------" << std::endl;
+    std::cout << "-------- Request Line --------" << std::endl;
     std::cout << "\tMethod   <" << get_method() << ">" << std::endl;
     std::cout << "\tUri      <" << get_uri() << ">" << std::endl;
     std::cout << "\tProtocol <" << get_protocol() << ">" << std::endl;
@@ -1098,7 +1137,6 @@ void                Request::print_request(void)
 
     std::cout << "---------  BODY  -------" << std::endl;
     std::cout << "\tBody " << std::endl << "<" << get_body() << ">" << std::endl;
-     std::cout << "---------  Request Line End  -------" << std::endl;
     std::cout << std::endl;
 
 	std::cout << RESET;
@@ -1753,13 +1791,12 @@ If host is a registered name, the registered name is an indirect identifier for 
 for that origin server. If the port subcomponent is empty or not given, TCP port 80 (the reserved port for WWW services) is the default.
 */
 
-
 std::string         Request::get_query(void) const
 {
-    return ("");
+    return("");
 }
 
-int                  Request::get_ret(void) const
-{
-    return (0);
+int                 Request::get_ret(void) const
+{      
+    return(0);
 }

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/06 13:01:35 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/08 17:32:50 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -430,19 +430,19 @@ void	Response::initContentMap()
 std::string Response::call()
 {
 	// remove("./tmpFile");
-	// if (_ret != 200)
-	// 	error();
-	// else {
-	// 	_ret = ParsingResponse();
-	// 	if (_ret != 200)
-	// 		error();
-	// 	else if(_method == "GET")
+	if (_ret != 200)
+		error();
+	else {
+		_ret = ParsingResponse();
+		if (_ret != 200)
+			error();
+		 else if(_method == "GET")
 			getMethod();
 		// else if (_method == "POST")
 		// 	postMethod();
 		// else if (_method == "DELETE")
 		// 	deleteMethod();
-	// }
+	}
 	headerGen();
 	return (_response);
 }
@@ -460,6 +460,8 @@ void	Response::setPath()
 
 		
 	_path = decodePath();
+	_location_index = _request.get_location_index(_serverID);
+	
 	// _root = ("html/index.html"); // Tats config_parser
 	if (_path == "/") // TODO Maira Modified for testing
 		_path = root_path + "/index.html"; // TODO Maira Modified for testing
