@@ -102,7 +102,7 @@ int Response::deafIndex()
 	if (!_request.get_location(_serverID, _location_index).empty())
 	// if (!_server.getLocationValue(0, 0,"location").empty())
 	{
-		_path = request.get_location(_serverID, _location_index);
+		_path = _request.get_location(_serverID, _location_index);
 		// _path = _server.getLocationValue(0, 0, "location"); // ask Maira for this path
 		return(200);
 	}

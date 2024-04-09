@@ -17,15 +17,14 @@ void Response::getMethod()
 
 int Response::readObject()
 {
-// 	if (_cgi)
-// 		return (runcgi());
-// 	else if (isFile())
-// 		return(readFile());
-// 	else if (isIndex())
-// 		return(readDefault());
-// 	return (_ret = 404, 0);
-	// if (isFile())
-	// 	return (
+	if (_cgi)
+		return (runcgi());
+	else if (isFile())
 		return(readFile());
-	// return(_ret = 404, 0);
+	else if (isIndex())
+		return(readDefault());
+	return (_ret = 404, 0);
+	if (isFile())
+		return(readFile());
+	return(_ret = 404, 0);
  }
