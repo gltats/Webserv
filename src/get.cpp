@@ -8,7 +8,7 @@ void Response::getMethod()
 		if (!readObject() || _ret != 200) // inverted as readObject will return 200 if sucess
 		{
 			std::cout << REDB << "Error in function : getMethod reason: ret = _" << _ret << RESET << std::endl; // TODO remove
-			error();
+			error(); // added maira
 		}
 
 			// std::cout << "Error\n";
