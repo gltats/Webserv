@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:33
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-05 18:01:48
+ * @ Modified time: 2024-04-09 15:44:22
  * @ Description: webserv
  */
 
@@ -21,8 +21,10 @@
 #include <cctype>
 
 #include "ConfigFile.hpp"
+#include "CheckParameters.hpp"
 
 class ConfigFile;
+class CheckParameters;
 
 static std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "autoindex", "indexing", "cgi"};
 

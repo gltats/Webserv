@@ -29,7 +29,7 @@ void test()
             std::cout << "Number of servers: " << configParser.getNumServers() << std::endl;
             // std::cout << configParser.getParameterValue(1, "listen") << std::endl;
             std::cout << configParser.getParameterValue(0, "listen") << std::endl;
-
+            std::cout << configParser.getParameterValue(1, "listen") << std::endl;
             std::cout << configParser.getParameterValue(0, "server_name") << std::endl;
             std::cout << configParser.getParameterValue(0, "body_size") << std::endl;
             std::cout << configParser.getParameterValue(0, "error_number") << std::endl;

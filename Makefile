@@ -37,8 +37,8 @@ CC = clang++
 CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
 
 # Folders & files
-FILES = main ConfigParser ConfigFile
-HEADER_FILES = ConfigParser ConfigFile
+FILES = main ConfigParser CheckParameters ConfigFile
+HEADER_FILES = ConfigParser CheckParameters ConfigFile
 
 # Source files
 SRC = $(addsuffix .cpp, $(addprefix src/, $(FILES)))

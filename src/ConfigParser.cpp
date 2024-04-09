@@ -2,12 +2,11 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-05 18:16:48
+ * @ Modified time: 2024-04-09 16:52:08
  * @ Description: webserv
  */
 
 #include "ConfigParser.hpp"
-
 // Default constructor
 ConfigParser::ConfigParser() : servers()
 {
@@ -73,14 +72,20 @@ void ConfigParser::getConfig(const std::string &configtFile)
 
 	splitServers(content);
 	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
-	{
+	{	
 		parameters = parseParameters(*it);
 		std::vector<std::map<std::string, std::string> > locations = parseLocations(*it);
 
 		serverParameters.push_back(parameters);
 		serverLocations.push_back(locations);
+
+
 	}
-	print(); // test function
+	// print(); // test function
+		CheckParameters parametersChecker;
+    parametersChecker.CheckAllParameters(*this);
+
+
 }
 
 // helper functions
@@ -208,28 +213,6 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 		}
 	}
 	return parameters;
-}
-
-void ConfigParser::checkCorrectParameters(std::map<std::string, std::string> parameters)
-{
-	std::string listenValue = parameters["listen"];
-	std::string serverName = parameters["server_name"];
-	std::string bodySize = parameters["body_size"];
-	std::string errorNumber = parameters["error_number"];
-
-	if (listenValue.empty() || serverName.empty() || bodySize.empty())
-		throw std::invalid_argument("Empty value on configuration file");
-	else if (!isDigit(listenValue) || !isDigit(bodySize))
-		throw std::invalid_argument("Value is not a digit");
-	if (errorNumber != "400" && errorNumber != "401" && errorNumber != "403" && errorNumber != "404" && errorNumber != "405" && errorNumber != "408" && errorNumber != "413" && errorNumber != "414" && errorNumber != "415" && errorNumber != "418" && errorNumber != "500" && errorNumber != "501" && errorNumber != "504" && errorNumber != "505")
-	{
-		throw std::invalid_argument("Invalid value for 'error_number'");
-	}
-
-	listenValues.insert(listenValue);
-	listenValues.insert(serverName);
-	listenValues.insert(bodySize);
-	listenValues.insert(errorNumber);
 }
 
 bool ConfigParser::isDigit(const std::string &str)
