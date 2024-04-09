@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/06 13:11:30 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/09 19:41:22 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,12 @@ void				Connection::print_request(void)
 void				Connection::create_response(void)
 {
 	_response.create_response(_request.get_server_id());
-	
+
 
 	std::cout << CYAN << "-------- Response Line Start --------" << std::endl;// TODO remove, only for testing
 	std::cout << "<" << _response.get_response() << ">" << std::endl; // TODO remove, only for testing
 	std::cout << "-------- Response Line Start --------" << RESET << std::endl  << std::endl; // TODO remove, only for testing
-} 
+}
 
 
 int					Connection::get_fd_pipe_0(void) const
@@ -87,7 +87,7 @@ int					Connection::get_fd_pipe_0(void) const
 
 // 	//if fd from a cgi read
 // 	{
-// 		// reading returned valus from cgi pipe. 
+// 		// reading returned valus from cgi pipe.
 // 		dup2(_response.get_fd_pipe_0(), STDIN_FILENO);
 // 		fd_read = STDIN_FILENO;
 // 		is_cgi_read = true;
@@ -123,13 +123,13 @@ int					Connection::get_fd_pipe_0(void) const
 // 			_request.print_request();
 // 		_is_read_complete = 1;
 // 	}
-	
 
-	
 
-	
-	
-	
+
+
+
+
+
 // 	// else
 // 	// 	print_error_fd("No request received from connection fd ", _connection_socket);
 // }
@@ -187,7 +187,13 @@ void					Connection::parse_request(char const *buffer, size_t buffer_size)
 {
 	if (buffer_size == 0) // not used, consume
 		std::cout << "";
+
 	_request.parse_request(buffer);
+
+
+	// for testing:
+	std::cout << "--Error pages format received from configParser---"; // TODO remvremove
+	std::cout << "<" << _configParser.getParameterValue(_request.get_server_id(), "error_page") << ">" << std::endl;; // TODO remove
 }
 
 bool					Connection::response_is_cgi(void)

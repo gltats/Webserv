@@ -56,21 +56,21 @@ std::string Response::get_Redirection()
 
 
 /* ************************************************************************** */
-
-// std::string Response::get_Allow_Methods()
-// {
-// 	std::string allowed;
-// 	if (_l != std::string::npos)
-// 	{
-// 		for (std::vector<std::string>::iterator it = server.locations[_l].allow_methods.begin(); \
-//             it != server.locations[_l].allow_methods.end(); it++) {
-// 			allowed.append(" ").append(*it);
-// 		}
-// 		return (allowed.append("\r\n\r\n"));
-// 	}
-// 	return("");
-// }
-
+/*
+std::string Response::get_Allow_Methods()
+{
+	std::string allowed;
+	if (_l != std::string::npos)
+	{
+		for (std::vector<std::string>::iterator it = server.locations[_l].allow_methods.begin(); \
+            it != server.locations[_l].allow_methods.end(); it++) {
+			allowed.append(" ").append(*it);
+		}
+		return (allowed.append("\r\n\r\n"));
+	}
+	return("");
+}
+*/
 
 /* ************************************************************************** */
 
