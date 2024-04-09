@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/09 19:41:22 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/09 19:53:50 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,9 @@ void				Connection::create_response(void)
 	_response.create_response(_request.get_server_id());
 
 
-	std::cout << CYAN << "-------- Response Line Start --------" << std::endl;// TODO remove, only for testing
-	std::cout << "<" << _response.get_response() << ">" << std::endl; // TODO remove, only for testing
-	std::cout << "-------- Response Line Start --------" << RESET << std::endl  << std::endl; // TODO remove, only for testing
+	// std::cout << CYAN << "-------- Response Line Start --------" << std::endl;// TODO remove, only for testing
+	// std::cout << "<" << _response.get_response() << ">" << std::endl; // TODO remove, only for testing
+	// std::cout << "-------- Response Line Start --------" << RESET << std::endl  << std::endl; // TODO remove, only for testing
 }
 
 
