@@ -22,6 +22,7 @@ class CheckParameters
         std::string indexingParam;
         std::string cgiParam;
         bool isValidPort(const std::string &port);
+        bool isValidBodySize(const std::string &serverName);
 
     public:
         CheckParameters();
@@ -29,5 +30,6 @@ class CheckParameters
         CheckParameters(const CheckParameters &copy);
         ~CheckParameters();
         void CheckAllParameters(ConfigParser &configParser);
+
 
 };

@@ -28,11 +28,11 @@ void CheckParameters::CheckAllParameters(ConfigParser &configParser)
     {
         listenParam = configParser.getParameterValue(i, "listen");
         // serverNameParam = configParser.getParameterValue(i, "server_name");
-        // bodySizeParam = configParser.getParameterValue(i, "body_size");
+        bodySizeParam = configParser.getParameterValue(i, "body_size");
         // errorPageParam = configParser.getParameterValue(i, "error_page");
         // errorNumberParam = configParser.getParameterValue(i, "error_number");
         // errorLocationParam = configParser.getParameterValue(i, "error_location");
-        if (listenParam.empty())
+        if (listenParam.empty() || bodySizeParam.empty())
         {
             throw std::invalid_argument("One or more parameters are missing");
         }
@@ -41,9 +41,14 @@ void CheckParameters::CheckAllParameters(ConfigParser &configParser)
             std::cout << "Port number is NOT valid: " << listenParam << std::endl; // FOR TESTING
             // throw std::invalid_argument("Invalid port number");
         }
+        if(isValidBodySize(bodySizeParam) == false)
+        {
+            std::cout << "Body size is NOT valid: " << bodySizeParam << std::endl; // FOR TESTING
+        }
         else
         {
             std::cout << "Port number is valid: " << listenParam << std::endl; // FOR TESTING
+            std::cout << "Body size is valid: " << bodySizeParam << std::endl; // FOR TESTING
         }
 
         // for (int j = 0; j < locationIndex; j++)
@@ -98,4 +103,25 @@ bool CheckParameters::isValidPort(const std::string &port)
     int portNumber;
     iss >> portNumber;
     return portNumber >= 1024 && portNumber <= 49151;
+}
+
+/*
+A common range for client_max_body_size might be between 1m and 100m.
+1 megabyte is equal to 1,048,576 bytes (in binary systems, which is typically used in computing).
+
+So, 1 megabyte would be 1 * 1,048,576 bytes, which equals 1,048,576 bytes.
+and 100 megabytes would be 100 * 1,048,576 bytes, which equals 104,857,600 bytes.
+
+*/
+bool CheckParameters::isValidBodySize(const std::string &bodySize)
+{
+    for (std::string::const_iterator it = bodySize.begin(); it != bodySize.end(); ++it)
+    {
+        if (!isdigit(*it))
+            return false;
+    }
+    std::istringstream iss(bodySize);
+    int bodySizeNum;
+    iss >> bodySizeNum;
+    return bodySizeNum >= 1048576 && bodySizeNum <= 104857600;
 }
