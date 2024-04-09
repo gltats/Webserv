@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/09 19:50:00 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/09 22:10:08 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -429,15 +429,16 @@ void	Response::initContentMap()
 
 std::string Response::call()
 {
+
 	// remove("./tmpFile");
 	// if (_ret != 200)
 	// 	error();
 	// else {
 	// 	_ret = ParsingResponse();
-	// 	if (_ret != 200)
-	// 		error();
+		if (_ret != 200)
+			error();
 		//  else if(_method == "GET")
-			getMethod();
+		getMethod();
 		// else if (_method == "POST")
 		// 	postMethod();
 		// else if (_method == "DELETE")
