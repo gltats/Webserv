@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/08 17:27:16 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/09 21:42:03 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,27 +27,30 @@ std::string         Request::get_location(int const &server_id, int const &locat
 
 size_t                 Request::get_location_index(int const &server_id) const
 {
-    // TODO add here the getter for the amount of locations
-    // actual number of locations is set to be 2 fixed
-    size_t nb_of_locations = 2; // TODO REMOVE THIS AND ADD THE GETTER FROM CONFIGPARSRE
     std::string str;
     size_t pos;
 
-    for (size_t i = 0; i < nb_of_locations; i++)
+    for (size_t i = 0; i < _connection.get_configParser().getNumLocations(_server_id); i++)
     {
         str.clear();
-        pos = -1;
-        pos = get_uri().find('/');
-        if (pos != std::string::npos)
+        if ( get_uri().length() == 1 && get_uri().compare("/") == 0)
         {
-             str = get_uri().substr(0, pos);
+            str = get_uri();
+            return (i);
         }
         else
-            str = get_uri();
-       
+        {
+            pos = -1;
+            pos = get_uri().find('/', 1);
+            if (pos != std::string::npos)
+            {
+                str = get_uri().substr(0, pos);
+            }
+            else
+                str = get_uri();
+        }
         if (get_location(server_id, i).compare(str) == 0)
             return (i);
-        
     }
     return (std::string::npos); // no match found
 }
@@ -99,7 +102,7 @@ void    Request::_cleanMemory(void)
     _version.clear();
 
     _content_len = 0;
-    _error = 0;
+    _error = 200; // arafa is expecting 200 if all is ok
 
     _headers_map.clear();
 }
@@ -1798,5 +1801,5 @@ std::string         Request::get_query(void) const
 
 int                 Request::get_ret(void) const
 {      
-    return(0);
+    return(_error);
 }

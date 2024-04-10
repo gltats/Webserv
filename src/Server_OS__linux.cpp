@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/06 13:04:38 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/09 21:24:57 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -461,7 +461,7 @@ void	ServerOS::_loop(void)
 							_fd2client_map[ep_event[i].data.fd]->print_request();
 						
 
-						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 0)
+						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 200)
 						{
 							std::cerr << "Error in Request-  error page: " << _fd2client_map[ep_event[i].data.fd]->get_error() << std::endl;
 							print_error("Error: Connection closed. Please retry");
