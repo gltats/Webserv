@@ -48,7 +48,9 @@
 #include <ctime>
 #include <stdlib.h>
 #include <limits>
-
+#include <iterator>
+#include  <algorithm>
+#include <sstream>
 #include "Request.hpp"
 #include "library.hpp"
 #include "ConfigParser.hpp"
@@ -199,11 +201,11 @@ class Response
 	void				nextpath(std::string &path);
 	size_t				rootLocation();
 	int 				redirection();
-	// void				changeRoot();
+	void				changeRoot();
 	int					deafIndex();
 	std::string 		get_index();
-	// int					allowed();
-	// int					checkPath();
+	int					allowed();
+	int					checkPath();
 
 
 	std::string			call();
@@ -221,7 +223,7 @@ class Response
 	int 				isFile();
 	int					readObject();
 	int					readFile();
-	// int					isIndex();
+	int					isIndex();
 	int					readDefault();
 	size_t				getIndexLocation(std::string path);
 	std::string			getIndex();
@@ -229,7 +231,7 @@ class Response
 	std::string			getLastReadTime(struct dirent *dirName);
 	std::string			getSize(struct dirent *dirName);
 
-
+	std::string returned; // Review this
 
 	//! FUNCTIONS FOR POST METHOD
 	void				postMethod();

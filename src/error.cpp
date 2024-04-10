@@ -11,10 +11,12 @@ void Response::error()
 				// spError(server.error_page[i].page);  // original
 
 		// this get's the error code defined by the user in the configuration file
-		std::cout << REDB << "Finding an error page :" << _ret << RESET << std::endl;
 		if (_ret == str2int(_server.getParameterValue(_serverID, "error_number"))) // modified maira
 		{
-			_Resbody = setErrorPage(_server.getParameterValue(_serverID, "error_location"), to_String(_ret));
+			std::string error_page_path = ROOT;
+			error_page_path.append("/");
+			error_page_path.append(_server.getParameterValue(_serverID, "error_location"));
+			_Resbody = setErrorPage(error_page_path, to_String(_ret));
 			return ;
 		}
 
@@ -23,19 +25,21 @@ void Response::error()
 		{
 			// build servers predefined errors pages path
 			std::string error_page_path = "./frontEnd/error/error" + int2str(_ret) + ".html";
-
+			
 			// check if exist
 			if (access(error_page_path.c_str(), R_OK) == 0)
 			{
-				_Resbody = setErrorPage(error_page_path, to_String(_ret));
+				_Resbody = setErrorPage(error_page_path,to_String(_ret));
 				return ;
-			}
+			}	
 			else
 			{
-				std::cerr << REDB << "Error page :" << error_page_path << ", does not exist or not accessable" << std::endl;
+				std::cerr << REDB << "Error page :" << error_page_path << ", does not exist or not accessable" << std::endl;	
 				// return the default one in defError
 			}
 		// }
+			
+
 	}
 	defError();
 }

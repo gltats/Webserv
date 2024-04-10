@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/09 22:03:42 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/09 21:24:57 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,7 +408,7 @@ void	ServerOS::_loop(void)
 					// int fd_read = -1;
 
 					clear_memory(buffer, MAXMSG);
-
+			
 					if (_is_key_in_map (&_fd2client_map, ep_event[i].data.fd))
 					{
 						is_cgi = false;
@@ -417,7 +417,7 @@ void	ServerOS::_loop(void)
 					{
 						is_cgi = true;
 					}
-
+					
 					size_data_recv = read(ep_event[i].data.fd , buffer, MAXMSG);
 
 					if (size_data_recv == -1 || size_data_recv == 0)
@@ -428,7 +428,7 @@ void	ServerOS::_loop(void)
 						{
 							std::cout << REDB << "Closing file descriptor pipe read " << ep_event[i].data.fd << RESET << std::endl;
 							close(ep_event[i].data.fd);
-						}
+						}	
 						else
 						{
 							std::cout << REDB << "Closing connection sockets " << ep_event[i].data.fd << " and returning" << RESET << std::endl;
@@ -459,7 +459,7 @@ void	ServerOS::_loop(void)
 
 						if (VERBOSE == 1)
 							_fd2client_map[ep_event[i].data.fd]->print_request();
-
+						
 
 						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 200)
 						{
@@ -497,12 +497,12 @@ void	ServerOS::_loop(void)
 									continue;
 								}
 
-							}
+							}	
 							else
 								_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(true);
 
 						}
-
+							
 					}
 				}
 			}
@@ -535,7 +535,7 @@ void	ServerOS::_loop(void)
 					{
 						std::cerr << "Generic Exception during send_response" << '\n';
 						std::cerr << e.what() << '\n';
-						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
+						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server); 
 						continue;
 					}
 

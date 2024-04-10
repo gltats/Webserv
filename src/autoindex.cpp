@@ -1,21 +1,20 @@
 #include "Response.hpp"
 
-/*
-std::string	Response::getLastReadTime(struct dirent *dirName)
-{
-	struct stat st;
-	std::string dirname = dirName->d_name;
-	std::string tmpPath = server.root + "/" +  dirname;
 
-	if (stat(tmpPath.c_str(), &st))
-		return("Can't get the folder infos");
+// std::string	Response::getLastReadTime(struct dirent *dirName)
+// {
+// 	struct stat st;
+// 	std::string dirname = dirName->d_name;
+// 	std::string tmpPath = server.root + "/" +  dirname;
 
-	time_t accessTime = st.st_atime;
+// 	if (stat(tmpPath.c_str(), &st))
+// 		return("Can't get the folder infos");
 
-	return(ctime(&accessTime));
+// 	time_t accessTime = st.st_atime;
+	
+// 	return(ctime(&accessTime));
 
-}
-*/
+// }
 
 /* ************************************************************************** */
 // std::string Response::getSize(struct dirent *dirName)
@@ -25,8 +24,8 @@ std::string	Response::getLastReadTime(struct dirent *dirName)
 // 	std::string dirname = dirName->d_name;
 // 	std::string tmpPath = server.root + "/" +  dirname;
 
-// 	if (stat(tmpPath.c_str(), &st))
-// 		return(0);
+// 	if (stat(tmpPath.c_str(), &st))	
+// 		return(0);	
 // 	s << st.st_size;
 
 //  	return(s.str());
@@ -72,7 +71,7 @@ std::string Response::getIndex()
    <h1> Index of "+ server.root +" </h1>\n\
    <pre style=\"text-align:center;\">\n\
    <p>" ;
-
+	
 	if (dir == NULL)
 	{
 		std::cerr << "Error: could not open  the " << server.root <<  std::endl;
@@ -94,14 +93,14 @@ std::string Response::getIndex()
 	std::string string = "Hello There";
 
 	return string;
-
-
+	
+	
 }
 
 /* ************************************************************************** */
 
 int Response::deafIndex()
-{
+{ 
 
 	if (!_request.get_location(_serverID, _location_index).empty())
 	// if (!_server.getLocationValue(0, 0,"location").empty())

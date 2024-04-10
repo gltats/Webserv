@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/09 22:10:08 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/08 17:32:50 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void	Response::create_response(int server_id)
 		changeHost();
 	call(); // added function to create a response
 	//_parse_response(_request);
-
+	
 }
 
 std::string		Response::get_response(void) const
@@ -94,7 +94,7 @@ void Response::process_cgi(char const *buffer, int buffer_size)
 {
 	if (buffer_size == 0 && buffer[0] != 'c') // consume as it is not used at the moment
 		std::cout << "";
-// 	// dup2(_response.get_fd_stdin(), STDIN_FILENO);
+// 	// dup2(_response.get_fd_stdin(), STDIN_FILENO); 
 // 	// create a response
 // 	// close(_ fd_pipe[0]);
 // 	_create_status_line();
@@ -124,7 +124,7 @@ void Response::process_cgi(char const *buffer, int buffer_size)
 // 			std::cout << "Error: pipe creation" << std::endl;
 // 			return ;
 // 		}
-// 		std::cout << "pipe0 is fd" << _fd_pipe[0] << std::endl; //remove
+// 		std::cout << "pipe0 is fd" << _fd_pipe[0] << std::endl; //remove 
 // 		// it is a cgi
 // 		pid_t pid;
 // 		pid = fork();
@@ -143,7 +143,7 @@ void Response::process_cgi(char const *buffer, int buffer_size)
 // 				python_path = python_path_linux;
 
 
-
+		
 // 			uri.erase(0, 1);
 // 			char *exe[3] = {python_path, (char *)uri.c_str(), 0};
 
@@ -195,7 +195,7 @@ void Response::process_cgi(char const *buffer, int buffer_size)
 // }
 
 
-
+		
 bool		Response::get_is_cgi(void)
 {
 	return (_is_cgi);
@@ -429,21 +429,20 @@ void	Response::initContentMap()
 
 std::string Response::call()
 {
-
 	// remove("./tmpFile");
-	// if (_ret != 200)
-	// 	error();
-	// else {
-	// 	_ret = ParsingResponse();
+	if (_ret != 200)
+		error();
+	else {
+		_ret = ParsingResponse();
 		if (_ret != 200)
 			error();
-		//  else if(_method == "GET")
-		getMethod();
+		 else if(_method == "GET")
+			getMethod();
 		// else if (_method == "POST")
 		// 	postMethod();
 		// else if (_method == "DELETE")
 		// 	deleteMethod();
-	// }
+	}
 	headerGen();
 	return (_response);
 }
@@ -455,14 +454,14 @@ void	Response::setPath()
 	std::string root_path = ROOT; // ADDED Maira
 	// if (server.root[server.root.length() - 1] == '/') // ORIGINAL
 	// 	server.root.erase(server.root.length() - 1); // ORIGINAL
-
+	
 	// this->_path = request.get_path(); // ORIGINAL
 	this->_path = _request.get_uri(); // MODIFIED
 
-
+		
 	_path = decodePath();
 	_location_index = _request.get_location_index(_serverID);
-
+	
 	// _root = ("html/index.html"); // Tats config_parser
 	if (_path == "/") // TODO Maira Modified for testing
 		_path = root_path + "/index.html"; // TODO Maira Modified for testing

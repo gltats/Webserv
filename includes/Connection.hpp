@@ -68,7 +68,7 @@ class Connection
 		bool								response_is_cgi(void);
 		void								process_cgi(char const *buffer, size_t buffer_size);
 		void								parse_request(char const *buffer, size_t buffer_size);
-
+		
 
 		std::string							get_client_ip(void) const;
 		std::string							get_client_port(void) const;

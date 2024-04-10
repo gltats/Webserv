@@ -50,7 +50,7 @@ CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
 
 # else ifeq ($(shell uname), Linux) # Linux
 FILES = main signal_handler library ConfigParser ConfigFile   AServer Server_OS__linux Request Response Connection Webserv_Exceptions \
-		 response_head utilities get reading autoindex cgi error #responseUtilities
+		 response_head utilities get reading autoindex cgi error responseUtilities
 OS_NAME = "Linux OS"
 # add a extra linux identifier for docker if missing
 CFLAGS += -D__linux__

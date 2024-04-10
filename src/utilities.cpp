@@ -56,6 +56,7 @@ std::string Response::get_Redirection()
 
 
 /* ************************************************************************** */
+
 /*
 std::string Response::get_Allow_Methods()
 {
@@ -122,7 +123,7 @@ std::string Response::setErrorPage(std::string path, std::string status_code)
 
 	std::string line;
 	std::string lines;
-
+	std::cout << "error page path " << path  << ", error code " << status_code << std::endl; // TODO remove
 
 	while (getline(file, line))
 		lines.append(line + "\n");

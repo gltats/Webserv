@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/09 20:51:59 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/10 18:07:53 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,16 +187,7 @@ void					Connection::parse_request(char const *buffer, size_t buffer_size)
 {
 	if (buffer_size == 0) // not used, consume
 		std::cout << "";
-
 	_request.parse_request(buffer);
-
-
-	// for testing:
-	// std::cout << "--Error pages format received from configParser---"; // TODO remvremove
-	// std::cout << "<" << _configParser.getParameterValue(_request.get_server_id(), "error_number") << ">" << std::endl;; // TODO remove
-
-	// std::cout << "--Error pages location received from configParser---"; // TODO remvremove
-	// std::cout << "<" << _configParser.getParameterValue(_request.get_server_id(), "error_location") << ">" << std::endl;; // TODO remove
 }
 
 bool					Connection::response_is_cgi(void)

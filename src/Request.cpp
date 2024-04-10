@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:48:56 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/09 21:59:56 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/09 21:42:03 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ Request::Request(Connection &connection): _connection(connection)
 
     // allowed methods:  getLocationValue(i, j, "allow_methods")
 
-    // std::cout << CYAN <<  "allow methods Get <" << connection.get_configParser().getServerParameters()
+    // std::cout << CYAN <<  "allow methods Get <" << connection.get_configParser().getServerParameters() 
     // if (_config_map["allow_GET"].compare("y") == 0)
 	// 	_allow_GET = true;
 	// else
@@ -1166,7 +1166,7 @@ void                Request::_process_body(std::string body)
         //     std::cerr << REDB  << "mismatch from Content-Header field value and actual body length received. _content_len :" <<_content_len << ", body length: " << _body.length() << RESET << std::endl;
         //     throw BadRequestException();
         // }
-        // else
+        // else 
         if (_content_len > MAX_BODY_SIZE)
         {
             std::cerr << REDB << "body is bigger than define max body size in ConfigFile" << RESET << std::endl;
@@ -1800,6 +1800,6 @@ std::string         Request::get_query(void) const
 }
 
 int                 Request::get_ret(void) const
-{
+{      
     return(_error);
 }
