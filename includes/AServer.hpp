@@ -1,67 +1,63 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   AServer.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/04/11 18:39:04 by mgranero          #+#    #+#             */
+/*   Updated: 2024/04/11 21:54:10 by mgranero         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #ifndef SERVER_HPP
-#define SERVER_HPP
+# define SERVER_HPP
 
-#include <iostream>
+# include <iostream>
+# include <fcntl.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# include <netinet/in.h>
+# include <sys/un.h>
+# include <unistd.h>
+# include <map>
 
-// file descriptors
-#include <fcntl.h>
+# include "color_code.hpp"
+# include "library.hpp"
+# include "Connection.hpp"
 
-#include <stdlib.h> // for exit, is exit allowed
+# ifndef MAX_BACKLOG_QUEUE
+#  define MAX_BACKLOG_QUEUE 128
+# endif
 
-// socket libraries
-#include <sys/socket.h>
-#include <netinet/in.h> // AF_INET
-#include <netdb.h>
-#include <netinet/in.h> // for IPROTO_TCP protocol
-#include <sys/un.h> // to suport struct_addr_un
-
-// c basics
-#include <unistd.h>
-#include <map>
-
-// project basics
-#include "color_code.hpp"
-#include "library.hpp"
-#include "Connection.hpp"
-
-#ifndef VERBOSE
-#define VERBOSE 0
-#endif
+# ifndef MAX_MSG_BUFFER
+#  define MAX_MSG_BUFFER 8192*200
+# endif
 
 class Server
 {
 	protected:
+
+		// Attributes
 		int									_server_index;
 		ConfigParser 						&_configParser;
-
 		int									_max_backlog_queue;
-
 		char								**_env;
-
-		// map to hold Connection Object pointer per file descriptor
 		std::map<int, Connection *>			_fd2client_map;
 
-
-		// Server(void);
-		// Server(Server const & src);
-		Server								&operator=(Server const &rhs);
-		// void								_setup_server(void);
+		// Member Functions
 		virtual int							_setup_socket(int port) = 0;
 		virtual void						_loop(void) = 0;
 		virtual void	    				_listen_sockets(int fd_server, int port) = 0;
-
+		virtual void	   					_close_server_socket(int fd) = 0;
 
 	public:
-		// does the server needs the map to the error pages or only the response object?
+
+		// Member Functions
 		Server(int server_index, ConfigParser &configParser, char *env[]);
-
 		virtual 							~Server(void);
-
 		virtual void						launch_webserver(void)  = 0;
-
-		virtual void	   					 close_server_socket(int fd) = 0;
-
 };
 
 #endif

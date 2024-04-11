@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/03/23 15:26:12 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/11 21:49:24 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,17 +16,25 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <cerrno>
-#include <sys/un.h> 
-#include <arpa/inet.h> 
+#include <sys/un.h>
+#include <arpa/inet.h>
+
 #include "color_code.hpp"
+#include "iomanip" // only for testing
 #include "Request.hpp"
 #include "Response.hpp"
+
+# ifndef KEEP_ALIVE_TIME_SECONDS
+// set it to -1 to deactivate keep alive persistent connections
+# define KEEP_ALIVE_TIME_SECONDS 30
+# endif
 
 class Connection
 {
 	private:
+		static int							_nb_connections;
 		ConfigParser 						&_configParser;
 		char								**_env;
 		int									_connection_socket;
@@ -40,6 +48,8 @@ class Connection
 		Response							_response;
 		bool								_is_read_complete;
 		// bool					_			is_write_complete;
+ 		const std::clock_t 					c_start;
+		bool								_keep_alive;
 
 		std::string							_client_ip;
 		std::string							_client_port;
@@ -68,7 +78,7 @@ class Connection
 		bool								response_is_cgi(void);
 		void								process_cgi(char const *buffer, size_t buffer_size);
 		void								parse_request(char const *buffer, size_t buffer_size);
-		
+
 
 		std::string							get_client_ip(void) const;
 		std::string							get_client_port(void) const;
@@ -78,7 +88,8 @@ class Connection
 		ConfigParser						&get_configParser(void) const;
 		int									get_connection_socket(void) const;
 		int									get_server_socket(void) const;
-
+		static int							get_nb_connections(void);
+		bool 								get_keep_alive(void) const;
 };
 
 #endif

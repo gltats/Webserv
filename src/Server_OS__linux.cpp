@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_OS__linux.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgranero <mgranero@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/09 21:24:57 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/11 21:25:04 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void	ServerOS::_listen_sockets(int fd_server, int port)
 }
 
 
-void	ServerOS::close_server_socket(int fd)
+void	ServerOS::_close_server_socket(int fd)
 {
 	// can we just looop all of them or do i have the need to close only one?
 	for (int i = 0; i < _nb_of_servers; i++)
@@ -216,7 +216,7 @@ ServerOS::~ServerOS(void)
 
 	for (int i = 0; i < _nb_of_servers; i++)
 	{
-		close_server_socket(_servers_fd[i]);
+		_close_server_socket(_servers_fd[i]);
 	}
 
 	// free server sockets array
@@ -399,16 +399,18 @@ void	ServerOS::_loop(void)
 					std::cout << std::endl << "New client connected in fd " << client_fd << std::endl;
 					std::cout << "Client IP: " << _fd2client_map[client_fd]->get_client_ip() << std::endl;
 					std::cout << "Client PORT: " << _fd2client_map[client_fd]->get_client_port() << std::endl;
+					std::cout << "Current number of connected Clients: " << Connection::get_nb_connections() << std::endl;
+
 				}
 				else // file descriptor ready to read
 				{
 					bool is_cgi = false;
-					char buffer[MAXMSG];
+					char buffer[MAX_MSG_BUFFER];
 					int size_data_recv = 0;
 					// int fd_read = -1;
 
-					clear_memory(buffer, MAXMSG);
-			
+					clear_memory(buffer, MAX_MSG_BUFFER);
+
 					if (_is_key_in_map (&_fd2client_map, ep_event[i].data.fd))
 					{
 						is_cgi = false;
@@ -417,8 +419,8 @@ void	ServerOS::_loop(void)
 					{
 						is_cgi = true;
 					}
-					
-					size_data_recv = read(ep_event[i].data.fd , buffer, MAXMSG);
+
+					size_data_recv = read(ep_event[i].data.fd , buffer, MAX_MSG_BUFFER);
 
 					if (size_data_recv == -1 || size_data_recv == 0)
 					{
@@ -428,7 +430,7 @@ void	ServerOS::_loop(void)
 						{
 							std::cout << REDB << "Closing file descriptor pipe read " << ep_event[i].data.fd << RESET << std::endl;
 							close(ep_event[i].data.fd);
-						}	
+						}
 						else
 						{
 							std::cout << REDB << "Closing connection sockets " << ep_event[i].data.fd << " and returning" << RESET << std::endl;
@@ -459,7 +461,7 @@ void	ServerOS::_loop(void)
 
 						if (VERBOSE == 1)
 							_fd2client_map[ep_event[i].data.fd]->print_request();
-						
+
 
 						if (_fd2client_map[ep_event[i].data.fd]->get_error() != 200)
 						{
@@ -497,12 +499,12 @@ void	ServerOS::_loop(void)
 									continue;
 								}
 
-							}	
+							}
 							else
 								_fd2client_map[ep_event[i].data.fd]->set_is_read_complete(true);
 
 						}
-							
+
 					}
 				}
 			}
@@ -535,7 +537,7 @@ void	ServerOS::_loop(void)
 					{
 						std::cerr << "Generic Exception during send_response" << '\n';
 						std::cerr << e.what() << '\n';
-						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server); 
+						_close_connection(_epoll_fd, ep_event[i].data.fd, _ev_server);
 						continue;
 					}
 

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/10 18:07:53 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/10 21:59:08 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,16 @@
 
 // }
 
-Connection::Connection(ConfigParser &configParser, int connection_socket, struct sockaddr_in &client_addr, int server_socket, int *servers_fd, char *env[]):  _configParser(configParser),  _env(env),  _connection_socket(connection_socket), _server_socket(server_socket), _servers_fd(servers_fd), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*200),_request(*this), _response(configParser, _request, env), _is_read_complete(0)
+//initialize static member of Connection
+int Connection::_nb_connections = 0;
+
+Connection::Connection(ConfigParser &configParser, int connection_socket, struct sockaddr_in &client_addr, int server_socket, int *servers_fd, char *env[]):  _configParser(configParser),  _env(env),  _connection_socket(connection_socket), _server_socket(server_socket), _servers_fd(servers_fd), _size_data_recv(0), _flags_recv(0), _buffer_rcv_size(8192*200),_request(*this), _response(configParser, _request, env), _is_read_complete(0), c_start(std::clock()), _keep_alive(true)
 {
+	_nb_connections++;
+
+	// deactive keep alive if KEEP_ALIVE_TIME_SECONDS = -1
+	if (KEEP_ALIVE_TIME_SECONDS == -1)
+		_keep_alive = false;
 
 	_buffer_rcv = new char[_buffer_rcv_size];
 
@@ -28,12 +36,13 @@ Connection::Connection(ConfigParser &configParser, int connection_socket, struct
 	_obtain_client_port(client_addr);
 
 	if (VERBOSE == 1)
-		std::cout << "Connection constructor" << std::endl;
+		std::cout << std::endl << "Connection constructor connection " << _connection_socket << std::endl;
 
 }
 
 Connection::~Connection(void)
 {
+	_nb_connections--;
 	if (VERBOSE == 1)
 		std::cout << "Connection deconstructor fd "<< _connection_socket << std::endl;
 
@@ -77,6 +86,12 @@ int					Connection::get_fd_pipe_0(void) const
 {
 		return ( _response.get_fd_pipe_0());
 }
+
+int					Connection::get_nb_connections(void)
+{
+	return (_nb_connections);
+}
+
 
 // void				Connection::receive_request(void)
 // {
@@ -185,6 +200,13 @@ void					Connection::process_cgi(char const *buffer, size_t buffer_size)
 
 void					Connection::parse_request(char const *buffer, size_t buffer_size)
 {
+	const std::clock_t	c_current = std::clock();
+
+	if (KEEP_ALIVE_TIME_SECONDS != -1 && ((c_current - c_start) / CLOCKS_PER_SEC) > KEEP_ALIVE_TIME_SECONDS)
+		_keep_alive = false;
+	std::cout << "Connection on socket " << _connection_socket << ", elapsed time is " << std::fixed << std::setprecision(10) <<  ((c_current - c_start) / CLOCKS_PER_SEC) << " seconds" << std::endl; // TODO remove
+
+	// check if connection must be terminated after this request
 	if (buffer_size == 0) // not used, consume
 		std::cout << "";
 	_request.parse_request(buffer);
@@ -280,4 +302,9 @@ int						Connection::get_connection_socket(void) const
 int						Connection::get_server_socket(void) const
 {
 	return (_server_socket);
+}
+
+bool 					Connection::get_keep_alive(void) const
+{
+	return (_keep_alive);
 }

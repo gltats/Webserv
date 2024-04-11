@@ -16,16 +16,14 @@
 # include <iostream>
 # include <sstream>
 # include <stdlib.h>
-# include "Webserv_Exceptions.hpp"
 # include <color_code.hpp>
+# include "Webserv_Exceptions.hpp"
 
-std::string	size_t2str(size_t nb);
-std::string	int2str(int nb);
-int     	str2int(std::string);
-void	    clear_memory(void *dest, size_t size);
-void	    print_error(std::string error_msg);
-void	    print_error_fd(std::string error_msg, int fd);
-void	    print_error_error_exit(std::string error_msg, int exit_code);
-// void	    print_error_throw_exception(std::string &error_msg, std::exception except_class);
+std::string		size_t2str(size_t nb);
+std::string		int2str(int nb);
+int				str2int(std::string);
+void			clear_memory(void *dest, size_t size);
+void			print_error(std::string error_msg);
+void			print_error_fd(std::string error_msg, int fd);
 
 #endif

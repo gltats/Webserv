@@ -43,7 +43,8 @@ int			str2int(std::string str)
 
 	if (str2nb.fail() == true)
 	{
-		std::cerr << REDB << "Error:\nConversion failed in str2int. The input string '" << str << "' is not a valid integer. Returned -1" << RESET << std::endl;
+		std::cerr << REDB << "Error:\nConversion failed in str2int. The input string '";
+		std::cerr << str << "' is not a valid integer. Returned -1" << RESET << std::endl;
 		nb = -1;
 	}
 	return (nb);
@@ -71,22 +72,8 @@ void		print_error(std::string error_msg)
 	std::cerr << REDB << "Error:\n" << error_msg << RESET << std::endl;
 }
 
-void	    print_error_error_exit(std::string error_msg, int exit_code)
-{
-	std::cerr << REDB << "Error:\n" << error_msg << RESET << std::endl;
-	exit(exit_code);
-}
-
 void	    print_error_fd(std::string error_msg, int fd)
 {
-	std::cerr << REDB << "Error:\n" << error_msg << " " << fd << RESET << std::endl;
+	std::cerr << REDB << "Error:\n";
+	std::cerr << error_msg << " " << fd << RESET << std::endl;
 }
-
-
-// this function must be tested
-// template<typename ExceptionType>
-// void	    print_error_throw_exception(std::string &error_msg, std::exception except_class)
-// {
-// 	std::cerr << REDB << "Error:\n" << error_msg << RESET << std::endl;
-// 	throw ExceptionType();
-// }

@@ -301,7 +301,7 @@ std::string    Response::executeCgi(std::string fileName, Cgi cgi)
 
 		char **envp = setEnv(cgi, fileName);
 		execve(argv[0], argv, envp);
-		exit(0);
+		exit(0); // exit is not allowed
 	}
 
 	waitpid(-1, NULL, 0);
