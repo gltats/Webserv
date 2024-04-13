@@ -37,15 +37,28 @@ CC = c++
 CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
 
 # else ifeq ($(shell uname), Linux) # Linux
-FILES = main signal_handler library ConfigParser ConfigFile   AServer Server_OS__linux Server_OS__linux_helper Server_OS__linux_socket Server_OS__linux_loop Request Response Connection Webserv_Exceptions \
-		 response_head utilities get reading autoindex cgi error responseUtilities
-OS_NAME = "Linux OS"
-# add a extra linux identifier for docker if missing
-CFLAGS += -D__linux__
-
-# else
-#     $(error Error Unsupported operating system. Compilation aborted)
-# endif
+FILES = main \
+		signal_handler \
+		library \
+		ConfigParser \
+		ConfigFile \
+		AServer \
+		Server_OS__linux \
+		Server_OS__linux_helper \
+		Server_OS__linux_socket \
+		Server_OS__linux_loop \
+		Request \
+		Connection \
+		Webserv_Exceptions \
+		Response \
+		response_head \
+		utilities \
+		get \
+		reading \
+		autoindex \
+		cgi \
+		error \
+		responseUtilities
 
 HEADER_FILES = webserver
 
