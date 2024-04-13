@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 18:07:41 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/13 09:24:52 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 12:00:04 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,19 @@ class ServerOS : public Server
 		void											_close_connection(int epoll_fd, int fd_to_remove, struct epoll_event &ev_ref);
 		int												_is_port_already_set(int port, int *array_ports_set, int size_array);
 		virtual int 									_setup_socket(int port);
+		void											_configure_fd_nonblock(int fd);
 		virtual void									_listen_sockets(int fd_server, int port);
+
 		virtual void									_close_server_socket(int fd);
+		bool											_read_from_fd(int fd);
+		bool											_add_connection(int socket_fd);
+		void											_add_fd_to_monitored_events(int fd);
+		void											_remove_fd_from_monitored_events(int fd);
+
+		void											_handle_epollerr(int fd);
+		bool											_handle_epollin(int fd);
+		void											_handle_epollrdhup(int fd);
+		void											_handle_epollhup(int fd);
 
 	public:
 		// Member Functions

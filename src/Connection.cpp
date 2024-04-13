@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:35:15 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/10 21:59:08 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 11:29:41 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -280,7 +280,8 @@ void					Connection::_obtain_client_port(struct sockaddr_in &client_addr)
 
 int						Connection::get_error(void) const
 {
-	return (_request.get_error());
+	return (_response.get_ret());
+	// return (_request.get_error()); // TODO get_error from Response instead of from request
 
 }
 

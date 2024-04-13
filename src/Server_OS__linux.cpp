@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 16:31:13 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/13 09:24:15 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 11:48:45 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,13 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 	int				*port_array;
 	int 			port;
 	std::string 	identity;
+
+
+	if (_env == 0)
+	{
+		std::cerr << REDB << "Error environment _env is empty in ServerOS constructor" << RESET << std::endl;
+		throw ServerCriticalError();
+	}	
 
 	_flags_recv = 0;
 
@@ -69,6 +76,7 @@ ServerOS::ServerOS(int server_index, ConfigParser &configParser, char *env[]): S
 				std::cout << "New Port : Setup Socket for port " << port  << std::endl;
 			}
 			_servers_fd[i]= _setup_socket(port);
+			std::cout << "Created socket file descriptor " << _servers_fd[i] << std::endl;
 			_listen_sockets(_servers_fd[i], port);
 			port_array[i] = port;
 		}
@@ -97,8 +105,11 @@ ServerOS::~ServerOS(void)
 	{
 		fd 	 = it->first;
 		conn = it->second;
+
+		// TODO leaking file descriptors
 		// // close file descriptor saved in the key
-		close(fd);
+		// _close_connection(_epoll_fd, fd, _ev_server);
+		close(fd); // originalk
 		// // free allocated Connection
 		delete conn;
 	}
@@ -113,6 +124,7 @@ ServerOS::~ServerOS(void)
 
 	for (int i = 0; i < _nb_of_servers; i++)
 	{
+		std::cout << "closing server fd " <<_servers_fd[i] << std::endl; //remov 
 		_close_server_socket(_servers_fd[i]);
 	}
 
@@ -120,18 +132,15 @@ ServerOS::~ServerOS(void)
 	delete [] _servers_fd;
 }
 
+// TODO remove _epoll_fd and ev_ref as arguments. they belong to class
 void	ServerOS::_close_connection(int _epoll_fd, int fd_to_remove, struct epoll_event &ev_ref)
 {
 	if (VERBOSE == 1)
 		std::cout << "Remove Connection fd = " << fd_to_remove << std::endl;
 
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd_to_remove, &ev_ref) == -1)
-	{
-		std::cerr << REDB <<  "Error:\n epoll_ctl connection fd could not be removed from \
-			 monitored file descriptor list, fd: " << _epoll_fd << RESET << std::endl;
-		std::cerr << "Reason: " << strerror(errno) << std::endl;
-		throw ServerCriticalError();
-	}
+		_remove_fd_from_monitored_events(fd_to_remove);
+
 	// delete allocated Connection
 	if (VERBOSE == 1)
 		std::cout << "file descriptor Connection object free fd: " << fd_to_remove << std::endl;

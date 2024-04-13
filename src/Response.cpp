@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:53:38 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/08 17:32:50 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 11:29:10 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -551,4 +551,9 @@ std::string Response::get_key(std::string line)
 std::string	Response::get_index()
 {
 	return (_index);
+}
+
+int			Response::get_ret() const
+{
+	return (_ret);
 }

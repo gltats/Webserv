@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/13 09:24:36 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 11:53:32 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,67 @@
 	Comments:
 		-exit() is not allowed
 		-AServer is not in canonical form
+		-Arafa to call .close() on open file : std::string Response::setErrorPage(std::string path, std::string status_code)
 
 
 */
+
+
+
+/*
+ TODO 
+  Nb of servers 2
+
+ -- Server 0 -- 
+listen port : 4440
+server name : webserv42.com
+
+ -- Server 1 -- 
+listen port : 4441
+server name : lol2.com
+
+New Port : Setup Socket for port 4440
+Socket created sucessfully. Socket fd = 4
+Socket option set to SO_REUSEADDR sucessfully
+Binding sucessful socket fd 4
+before epoll_ctl 3
+Socket port 4440 set sucessfully to listen
+
+New Port : Setup Socket for port 4441
+Socket created sucessfully. Socket fd = 5
+Socket option set to SO_REUSEADDR sucessfully
+Binding sucessful socket fd 5
+before epoll_ctl 3
+Socket port 4441 set sucessfully to listen
+^Cclosing server fd 4
+closing server fd 5
+Server deconstructor
+Exception: User Request for Termination
+==2372216== 
+==2372216== FILE DESCRIPTORS: 7 open (3 std) at exit.
+==2372216== Open file descriptor 103: /usr/share/code/v8_context_snapshot.bin
+==2372216==    <inherited from parent>
+==2372216== 
+==2372216== Open file descriptor 39: /usr/share/code/resources/app/node_modules.asar
+==2372216==    <inherited from parent>
+==2372216== 
+==2372216== Open AF_UNIX socket 38: <unknown>
+==2372216==    <inherited from parent>
+==2372216== 
+==2372216== Open file descriptor 37: /home/mgranero/.config/Code/logs/20240413T085127/ptyhost.log
+==2372216==    <inherited from parent>
+==2372216== 
+==2372216== 
+==2372216== HEAP SUMMARY:
+==2372216==     in use at exit: 0 bytes in 0 blocks
+==2372216==   total heap usage: 450 allocs, 450 frees, 147,949 bytes allocated
+==2372216== 
+==2372216== All heap blocks were freed -- no leaks are possible
+==2372216== 
+==2372216== For lists of detected and suppressed errors, rerun with: -s
+==2372216== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+*/
+
 
 // TODO header for main.cpp which represents all of us
 

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/04 21:37:17 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/08 17:32:52 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 11:29:32 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -344,6 +344,8 @@ class Response
 	// std::string		executeCgiPy(std::string fileName, Response::Cgi cgi);
 	// std::string		executeCgiPhp(std::string fileName, Response::Cgi cgi);
 
+
+	int				get_ret() const;
 
 };
 

@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/13 09:11:26 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/13 09:17:19 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 11:51:49 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ int		ServerOS::_setup_socket(int port)
 {
 	int					server_socket;
 	struct sockaddr_in	serverAddr;
-
 
     // Socket will be created for AF_INET(IPv4), for SOCK_STREAM(TCP) and specific for the TCP protocol
 	server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
@@ -58,29 +57,19 @@ int		ServerOS::_setup_socket(int port)
 	}
 	std::cout << "Binding sucessful socket fd " << server_socket << std::endl;
 
-	// add file descriptor to be monitored
-	_ev_server.data.fd = server_socket;
-
-	std::cout << "before epoll_ctl " << _epoll_fd << std::endl; // remove
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, server_socket, &_ev_server) == -1)
-	{
-		std::cerr << REDB <<  "Error:\n epoll_ctl server socket could not be set to monitored file descriptor list. Port "<< port << RESET << std::endl;
-		std::cerr << "Reason: " << strerror(errno) << std::endl;
-		throw ServerCriticalError();
-	}
+	// add file descriptor to be monitored	
+	_add_fd_to_monitored_events(server_socket);
+	
 	return (server_socket);
-
 }
 
 void	ServerOS::_listen_sockets(int fd_server, int port)
 {
 	if (listen(fd_server, _max_backlog_queue) == -1)
 	{
-		//ideally print the server socket and port that could not be listen
 		print_error_fd("to listen socket Port ", port);
 		close(fd_server);
-		//throw exception
-		exit (1); // at the moment just exit
+		throw ServerCriticalError();
 	}
 	std::cout << "Socket port " << port << " set sucessfully to listen" << std::endl; // remove
 
@@ -88,7 +77,6 @@ void	ServerOS::_listen_sockets(int fd_server, int port)
 
 void	ServerOS::_close_server_socket(int fd)
 {
-	// can we just looop all of them or do i have the need to close only one?
 	for (int i = 0; i < _nb_of_servers; i++)
 	{
 		if (_servers_fd[i] != -1 && _servers_fd[i] == fd)
