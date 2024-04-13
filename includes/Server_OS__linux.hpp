@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 18:07:41 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/11 21:51:32 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 09:24:52 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ class ServerOS : public Server
 		bool											_is_key_in_map(std::map<int, Connection *> *map, int key);
 		void											_print_epoll_events(uint32_t event, int fd);
 		void											_close_connection(int epoll_fd, int fd_to_remove, struct epoll_event &ev_ref);
+		int												_is_port_already_set(int port, int *array_ports_set, int size_array);
 		virtual int 									_setup_socket(int port);
-		virtual void									_loop(void);
 		virtual void									_listen_sockets(int fd_server, int port);
 		virtual void									_close_server_socket(int fd);
 
@@ -42,7 +42,7 @@ class ServerOS : public Server
 		// Member Functions
 		ServerOS(int server_index, ConfigParser &configParser, char *env[]);
 		~ServerOS(void);
-		virtual void									launch_webserver(void);
+		virtual void									launch_webserver_loop(void);
 };
 
 #endif

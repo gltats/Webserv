@@ -35,21 +35,9 @@ NAME = webserver
 # Compiler and flags
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98
-#CFLAGS = -Iincludes -std=c++98  # in mac for development
-# CFLAGS =  -Iincludes -std=c++98 -D__linux__  # for development in docker linux
-
-# Folders & files
-# FILES = main ConfigParser # Tatiana's original
-
-# ifeq ($(shell uname), Darwin) # Mac OS
-# 	FILES = main signal_handler library ConfigParser ConfigFile  AServer Server_OS__singleClient Request Response Connection Webserv_Exceptions
-
-# # FILES = main map signal_handler library ConfigParser ConfigFile Server Server_OS__singleClient Request Response Connection Webserv_Exceptions
-# 	OS_NAME = "MAC OS Darwin"
-# 	CFLAGS += -D__mac__
 
 # else ifeq ($(shell uname), Linux) # Linux
-FILES = main signal_handler library ConfigParser ConfigFile   AServer Server_OS__linux Request Response Connection Webserv_Exceptions \
+FILES = main signal_handler library ConfigParser ConfigFile   AServer Server_OS__linux Server_OS__linux_helper Server_OS__linux_socket Server_OS__linux_loop Request Response Connection Webserv_Exceptions \
 		 response_head utilities get reading autoindex cgi error responseUtilities
 OS_NAME = "Linux OS"
 # add a extra linux identifier for docker if missing

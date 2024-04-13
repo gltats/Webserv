@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 18:39:04 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/11 21:54:10 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 09:27:15 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ class Server
 
 		// Member Functions
 		virtual int							_setup_socket(int port) = 0;
-		virtual void						_loop(void) = 0;
 		virtual void	    				_listen_sockets(int fd_server, int port) = 0;
 		virtual void	   					_close_server_socket(int fd) = 0;
 
@@ -57,7 +56,7 @@ class Server
 		// Member Functions
 		Server(int server_index, ConfigParser &configParser, char *env[]);
 		virtual 							~Server(void);
-		virtual void						launch_webserver(void)  = 0;
+		virtual void						launch_webserver_loop(void)  = 0;
 };
 
 #endif

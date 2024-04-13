@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 17:06:43 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/11 18:39:43 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 09:24:36 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,7 +189,7 @@ int	main(int argc, char *argv[], char *env[])
 	{
 		// constructor setup socket and put it in listening mode
 		ServerOS srv(0, configParser, env);
-		srv.launch_webserver();
+		srv.launch_webserver_loop();
 	}
 	catch(const UserRequestTermination& e)
 	{
