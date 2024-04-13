@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 21:30:09 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/11 21:49:24 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 09:48:01 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,12 @@
 #include <sys/un.h>
 #include <arpa/inet.h>
 
-#include "color_code.hpp"
-#include "iomanip" // only for testing
+#include "webserver_configuration.hpp"
+#include "iomanip" // only for testing, print time with setprecision TODO remove it?
 #include "Request.hpp"
 #include "Response.hpp"
 
-# ifndef KEEP_ALIVE_TIME_SECONDS
-// set it to -1 to deactivate keep alive persistent connections
-# define KEEP_ALIVE_TIME_SECONDS 30
-# endif
+
 
 class Connection
 {

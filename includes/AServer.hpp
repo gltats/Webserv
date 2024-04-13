@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 18:39:04 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/13 09:27:15 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 09:48:14 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,17 +23,10 @@
 # include <unistd.h>
 # include <map>
 
+# include "webserver_configuration.hpp"
 # include "color_code.hpp"
 # include "library.hpp"
 # include "Connection.hpp"
-
-# ifndef MAX_BACKLOG_QUEUE
-#  define MAX_BACKLOG_QUEUE 128
-# endif
-
-# ifndef MAX_MSG_BUFFER
-#  define MAX_MSG_BUFFER 8192*200
-# endif
 
 class Server
 {

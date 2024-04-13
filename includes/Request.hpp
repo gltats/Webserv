@@ -6,7 +6,7 @@
 /*   By: mgranero <mgranero@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/06 20:32:57 by mgranero          #+#    #+#             */
-/*   Updated: 2024/04/08 17:26:13 by mgranero         ###   ########.fr       */
+/*   Updated: 2024/04/13 09:51:54 by mgranero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,10 @@
 #include <list>
 #include <stdlib.h>
 #include <cstring>
-#include "color_code.hpp"
+
+#include "webserver_configuration.hpp"
 #include "library.hpp"
 #include "ConfigParser.hpp"
-
-#define MAX_REQUEST_LINE_LEN 8000
-#define MAX_FIELD_NAME_LEN 256
-#define MAX_FIELD_VALUE_LEN 512
-#define MAX_BODY_SIZE 200 // TODO make it come from config parser
 
 class Connection;
 
