@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-15 13:39:40
+ * @ Modified time: 2024-04-15 16:50:54
  * @ Description: webserv
  */
 
@@ -108,6 +108,7 @@ void ConfigParser::splitServers(std::string &content)
 
 std::vector<std::map<std::string, std::string> > ConfigParser::parseErrorPages(const std::string &serverConfig)
 {
+	errorPages.clear();
     size_t startPos = serverConfig.find("error_page");
    // std::vector<std::map<std::string, std::string> > errorPages;
     while (startPos != std::string::npos)
@@ -145,6 +146,7 @@ std::vector<std::map<std::string, std::string> > ConfigParser::parseErrorPages(c
 
 std::vector<std::map<std::string, std::string> > ConfigParser::parseLocations(const std::string &serverConfig)
 {
+	locations.clear();
 	size_t startPos = serverConfig.find("location");
 	while (startPos != std::string::npos)
 	{
@@ -160,6 +162,14 @@ std::vector<std::map<std::string, std::string> > ConfigParser::parseLocations(co
 				keyPos += key.length();
 				size_t semicolonPos = locationBlock.find(';', keyPos);
 				std::string value = locationBlock.substr(keyPos, semicolonPos - keyPos);
+				if (key == "location")
+                {
+                    size_t bracePos = value.find('{');
+                    if (bracePos != std::string::npos)
+                    {
+                        value = value.substr(0, bracePos);
+                    }
+                }
 				if (key == "allow_methods")
 				{
 					if (value.find("GET") != std::string::npos || value.find("POST") != std::string::npos || value.find("DELETE") != std::string::npos || value.empty())
@@ -218,19 +228,6 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 			size_t endPos = serverConfig.find(';', startPos);
 			std::string value = serverConfig.substr(startPos, endPos - startPos);
 			parameters[key] = value;
-			// Additional checkers for specific parameters
-			if (key == "location")
-			{
-
-				size_t braceStartPos = value.find('{');
-				size_t braceEndPos = value.find('}');
-
-				if (braceStartPos != braceEndPos)
-				{
-					std::string location = value.substr(0, braceStartPos);
-					parameters["location"] = location;
-				}
-			}
 		}
 	}
 	return parameters;
@@ -395,24 +392,23 @@ void ConfigParser::print()
 	for (size_t i = 0; i < getNumServers(); i++)
 	{
 		std::cout << servers[i] << std::endl;
-		std::map<std::string, std::string> parameters = getServerParameters(i);
-		std::cout << "************************ Main *****************************" << std::endl;
-		std::cout << "listen: " << i << " " << getParameterValue(i, "listen") << std::endl;
-		std::cout << "server_name: " << i << " " << getParameterValue(i, "server_name") << std::endl;
-		std::cout << "body_size: " << i << " " << getParameterValue(i, "body_size") << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "********************** Error pages **************************" << std::endl;
-		for (size_t x = 0; x < serverErrorPages[i].size(); x++)
-		{
-			std::map<std::string, std::string> errorPageParameters = serverErrorPages[i][x];
-			std::cout << x << " error page on server " << i << ": " << getErrorPageValue(i, x, "error_page") << std::endl;
-			std::cout << x << " error page number on server " << i << ": " << getErrorPageValue(i, x, "error_number") << std::endl;
-			std::cout << x << " error page location on server " << i << ": " << getErrorPageValue(i, x, "error_location") << std::endl;
-			
-		}
-		std::cout << "" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "********************** Locations **************************" << std::endl;
+		// std::map<std::string, std::string> parameters = getServerParameters(i);
+		// std::cout << "************************ Main *****************************" << std::endl;
+		// std::cout << "listen: " << i << " " << getParameterValue(i, "listen") << std::endl;
+		// std::cout << "server_name: " << i << " " << getParameterValue(i, "server_name") << std::endl;
+		// std::cout << "body_size: " << i << " " << getParameterValue(i, "body_size") << std::endl;
+		// std::cout << "***********************************************************" << std::endl;
+		// std::cout << "********************** Error pages **************************" << std::endl;
+		// for (size_t x = 0; x < serverErrorPages[i].size(); x++)
+		// {
+		// 	std::map<std::string, std::string> errorPageParameters = serverErrorPages[i][x];
+		// 	// std::cout << x << " error page on server " << i << ": " << getErrorPageValue(i, x, "error_page") << std::endl;
+		// 	std::cout << x << " error page number on server " << i << ": " << getErrorPageValue(i, x, "error_number") << std::endl;
+		// 	std::cout << x << " error page location on server " << i << ": " << getErrorPageValue(i, x, "error_location") << std::endl;
+		// }
+		// std::cout << "" << std::endl;
+		// std::cout << "***********************************************************" << std::endl;
+		// std::cout << "********************** Locations **************************" << std::endl;
 		for (size_t j = 0; j < serverLocations[i].size(); j++)
 		{
 			std::map<std::string, std::string> locationParameters = serverLocations[i][j];
@@ -425,8 +421,8 @@ void ConfigParser::print()
 			std::cout << j << " location with autoindex on server " << i << ": " << getLocationValue(i, j, "autoindex") << std::endl;
 			std::cout << j << " location with cgi on server " << i << ": " << getLocationValue(i, j, "cgi") << std::endl;
 		}
-		std::cout << "" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
+		// std::cout << "" << std::endl;
+		// std::cout << "***********************************************************" << std::endl;
 	}
-	std::cout << "=============================================================================================" << std::endl;
+	// std::cout << "=============================================================================================" << std::endl;
 }
