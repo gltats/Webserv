@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:33
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-09 15:44:22
+ * @ Modified time: 2024-04-10 11:44:50
  * @ Description: webserv
  */
 
@@ -36,8 +36,13 @@ private:
 
 	std::map<std::string, std::string> parameters;
 	std::vector<std::string> servers;
+	std::vector<std::map<std::string, std::string> > locations;
+	std::vector<std::map<std::string, std::string> > errorPages;
 	std::vector<std::map<std::string, std::string> > serverParameters;
+	std::map<std::string, std::string> locationParameters;
+	std::map<std::string, std::string> errorPageParameters;
 	std::vector<std::vector<std::map<std::string, std::string> > > serverLocations;
+	std::vector<std::vector<std::map<std::string, std::string> > > serverErrorPages;
 	std::set<std::string> listenValues;
 	
 
@@ -53,6 +58,7 @@ private:
 
 	std::map<std::string, std::string> parseParameters(const std::string &serverConfig);
 	std::vector<std::map<std::string, std::string> > parseLocations(const std::string &serverConfig);
+	std::vector<std::map<std::string, std::string> > parseErrorPages(const std::string &serverConfig);
 	std::map<std::string, std::string> &getServerParameters(size_t index);
 
 	void print();
@@ -71,7 +77,9 @@ public:
 
 	std::string getParameterValue(size_t serverIndex, const std::string &parameterKey);
 	std::string getLocationValue(size_t serverIndex, size_t locationIndex, const std::string &key);
+	std::string getErrorPageValue(size_t serverIndex, size_t errorPageIndex, const std::string &key);
 
 	size_t getNumServers();
 	size_t getNumLocations(size_t serverIndex);
+	size_t getNumErrorPages(size_t serverIndex);
 };

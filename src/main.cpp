@@ -32,8 +32,11 @@ void test()
             std::cout << configParser.getParameterValue(1, "listen") << std::endl;
             std::cout << configParser.getParameterValue(0, "server_name") << std::endl;
             std::cout << configParser.getParameterValue(0, "body_size") << std::endl;
-            std::cout << configParser.getParameterValue(0, "error_number") << std::endl;
-            std::cout << configParser.getParameterValue(0, "error_location") << std::endl;
+            std::cout << configParser.getErrorPageValue(0, 0, "error_number")  << std::endl;
+            std::cout << configParser.getErrorPageValue(0, 0, "error_location")  << std::endl;
+
+            std::cout << configParser.getErrorPageValue(0, 1, "error_number")  << std::endl;
+            std::cout << configParser.getErrorPageValue(0, 1, "error_location")  << std::endl;
 
             std::cout << configParser.getLocationValue(0, 0, "location") << std::endl;
             std::cout << configParser.getLocationValue(0, 0, "allow_methods") << std::endl;

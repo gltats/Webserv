@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-09 16:52:08
+ * @ Modified time: 2024-04-15 10:55:51
  * @ Description: webserv
  */
 
@@ -72,20 +72,18 @@ void ConfigParser::getConfig(const std::string &configtFile)
 
 	splitServers(content);
 	for (std::vector<std::string>::iterator it = servers.begin(); it != servers.end(); ++it)
-	{	
+	{
 		parameters = parseParameters(*it);
-		std::vector<std::map<std::string, std::string> > locations = parseLocations(*it);
+		locations = parseLocations(*it);
+		errorPages = parseErrorPages(*it);
 
 		serverParameters.push_back(parameters);
 		serverLocations.push_back(locations);
-
-
+		serverErrorPages.push_back(errorPages);
 	}
-	// print(); // test function
-		CheckParameters parametersChecker;
-    parametersChecker.CheckAllParameters(*this);
-
-
+	print(); // test function
+	CheckParameters parametersChecker;
+	parametersChecker.CheckAllParameters(*this);
 }
 
 // helper functions
@@ -108,17 +106,51 @@ void ConfigParser::splitServers(std::string &content)
 	}
 }
 
+std::vector<std::map<std::string, std::string> > ConfigParser::parseErrorPages(const std::string &serverConfig)
+{
+    size_t startPos = serverConfig.find("error_page");
+   // std::vector<std::map<std::string, std::string> > errorPages;
+    while (startPos != std::string::npos)
+    {
+		size_t endPos = serverConfig.find(';', startPos);
+		//std::string errorBlock = serverConfig.substr(startPos, endPos - startPos + 1);
+
+        std::map<std::string, std::string> errorPageParameters; // Create a new map for each error page
+        for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
+        {
+            std::string key = keys[i];
+            size_t startPos = serverConfig.find(key);
+            if (startPos != std::string::npos)
+            {
+                startPos += key.length();
+                size_t endPos = serverConfig.find(';', startPos);
+                std::string value = serverConfig.substr(startPos, endPos - startPos);
+                parameters[key] = value;
+                // Additional checkers for specific parameters
+                size_t locPos = value.find('/');
+                if (locPos != std::string::npos)
+                {
+                    std::string errorNumber = value.substr(0, locPos);
+                    std::string errorLocation = value.substr(locPos + 1);
+                    errorPageParameters["error_number"] = errorNumber;
+                    errorPageParameters["error_location"] = errorLocation;
+                }
+            }
+        }
+        errorPages.push_back(errorPageParameters); // Add the parameters map to the errorPages vector
+        startPos = serverConfig.find("error_page", startPos + 1); // Find the next "error_pages" occurrence
+    }
+    return errorPages;
+}
+
 std::vector<std::map<std::string, std::string> > ConfigParser::parseLocations(const std::string &serverConfig)
 {
-	std::vector<std::map<std::string, std::string> > locations;
-
 	size_t startPos = serverConfig.find("location");
 	while (startPos != std::string::npos)
 	{
 		size_t endPos = serverConfig.find('}', startPos);
 		std::string locationBlock = serverConfig.substr(startPos, endPos - startPos + 1);
 
-		std::map<std::string, std::string> locationParameters;
 		for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
 		{
 			std::string key = keys[i];
@@ -187,18 +219,7 @@ std::map<std::string, std::string> ConfigParser::parseParameters(const std::stri
 			std::string value = serverConfig.substr(startPos, endPos - startPos);
 			parameters[key] = value;
 			// Additional checkers for specific parameters
-			if (key == "error_page")
-			{
-				size_t locPos = value.find('/');
-				if (locPos != std::string::npos)
-				{
-					std::string errorNumber = value.substr(0, locPos);
-					std::string errorLocation = value.substr(locPos + 1);
-					parameters["error_number"] = errorNumber;
-					parameters["error_location"] = errorLocation;
-				}
-			}
-			else if (key == "location")
+			if (key == "location")
 			{
 
 				size_t braceStartPos = value.find('{');
@@ -308,12 +329,34 @@ std::string ConfigParser::getLocationValue(size_t serverIndex, size_t locationIn
 	if (locationIndex >= serverLocations[serverIndex].size())
 		throw std::invalid_argument("Invalid location index");
 
-	const std::map<std::string, std::string> &locationParameters = serverLocations[serverIndex][locationIndex];
+	std::map<std::string, std::string> &locationParameters = serverLocations[serverIndex][locationIndex];
 	std::map<std::string, std::string>::const_iterator it = locationParameters.find(key);
 
 	if (it == locationParameters.end())
 	{
 		if (key == "GET" || key == "POST" || key == "DELETE" || key == "NoAllowedMethods")
+			return ""; // or return some default value
+		else
+			throw std::invalid_argument("Invalid parameter key");
+	}
+
+	return it->second;
+}
+
+std::string ConfigParser::getErrorPageValue(size_t serverIndex, size_t errorIndex, const std::string &key)
+{
+	if (serverIndex >= serverErrorPages.size())
+		throw std::invalid_argument("Invalid server index");
+
+	if (errorIndex >= serverErrorPages[serverIndex].size())
+		throw std::invalid_argument("Invalid error index");
+
+	const std::map<std::string, std::string> &errorPageParameters = serverErrorPages[serverIndex][errorIndex];
+	std::map<std::string, std::string>::const_iterator it = errorPageParameters.find(key);
+
+	if (it == errorPageParameters.end())
+	{
+		if (key == "error_page" || key == "error_number" || key == "error_location")
 			return ""; // or return some default value
 		else
 			throw std::invalid_argument("Invalid parameter key");
@@ -335,6 +378,14 @@ size_t ConfigParser::getNumLocations(size_t serverIndex)
 	return serverLocations[serverIndex].size();
 }
 
+size_t ConfigParser::getNumErrorPages(size_t serverIndex)
+{
+	if (serverIndex >= serverErrorPages.size())
+		throw std::invalid_argument("Invalid server index");
+
+	return serverErrorPages[serverIndex].size();
+}
+
 // Test function
 void ConfigParser::print()
 {
@@ -349,11 +400,18 @@ void ConfigParser::print()
 		std::cout << "listen: " << i << " " << getParameterValue(i, "listen") << std::endl;
 		std::cout << "server_name: " << i << " " << getParameterValue(i, "server_name") << std::endl;
 		std::cout << "body_size: " << i << " " << getParameterValue(i, "body_size") << std::endl;
-		std::cout << "error_page: " << i << " " << getParameterValue(i, "error_page") << std::endl;
-		std::cout << "error page number: " << i << " " << getParameterValue(i, "error_number") << std::endl;
-		std::cout << "error page location: " << i << " " << getParameterValue(i, "error_location") << std::endl;
 		std::cout << "***********************************************************" << std::endl;
-
+		std::cout << "********************** Error pages **************************" << std::endl;
+		for (size_t x = 0; x < serverErrorPages[i].size(); x++)
+		{
+			std::map<std::string, std::string> errorPageParameters = serverErrorPages[i][x];
+			std::cout << x << " error page on server " << i << ": " << getErrorPageValue(i, x, "error_page") << std::endl;
+			std::cout << x << " error page number on server " << i << ": " << getErrorPageValue(i, x, "error_number") << std::endl;
+			std::cout << x << " error page location on server " << i << ": " << getErrorPageValue(i, x, "error_location") << std::endl;
+			
+		}
+		std::cout << "" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
 		std::cout << "********************** Locations **************************" << std::endl;
 		for (size_t j = 0; j < serverLocations[i].size(); j++)
 		{
@@ -370,7 +428,5 @@ void ConfigParser::print()
 		std::cout << "" << std::endl;
 		std::cout << "***********************************************************" << std::endl;
 	}
-
-	std::cout << "check location number of the 1st server: " << getNumLocations(0) << std::endl;
 	std::cout << "=============================================================================================" << std::endl;
 }
