@@ -392,23 +392,23 @@ void ConfigParser::print()
 	for (size_t i = 0; i < getNumServers(); i++)
 	{
 		std::cout << servers[i] << std::endl;
-		// std::map<std::string, std::string> parameters = getServerParameters(i);
-		// std::cout << "************************ Main *****************************" << std::endl;
-		// std::cout << "listen: " << i << " " << getParameterValue(i, "listen") << std::endl;
-		// std::cout << "server_name: " << i << " " << getParameterValue(i, "server_name") << std::endl;
-		// std::cout << "body_size: " << i << " " << getParameterValue(i, "body_size") << std::endl;
-		// std::cout << "***********************************************************" << std::endl;
-		// std::cout << "********************** Error pages **************************" << std::endl;
-		// for (size_t x = 0; x < serverErrorPages[i].size(); x++)
-		// {
-		// 	std::map<std::string, std::string> errorPageParameters = serverErrorPages[i][x];
-		// 	// std::cout << x << " error page on server " << i << ": " << getErrorPageValue(i, x, "error_page") << std::endl;
-		// 	std::cout << x << " error page number on server " << i << ": " << getErrorPageValue(i, x, "error_number") << std::endl;
-		// 	std::cout << x << " error page location on server " << i << ": " << getErrorPageValue(i, x, "error_location") << std::endl;
-		// }
-		// std::cout << "" << std::endl;
-		// std::cout << "***********************************************************" << std::endl;
-		// std::cout << "********************** Locations **************************" << std::endl;
+		std::map<std::string, std::string> parameters = getServerParameters(i);
+		std::cout << "************************ Main *****************************" << std::endl;
+		std::cout << "listen: " << i << " " << getParameterValue(i, "listen") << std::endl;
+		std::cout << "server_name: " << i << " " << getParameterValue(i, "server_name") << std::endl;
+		std::cout << "body_size: " << i << " " << getParameterValue(i, "body_size") << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "********************** Error pages **************************" << std::endl;
+		for (size_t x = 0; x < serverErrorPages[i].size(); x++)
+		{
+			std::map<std::string, std::string> errorPageParameters = serverErrorPages[i][x];
+			// std::cout << x << " error page on server " << i << ": " << getErrorPageValue(i, x, "error_page") << std::endl;
+			std::cout << x << " error page number on server " << i << ": " << getErrorPageValue(i, x, "error_number") << std::endl;
+			std::cout << x << " error page location on server " << i << ": " << getErrorPageValue(i, x, "error_location") << std::endl;
+		}
+		std::cout << "" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "********************** Locations **************************" << std::endl;
 		for (size_t j = 0; j < serverLocations[i].size(); j++)
 		{
 			std::map<std::string, std::string> locationParameters = serverLocations[i][j];
@@ -421,8 +421,8 @@ void ConfigParser::print()
 			std::cout << j << " location with autoindex on server " << i << ": " << getLocationValue(i, j, "autoindex") << std::endl;
 			std::cout << j << " location with cgi on server " << i << ": " << getLocationValue(i, j, "cgi") << std::endl;
 		}
-		// std::cout << "" << std::endl;
-		// std::cout << "***********************************************************" << std::endl;
+		std::cout << "" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
 	}
-	// std::cout << "=============================================================================================" << std::endl;
+	std::cout << "=============================================================================================" << std::endl;
 }

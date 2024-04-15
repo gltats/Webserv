@@ -3,45 +3,51 @@
 
 void Response::error()
 {
-	// only supporting one error_page being set by the user or the default ones
+    // Get the number of error pages for the server
+    size_t numErrorPages = _server.getNumErrorPages(_serverID);
+    std::cout << "Number of error pages: " << numErrorPages << std::endl;
 
-	// for (size_t i = 0; i < _server.error_page.size(); i++) //
-	// {
-		// if (_ret == _server.error_page[i].status_code) // original
-				// spError(server.error_page[i].page);  // original
+    // Loop through each error page
+    for (size_t i = 0; i < numErrorPages; i++)
+    {
+        // Get the error number for the current error page
+        int errorNumber = str2int(_server.getErrorPageValue(_serverID, i, "error_number"));
+        std::cout << "Error number for page " << i << ": " << errorNumber << std::endl;
 
-		// this get's the error code defined by the user in the configuration file
-		if (_ret == str2int(_server.getParameterValue(_serverID, "error_number"))) // modified maira
-		{
-			std::string error_page_path = ROOT;
-			error_page_path.append("/");
-			error_page_path.append(_server.getParameterValue(_serverID, "error_location"));
-			_Resbody = setErrorPage(error_page_path, to_String(_ret));
-			return ;
-		}
+        // If the return code matches the error number
+        if (_ret == errorNumber)
+        {
+            // Build the error page path
+            std::string error_page_path = ROOT;
+            error_page_path.append("/");
+            error_page_path.append(_server.getErrorPageValue(_serverID, i, "error_location"));
+            std::cout << "Error page path: " << error_page_path << std::endl;
 
-		// if user didnt define one, use the defaults.
-		else
-		{
-			// build servers predefined errors pages path
-			std::string error_page_path = "./frontEnd/error/error" + int2str(_ret) + ".html";
-			
-			// check if exist
-			if (access(error_page_path.c_str(), R_OK) == 0)
-			{
-				_Resbody = setErrorPage(error_page_path,to_String(_ret));
-				return ;
-			}	
-			else
-			{
-				std::cerr << REDB << "Error page :" << error_page_path << ", does not exist or not accessable" << std::endl;	
-				// return the default one in defError
-			}
-		// }
-			
+            // Set the response body to the error page
+            _Resbody = setErrorPage(error_page_path, to_String(_ret));
+            return;
+        }
+    }
 
-	}
-	defError();
+    // If no user-defined error page was found, use the default ones
+    std::string error_page_path = "./frontEnd/error/error" + int2str(_ret) + ".html";
+    std::cout << "Default error page path: " << error_page_path << std::endl;
+
+    // Check if the error page exists
+    if (access(error_page_path.c_str(), R_OK) == 0)
+    {
+        // Set the response body to the error page
+        _Resbody = setErrorPage(error_page_path, to_String(_ret));
+        return;
+    }
+    else
+    {
+        // If the error page does not exist, print an error message
+        std::cerr << REDB << "Error page :" << error_page_path << ", does not exist or not accessible" << std::endl;
+    }
+
+    // If no error page was found, use the default error
+    defError();
 }
 
 /* ************************************************************************** */
