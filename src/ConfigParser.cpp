@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-15 10:55:51
+ * @ Modified time: 2024-04-15 13:39:40
  * @ Description: webserv
  */
 
@@ -113,18 +113,18 @@ std::vector<std::map<std::string, std::string> > ConfigParser::parseErrorPages(c
     while (startPos != std::string::npos)
     {
 		size_t endPos = serverConfig.find(';', startPos);
-		//std::string errorBlock = serverConfig.substr(startPos, endPos - startPos + 1);
+		std::string errorBlock = serverConfig.substr(startPos, endPos - startPos + 1);
 
-        std::map<std::string, std::string> errorPageParameters; // Create a new map for each error page
+        //std::map<std::string, std::string> errorPageParameters; // Create a new map for each error page
         for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
         {
             std::string key = keys[i];
-            size_t startPos = serverConfig.find(key);
-            if (startPos != std::string::npos)
+            size_t keyPos = errorBlock.find(key);
+            if (keyPos != std::string::npos)
             {
-                startPos += key.length();
-                size_t endPos = serverConfig.find(';', startPos);
-                std::string value = serverConfig.substr(startPos, endPos - startPos);
+                keyPos += key.length();
+				size_t semicolonPos = errorBlock.find(';', keyPos);
+				std::string value = errorBlock.substr(keyPos, semicolonPos - keyPos);
                 parameters[key] = value;
                 // Additional checkers for specific parameters
                 size_t locPos = value.find('/');
@@ -138,7 +138,7 @@ std::vector<std::map<std::string, std::string> > ConfigParser::parseErrorPages(c
             }
         }
         errorPages.push_back(errorPageParameters); // Add the parameters map to the errorPages vector
-        startPos = serverConfig.find("error_page", startPos + 1); // Find the next "error_pages" occurrence
+        startPos = serverConfig.find("error_page", endPos); // Find the next "error_pages" occurrence
     }
     return errorPages;
 }
