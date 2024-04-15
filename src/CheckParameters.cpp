@@ -38,29 +38,14 @@ void CheckParameters::CheckAllParameters(ConfigParser &configParser)
         }
         if (isValidPort(listenParam) == false)
         {
-            std::cout << "Port number is NOT valid: " << listenParam << std::endl; // FOR TESTING
-            // throw std::invalid_argument("Invalid port number");
+            // std::cout << "Port number is NOT valid: " << listenParam << std::endl; // FOR TESTING
+            throw std::invalid_argument("Invalid port number");
         }
         if(isValidBodySize(bodySizeParam) == false)
         {
-            std::cout << "Body size is NOT valid: " << bodySizeParam << std::endl; // FOR TESTING
+            throw std::invalid_argument("Invalid body_size number");
+            // std::cout << "Body size is NOT valid: " << bodySizeParam << std::endl; // FOR TESTING
         }
-        else
-        {
-            std::cout << "Port number is valid: " << listenParam << std::endl; // FOR TESTING
-            std::cout << "Body size is valid: " << bodySizeParam << std::endl; // FOR TESTING
-        }
-
-        // for (int j = 0; j < locationIndex; j++)
-        // {
-        //     locationParam = configParser.getLocationValue(i, j, "location");
-        //     autoindexParam = configParser.getLocationValue(i, j, "autoindex");
-        //     indexingParam = configParser.getLocationValue(i, j, "indexing");
-        //     cgiParam = configParser.getLocationValue(i, j, "cgi");
-
-        // }
-
-        // check if the parameters are correct
 
     }
 }
