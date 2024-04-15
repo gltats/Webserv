@@ -58,7 +58,8 @@ FILES = main \
 		autoindex \
 		cgi \
 		error \
-		responseUtilities
+		responseUtilities \
+		CheckParameters
 
 HEADER_FILES = webserver
 
