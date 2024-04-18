@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:33
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-10 11:44:50
+ * @ Modified time: 2024-04-18 15:18:56
  * @ Description: webserv
  */
 
@@ -26,7 +26,7 @@
 class ConfigFile;
 class CheckParameters;
 
-static std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "autoindex", "indexing", "cgi"};
+static std::string keys[] = {"listen", "server_name", "body_size", "error_page", "location", "allow_methods", "upload_enable", "upload_dir", "autoindex", "indexing", "cgi"};
 
 class ConfigParser
 {

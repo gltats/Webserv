@@ -109,7 +109,7 @@ int Response::deafIndex()
 		// _path = _server.getLocationValue(0, 0, "location"); // ask Maira for this path
 		return(200);
 	}
-	return(404);
+	return(404); //403
 }
 
 /* ************************************************************************** */

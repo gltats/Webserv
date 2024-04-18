@@ -2,7 +2,7 @@
  * @ Author: Gl.tats
  * @ Create Time: 2023-12-21 16:17:24
  * @ Modified by: Gltats
- * @ Modified time: 2024-04-15 16:50:54
+ * @ Modified time: 2024-04-18 15:40:45
  * @ Description: webserv
  */
 
@@ -64,6 +64,8 @@ void ConfigParser::getConfig(const std::string &configtFile)
 			char lastChar = line.at(line.size() - 1);
 			if (!(line.empty() || lastChar == ';' || lastChar == '{' || lastChar == '}'))
 			{
+				//print the line that is not empty and does not end with ; or { or }
+				std::cout << "Invalid configuration line: " << line << std::endl;
 				throw std::invalid_argument("Invalid configuration line");
 			}
 		}
@@ -204,6 +206,25 @@ std::vector<std::map<std::string, std::string> > ConfigParser::parseLocations(co
 						throw std::invalid_argument("Invalid method in allow_methods");
 					}
 				}
+				if (key == "upload_enable")
+				{
+					if (value == "on")
+					{
+						locationParameters["upload_enable"] = "on";
+					}
+					else if (value == "off")
+					{
+						locationParameters["upload_enable"] = "off";
+					}
+					else
+					{
+						throw std::invalid_argument("Invalid value for upload_enable");
+					}
+				}
+				if (key == "upload_dir" && locationParameters["upload_enable"] == "off")
+				{
+					throw std::invalid_argument("upload_dir is not allowed when upload_enable is off");
+				}
 				locationParameters[key] = value;
 			}
 		}
@@ -331,7 +352,7 @@ std::string ConfigParser::getLocationValue(size_t serverIndex, size_t locationIn
 
 	if (it == locationParameters.end())
 	{
-		if (key == "GET" || key == "POST" || key == "DELETE" || key == "NoAllowedMethods")
+		if (key == "GET" || key == "POST" || key == "DELETE" || key == "NoAllowedMethods" || key == "upload_dir")
 			return ""; // or return some default value
 		else
 			throw std::invalid_argument("Invalid parameter key");
@@ -418,6 +439,10 @@ void ConfigParser::print()
 			{
 				std::cout << "NoAllowedMethods" << j << ": " << getLocationValue(i, j, "NoAllowedMethods") << std::endl;
 			}
+			std::cout << j << " upload enabled " << i << ": " << getLocationValue(i, j, "upload_enable") << std::endl;
+			//in case there is upload dir print it
+			if (!getLocationValue(i, j, "upload_dir").empty())
+				std::cout << j << " upload dir " << i << ": " << getLocationValue(i, j, "upload_dir") << std::endl;
 			std::cout << j << " location with autoindex on server " << i << ": " << getLocationValue(i, j, "autoindex") << std::endl;
 			std::cout << j << " location with cgi on server " << i << ": " << getLocationValue(i, j, "cgi") << std::endl;
 		}
