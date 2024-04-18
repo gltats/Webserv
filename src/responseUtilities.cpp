@@ -24,16 +24,16 @@ int	Response::ParsingResponse()
 
 // /* ************************************************************************** */
 
-// int Response::allowed()
-// {
-// 	if (!server.locations[_l].allow_methods.size() && _method == "GET")
-// 		return(1);
-// 	for (size_t i = 0; i < server.locations[_l].allow_methods.size(); i++)
-// 	{		if (server.locations[_l].allow_methods[i] == _method)
-// 			return(1);
-// 	}
-// 	return(0);
-// }
+int Response::allowed()
+{
+	if (!_server.locations[_l].allow_methods.size() && _method == "GET")
+		return(1);
+	for (size_t i = 0; i < server.locations[_l].allow_methods.size(); i++)
+	{		if (server.locations[_l].allow_methods[i] == _method)
+			return(1);
+	}
+	return(0);
+}
 
 /* ************************************************************************** */
 
